@@ -1,0 +1,35 @@
+{
+    "name": "LMB Plusur",
+    "short_name": "LMB Plusur",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#14183B",
+    "theme_color": "#14183B",
+    "description": "LMB Plusur — zona sur de la Liga Mexicana de Béisbol.",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}

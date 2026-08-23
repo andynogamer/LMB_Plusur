@@ -1,0 +1,872 @@
+[
+  {
+    "id": "diablos_rojos",
+    "nombre": "Diablos Rojos del México",
+    "historia": "Los Diablos Rojos del México nacieron en 1940 y se convirtieron en la franquicia más ganadora de la Liga Mexicana de Béisbol. Durante décadas tuvieron su casa en el Parque del Seguro Social y, desde 2019, juegan en el Estadio Alfredo Harp Helú, en la Ciudad de México. Su afición, conocida por el ambiente de «la casa del terror», acompaña a un club que ha marcado la historia del béisbol profesional mexicano con múltiples campeonatos de la Serie del Rey.",
+    "fundacion": 1940,
+    "trivias": [
+      {
+        "id": 1,
+        "pregunta": "¿En qué año fueron fundados los Diablos Rojos del México?",
+        "opciones": ["1955", "1940", "1967", "1980"],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 2,
+        "pregunta": "¿Cómo se llama el estadio actual de los Diablos Rojos?",
+        "opciones": [
+          "Parque del Seguro Social",
+          "Foro Sol",
+          "Estadio Alfredo Harp Helú",
+          "Estadio Fray Nano"
+        ],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 3,
+        "pregunta": "¿En qué ciudad juegan de local los Diablos Rojos?",
+        "opciones": ["Guadalajara", "Monterrey", "Ciudad de México", "Puebla"],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 4,
+        "pregunta": "¿Cómo se conoce popularmente al ambiente de su casa?",
+        "opciones": [
+          "La casa del terror",
+          "El nido rojo",
+          "La jaula de los diablos",
+          "El volcán"
+        ],
+        "respuestaCorrecta": 0
+      },
+      {
+        "id": 5,
+        "pregunta": "¿En qué año inauguraron el Estadio Alfredo Harp Helú?",
+        "opciones": ["2001", "2010", "2015", "2019"],
+        "respuestaCorrecta": 3
+      },
+      {
+        "id": 6,
+        "pregunta": "¿Cuál era su estadio anterior más emblemático?",
+        "opciones": [
+          "Parque Kukulcán",
+          "Parque del Seguro Social",
+          "Estadio Azteca",
+          "Estadio Ciudad de los Deportes"
+        ],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 7,
+        "pregunta": "¿A qué zona de la LMB pertenecen los Diablos Rojos?",
+        "opciones": ["Zona Norte", "Zona Pacífico", "Zona Sur", "Zona Centro"],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 8,
+        "pregunta": "¿Qué serie define al campeón de la LMB?",
+        "opciones": [
+          "Serie Mundial",
+          "Serie del Caribe",
+          "Serie del Rey",
+          "Copa México"
+        ],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 9,
+        "pregunta": "¿De qué color es el uniforme más identificable de los Diablos?",
+        "opciones": ["Verde", "Rojo", "Amarillo", "Azul marino"],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 10,
+        "pregunta": "¿En qué liga profesional juegan los Diablos Rojos?",
+        "opciones": [
+          "Liga del Pacífico",
+          "MLB",
+          "Liga Mexicana de Béisbol",
+          "Liga Invernal Veracruzana"
+        ],
+        "respuestaCorrecta": 2
+      }
+    ]
+  },
+  {
+    "id": "bravos_leon",
+    "nombre": "Bravos de León",
+    "historia": "Los Bravos de León representan a la ciudad de León, Guanajuato, y se fundaron en 1979. Juegan de local en el Estadio Domingo Santana y han formado parte de distintas etapas de la Liga Mexicana de Béisbol, con salidas y regresos a la circuito. En el reacomodo reciente de la LMB quedaron integrados a la Zona Sur, donde mantienen una afición leonesa muy identificada con el béisbol de verano.",
+    "fundacion": 1979,
+    "trivias": [
+      {
+        "id": 1,
+        "pregunta": "¿En qué ciudad juegan de local los Bravos de León?",
+        "opciones": ["Guadalajara", "León", "Aguascalientes", "Toluca"],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 2,
+        "pregunta": "¿En qué año se fundó la franquicia de los Bravos de León?",
+        "opciones": ["1996", "2004", "1979", "2018"],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 3,
+        "pregunta": "¿Cómo se llama el estadio de los Bravos de León?",
+        "opciones": [
+          "Estadio Domingo Santana",
+          "Estadio León",
+          "Estadio Nou Camp",
+          "Parque del Seguro Social"
+        ],
+        "respuestaCorrecta": 0
+      },
+      {
+        "id": 4,
+        "pregunta": "¿A qué estado representan los Bravos?",
+        "opciones": ["Jalisco", "Michoacán", "Querétaro", "Guanajuato"],
+        "respuestaCorrecta": 3
+      },
+      {
+        "id": 5,
+        "pregunta": "¿A qué zona de la LMB pertenecen hoy los Bravos de León?",
+        "opciones": ["Zona Norte", "Zona Sur", "Zona Pacífico", "Zona Occidente"],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 6,
+        "pregunta": "¿En qué región de México se ubica León?",
+        "opciones": ["Bajío", "Peninsula de Yucatán", "Noroeste", "Istmo"],
+        "respuestaCorrecta": 0
+      },
+      {
+        "id": 7,
+        "pregunta": "¿Qué liga profesional disputan los Bravos?",
+        "opciones": [
+          "Liga Mexicana del Pacífico",
+          "Liga Mexicana de Béisbol",
+          "Liga Norte de México",
+          "MLB"
+        ],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 8,
+        "pregunta": "¿Qué significa el apodo «Bravos» en el contexto del equipo?",
+        "opciones": [
+          "Una referencia a valientes o guerreros",
+          "Un río de León",
+          "Un barrio colonial",
+          "Un tipo de calzado"
+        ],
+        "respuestaCorrecta": 0
+      },
+      {
+        "id": 9,
+        "pregunta": "¿En qué país juegan los Bravos de León?",
+        "opciones": ["Estados Unidos", "Cuba", "México", "Venezuela"],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 10,
+        "pregunta": "¿El Estadio Domingo Santana se usa principalmente para qué deporte?",
+        "opciones": ["Fútbol", "Béisbol", "Boxeo", "Atletismo"],
+        "respuestaCorrecta": 1
+      }
+    ]
+  },
+  {
+    "id": "conspiradores_queretaro",
+    "nombre": "Conspiradores de Querétaro",
+    "historia": "Los Conspiradores de Querétaro debutaron en la Liga Mexicana de Béisbol en 2024 como equipo de expansión. Su nombre evoca la Conspiración de Querétaro de 1810, episodio clave en el inicio de la Independencia de México. El club representa al estado de Querétaro en la Zona Sur y busca construir una identidad propia en una plaza que recibió de nuevo el béisbol de la LMB con una afición creciente.",
+    "fundacion": 2024,
+    "trivias": [
+      {
+        "id": 1,
+        "pregunta": "¿En qué año debutaron los Conspiradores de Querétaro en la LMB?",
+        "opciones": ["2010", "1998", "2024", "1985"],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 2,
+        "pregunta": "¿A qué estado representan los Conspiradores?",
+        "opciones": ["Hidalgo", "San Luis Potosí", "Morelos", "Querétaro"],
+        "respuestaCorrecta": 3
+      },
+      {
+        "id": 3,
+        "pregunta": "¿Qué tipo de franquicia fueron los Conspiradores al llegar a la LMB?",
+        "opciones": [
+          "Equipo de expansión",
+          "Filial de MLB",
+          "Club universitario",
+          "Equipo de la Liga del Pacífico"
+        ],
+        "respuestaCorrecta": 0
+      },
+      {
+        "id": 4,
+        "pregunta": "¿A qué hecho histórico alude el nombre del equipo?",
+        "opciones": [
+          "La Batalla de Puebla",
+          "La Conspiración de Querétaro",
+          "La Revolución de 1910",
+          "El Grito de Dolores en Guanajuato"
+        ],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 5,
+        "pregunta": "¿En qué año ocurrió la Conspiración de Querétaro?",
+        "opciones": ["1810", "1821", "1910", "1862"],
+        "respuestaCorrecta": 0
+      },
+      {
+        "id": 6,
+        "pregunta": "¿A qué zona de la LMB pertenecen los Conspiradores?",
+        "opciones": ["Zona Norte", "Zona Sur", "Zona Pacífico", "Zona Caribe"],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 7,
+        "pregunta": "¿Qué movimiento histórico impulsó la Conspiración de Querétaro?",
+        "opciones": [
+          "La Independencia de México",
+          "La Reforma agraria",
+          "La nacionalización del petróleo",
+          "El Porfiriato"
+        ],
+        "respuestaCorrecta": 0
+      },
+      {
+        "id": 8,
+        "pregunta": "¿En qué liga debutaron los Conspiradores en 2024?",
+        "opciones": [
+          "Liga Mexicana del Pacífico",
+          "Liga Mexicana de Béisbol",
+          "Liga Invernal Mexicana",
+          "Liga de Desarrollo"
+        ],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 9,
+        "pregunta": "¿Los Conspiradores son uno de los equipos más… de la Zona Sur?",
+        "opciones": ["Antiguos", "Recientes", "Norteños", "Invernales"],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 10,
+        "pregunta": "¿Qué entidad federativa tiene por capital a Santiago de Querétaro?",
+        "opciones": ["Guanajuato", "Hidalgo", "Querétaro", "Aguascalientes"],
+        "respuestaCorrecta": 2
+      }
+    ]
+  },
+  {
+    "id": "aguila_veracruz",
+    "nombre": "El Águila de Veracruz",
+    "historia": "El Águila de Veracruz es uno de los clubes más antiguos del béisbol mexicano: su origen se sitúa en 1903, en el puerto de Veracruz. A lo largo del siglo XX se consolidó como un equipo histórico de la Liga Mexicana de Béisbol, con varios campeonatos y una afición jarocha muy leal. Hoy juega de local en el Estadio Universitario Beto Ávila y sigue siendo un símbolo deportivo del puerto.",
+    "fundacion": 1903,
+    "trivias": [
+      {
+        "id": 1,
+        "pregunta": "¿Cuál es el año tradicional de fundación de El Águila de Veracruz?",
+        "opciones": ["1940", "1903", "1965", "1988"],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 2,
+        "pregunta": "¿En qué puerto juega de local El Águila?",
+        "opciones": ["Tampico", "Coatzacoalcos", "Veracruz", "Progreso"],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 3,
+        "pregunta": "¿Cómo se llama el estadio de El Águila de Veracruz?",
+        "opciones": [
+          "Estadio Luis de la Fuente",
+          "Estadio Universitario Beto Ávila",
+          "Parque Deportivo Veracruzano",
+          "Estadio Pirata Fuente"
+        ],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 4,
+        "pregunta": "¿Cómo se le dice a la afición del puerto de Veracruz?",
+        "opciones": ["Jarocha", "Regia", "Tapatía", "Yucateca"],
+        "respuestaCorrecta": 0
+      },
+      {
+        "id": 5,
+        "pregunta": "¿A qué zona de la LMB pertenece El Águila?",
+        "opciones": ["Zona Norte", "Zona Pacífico", "Zona Sur", "Zona Centro"],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 6,
+        "pregunta": "¿Qué animal da nombre al equipo?",
+        "opciones": ["Tigre", "León", "Águila", "Perico"],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 7,
+        "pregunta": "El Águila es considerado uno de los clubes más… de México.",
+        "opciones": ["Recientes", "Antiguos", "Invernales", "Extranjeros"],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 8,
+        "pregunta": "¿En qué estado de la República se ubica el equipo?",
+        "opciones": ["Tabasco", "Oaxaca", "Tamaulipas", "Veracruz"],
+        "respuestaCorrecta": 3
+      },
+      {
+        "id": 9,
+        "pregunta": "¿En qué liga juega El Águila de Veracruz?",
+        "opciones": [
+          "Liga Mexicana de Béisbol",
+          "Liga del Pacífico",
+          "Liga Norte",
+          "Serie del Caribe"
+        ],
+        "respuestaCorrecta": 0
+      },
+      {
+        "id": 10,
+        "pregunta": "¿El puerto de Veracruz se encuentra en qué litoral?",
+        "opciones": [
+          "Pacífico",
+          "Golfo de México",
+          "Mar de Cortés",
+          "Mar Caribe únicamente"
+        ],
+        "respuestaCorrecta": 1
+      }
+    ]
+  },
+  {
+    "id": "guerreros_oaxaca",
+    "nombre": "Guerreros de Oaxaca",
+    "historia": "Los Guerreros de Oaxaca fueron fundados en 1996 por el empresario Alfredo Harp Helú, con la idea de devolver el béisbol profesional a Oaxaca de Juárez. El equipo juega en el Estadio Eduardo Vasconcelos y, apenas en 1998, conquistó su primer título de la Liga Mexicana de Béisbol. Desde entonces se han convertido en un referente cultural y deportivo del estado, con una afición que llena la casa de los Guerreros en la Zona Sur.",
+    "fundacion": 1996,
+    "trivias": [
+      {
+        "id": 1,
+        "pregunta": "¿En qué año fue fundado el equipo?",
+        "opciones": ["1996", "2004", "1826", "2010"],
+        "respuestaCorrecta": 0
+      },
+      {
+        "id": 2,
+        "pregunta": "¿Cómo se llama el estadio de los Guerreros de Oaxaca?",
+        "opciones": [
+          "Parque Kukulcán Alamo",
+          "Estadio Eduardo Vasconcelos",
+          "Estadio Beto Ávila",
+          "Estadio Hermanos Serdán"
+        ],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 3,
+        "pregunta": "¿Quién impulsó la fundación de los Guerreros de Oaxaca?",
+        "opciones": [
+          "Emilio Azcárraga",
+          "Alfredo Harp Helú",
+          "Carlos Slim",
+          "Jorge Hank Rhon"
+        ],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 4,
+        "pregunta": "¿En qué año ganaron su primer título de la LMB?",
+        "opciones": ["1996", "1998", "2004", "2010"],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 5,
+        "pregunta": "¿En qué ciudad juegan de local los Guerreros?",
+        "opciones": [
+          "Salina Cruz",
+          "Huajuapan",
+          "Oaxaca de Juárez",
+          "Puerto Escondido"
+        ],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 6,
+        "pregunta": "¿A qué zona de la LMB pertenecen los Guerreros?",
+        "opciones": ["Zona Norte", "Zona Sur", "Zona Pacífico", "Zona Occidente"],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 7,
+        "pregunta": "¿Cuántos años pasaron entre la fundación y el primer campeonato?",
+        "opciones": ["Uno", "Dos", "Cinco", "Diez"],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 8,
+        "pregunta": "¿A qué estado representan los Guerreros?",
+        "opciones": ["Chiapas", "Guerrero", "Oaxaca", "Puebla"],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 9,
+        "pregunta": "¿En qué liga profesional juegan los Guerreros?",
+        "opciones": [
+          "Liga Mexicana de Béisbol",
+          "Liga Invernal",
+          "Liga del Pacífico",
+          "MLB"
+        ],
+        "respuestaCorrecta": 0
+      },
+      {
+        "id": 10,
+        "pregunta": "¿Qué evoca el nombre «Guerreros» en Oaxaca?",
+        "opciones": [
+          "Una marca de café",
+          "La identidad combativa del estado",
+          "Un río local",
+          "Un estadio anterior"
+        ],
+        "respuestaCorrecta": 1
+      }
+    ]
+  },
+  {
+    "id": "leones_yucatan",
+    "nombre": "Leones de Yucatán",
+    "historia": "Los Leones de Yucatán se fundaron en 1954 y son uno de los clubes más emblemáticos del sureste mexicano. Juegan en Mérida, en el Parque Kukulcán Alamo, y han ganado varios campeonatos de la LMB, entre ellos los de 1957, 1984, 2006, 2018 y 2022. Su afición, de las más ruidosas de la liga, convierte cada temporada en una fiesta de béisbol en la península de Yucatán.",
+    "fundacion": 1954,
+    "trivias": [
+      {
+        "id": 1,
+        "pregunta": "¿En qué año se fundaron los Leones de Yucatán?",
+        "opciones": ["1940", "1975", "1954", "1999"],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 2,
+        "pregunta": "¿En qué ciudad juegan de local los Leones?",
+        "opciones": ["Villahermosa", "Mérida", "Cancún", "Campeche"],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 3,
+        "pregunta": "¿Cómo se llama el parque de los Leones de Yucatán?",
+        "opciones": [
+          "Estadio Eduardo Vasconcelos",
+          "Parque Kukulcán Alamo",
+          "Estadio Beto Ávila",
+          "Estadio Nelson Barrera"
+        ],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 4,
+        "pregunta": "¿En qué año ganaron uno de sus títulos más recientes?",
+        "opciones": ["1998", "2004", "2012", "2022"],
+        "respuestaCorrecta": 3
+      },
+      {
+        "id": 5,
+        "pregunta": "¿En qué península se ubica el equipo?",
+        "opciones": ["Baja California", "Yucatán", "Ibérica", "de Florida"],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 6,
+        "pregunta": "¿A qué zona de la LMB pertenecen los Leones?",
+        "opciones": ["Zona Norte", "Zona Pacífico", "Zona Sur", "Zona Centro"],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 7,
+        "pregunta": "¿Qué animal da nombre al equipo de Yucatán?",
+        "opciones": ["Tigre", "León", "Águila", "Perico"],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 8,
+        "pregunta": "¿En qué año fueron campeones los Leones además de 2022?",
+        "opciones": ["2018", "1996", "2001", "1980"],
+        "respuestaCorrecta": 0
+      },
+      {
+        "id": 9,
+        "pregunta": "Kukulcán es una figura asociada a qué cultura?",
+        "opciones": ["Olmeca", "Maya", "Zapoteca", "Purépecha"],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 10,
+        "pregunta": "¿En qué liga juegan los Leones de Yucatán?",
+        "opciones": [
+          "Liga del Pacífico",
+          "Liga Mexicana de Béisbol",
+          "Liga Invernal Yucateca",
+          "MLB"
+        ],
+        "respuestaCorrecta": 1
+      }
+    ]
+  },
+  {
+    "id": "olmecas_tabasco",
+    "nombre": "Olmecas de Tabasco",
+    "historia": "La franquicia de Tabasco nació en 1975 y, tras distintas denominaciones, se consolidó como los Olmecas de Tabasco, en homenaje a la civilización olmeca del Golfo de México. El equipo tiene su casa en Villahermosa, en el Estadio Centenario 27 de Febrero, y representa al estado en la Zona Sur de la LMB. Su historia está ligada a la pasión beisbolera de Tabasco y a la búsqueda constante de un título para la afición choca.",
+    "fundacion": 1975,
+    "trivias": [
+      {
+        "id": 1,
+        "pregunta": "¿En qué año nació la franquicia de los Olmecas de Tabasco?",
+        "opciones": ["1975", "1940", "1996", "2008"],
+        "respuestaCorrecta": 0
+      },
+      {
+        "id": 2,
+        "pregunta": "¿A qué estado representan los Olmecas?",
+        "opciones": ["Chiapas", "Oaxaca", "Tabasco", "Campeche"],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 3,
+        "pregunta": "¿A qué civilización prehispánica hace honor el nombre del equipo?",
+        "opciones": ["Maya", "Azteca", "Tolteca", "Olmeca"],
+        "respuestaCorrecta": 3
+      },
+      {
+        "id": 4,
+        "pregunta": "¿Cómo se llama el estadio de los Olmecas?",
+        "opciones": [
+          "Estadio Centenario 27 de Febrero",
+          "Parque Kukulcán Alamo",
+          "Estadio Olmeca",
+          "Estadio Adolfo López Mateos"
+        ],
+        "respuestaCorrecta": 0
+      },
+      {
+        "id": 5,
+        "pregunta": "¿En qué ciudad juegan de local los Olmecas?",
+        "opciones": ["Cárdenas", "Comalcalco", "Villahermosa", "Paraíso"],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 6,
+        "pregunta": "¿A qué zona de la LMB pertenecen los Olmecas?",
+        "opciones": ["Zona Norte", "Zona Sur", "Zona Pacífico", "Zona Frontera"],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 7,
+        "pregunta": "¿Cómo se le dice a la afición de Tabasco?",
+        "opciones": ["Jarocha", "Choca", "Regia", "Yucateca"],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 8,
+        "pregunta": "La cultura olmeca se desarrolló principalmente en el…",
+        "opciones": [
+          "Altiplano central",
+          "Noroeste desértico",
+          "Golfo de México",
+          "Bajío"
+        ],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 9,
+        "pregunta": "¿En qué liga juegan los Olmecas de Tabasco?",
+        "opciones": [
+          "Liga Mexicana de Béisbol",
+          "Liga del Pacífico",
+          "Liga Tabasqueña",
+          "Serie Nacional"
+        ],
+        "respuestaCorrecta": 0
+      },
+      {
+        "id": 10,
+        "pregunta": "Villahermosa es la capital de qué estado?",
+        "opciones": ["Veracruz", "Chiapas", "Campeche", "Tabasco"],
+        "respuestaCorrecta": 3
+      }
+    ]
+  },
+  {
+    "id": "pericos_puebla",
+    "nombre": "Pericos de Puebla",
+    "historia": "Los Pericos de Puebla se fundaron en 1938 y son uno de los equipos clásicos de la Liga Mexicana de Béisbol. Visten de verde, en alusión al perico, y juegan en el Estadio de Béisbol Hermanos Serdán. A lo largo de su historia han conquistado varios campeonatos —entre ellos 1963, 1986 y 2016— y mantienen una de las aficiones más fieles del centro-sur del país.",
+    "fundacion": 1938,
+    "trivias": [
+      {
+        "id": 1,
+        "pregunta": "¿En qué año se fundaron los Pericos de Puebla?",
+        "opciones": ["1960", "1938", "1982", "2001"],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 2,
+        "pregunta": "¿Qué animal da nombre al equipo de Puebla?",
+        "opciones": ["Tigre", "León", "Perico", "Águila"],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 3,
+        "pregunta": "¿De qué color es el uniforme más identificable de los Pericos?",
+        "opciones": ["Rojo", "Verde", "Negro", "Naranja"],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 4,
+        "pregunta": "¿Cómo se llama el estadio de los Pericos de Puebla?",
+        "opciones": [
+          "Estadio Cuauhtémoc",
+          "Estadio de Béisbol Hermanos Serdán",
+          "Parque del Seguro Social",
+          "Estadio Olímpico Universitario"
+        ],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 5,
+        "pregunta": "¿En qué año ganaron un campeonato reciente muy recordado?",
+        "opciones": ["1998", "2004", "2016", "2022"],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 6,
+        "pregunta": "¿A qué zona de la LMB pertenecen los Pericos?",
+        "opciones": ["Zona Norte", "Zona Sur", "Zona Pacífico", "Zona Frontera"],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 7,
+        "pregunta": "¿En qué ciudad juegan de local los Pericos?",
+        "opciones": ["Tlaxcala", "Puebla", "Cuernavaca", "Pachuca"],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 8,
+        "pregunta": "¿Cuál de estos años también es un campeonato histórico de Puebla?",
+        "opciones": ["1963", "1979", "1992", "2008"],
+        "respuestaCorrecta": 0
+      },
+      {
+        "id": 9,
+        "pregunta": "¿En qué liga juegan los Pericos de Puebla?",
+        "opciones": [
+          "Liga del Pacífico",
+          "Liga Mexicana de Béisbol",
+          "Liga Centro",
+          "MLB"
+        ],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 10,
+        "pregunta": "¿En 1986 los Pericos de Puebla qué lograron?",
+        "opciones": [
+          "Descendieron",
+          "Se fundaron",
+          "Fueron campeones",
+          "Cambiaron de sede a Cancún"
+        ],
+        "respuestaCorrecta": 2
+      }
+    ]
+  },
+  {
+    "id": "piratas_campeche",
+    "nombre": "Piratas de Campeche",
+    "historia": "Los Piratas de Campeche surgieron en 1980 y toman su nombre de la historia corsaria del puerto amurallado de Campeche. Juegan de local en el Estadio Nelson Barrera Romellón y han sido campeones de la Liga Mexicana de Béisbol en 1983 y 2004. El club es un orgullo estatal y uno de los representantes tradicionales de la península en la Zona Sur.",
+    "fundacion": 1980,
+    "trivias": [
+      {
+        "id": 1,
+        "pregunta": "¿En qué año se fundaron los Piratas de Campeche?",
+        "opciones": ["1954", "1968", "1980", "1992"],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 2,
+        "pregunta": "¿Cómo se llama el estadio de los Piratas de Campeche?",
+        "opciones": [
+          "Parque Kukulcán Alamo",
+          "Estadio Nelson Barrera Romellón",
+          "Estadio Alfredo Harp Helú",
+          "Estadio Domingo Santana"
+        ],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 3,
+        "pregunta": "¿En qué año lograron su primer campeonato de la LMB?",
+        "opciones": ["1980", "1983", "1990", "1999"],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 4,
+        "pregunta": "¿En qué año ganaron su segundo título?",
+        "opciones": ["1996", "2000", "2004", "2012"],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 5,
+        "pregunta": "¿De qué historia local toma el equipo su nombre?",
+        "opciones": [
+          "Los cañoneros del fuerte",
+          "Los piratas del puerto amurallado",
+          "Los mayas de Calakmul",
+          "Los pescadores de camarón"
+        ],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 6,
+        "pregunta": "¿A qué zona de la LMB pertenecen los Piratas?",
+        "opciones": ["Zona Norte", "Zona Pacífico", "Zona Sur", "Zona Centro"],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 7,
+        "pregunta": "¿En qué estado juegan los Piratas?",
+        "opciones": ["Yucatán", "Quintana Roo", "Tabasco", "Campeche"],
+        "respuestaCorrecta": 3
+      },
+      {
+        "id": 8,
+        "pregunta": "Campeche es famoso por su…",
+        "opciones": [
+          "Puerto amurallado",
+          "Desierto de dunas",
+          "Sierra nevada",
+          "Viñedos"
+        ],
+        "respuestaCorrecta": 0
+      },
+      {
+        "id": 9,
+        "pregunta": "¿En qué liga juegan los Piratas de Campeche?",
+        "opciones": [
+          "Liga Mexicana de Béisbol",
+          "Liga del Pacífico",
+          "Liga Peninsular",
+          "Liga Invernal"
+        ],
+        "respuestaCorrecta": 0
+      },
+      {
+        "id": 10,
+        "pregunta": "¿En qué península se ubica Campeche?",
+        "opciones": [
+          "Baja California",
+          "Yucatán",
+          "Ibérica",
+          "de Valdés"
+        ],
+        "respuestaCorrecta": 1
+      }
+    ]
+  },
+  {
+    "id": "tigres_quintana_roo",
+    "nombre": "Tigres de Quintana Roo",
+    "historia": "La franquicia de los Tigres nació en 1955 en la Ciudad de México, como los Tigres Capitalinos, y se mudó a Cancún en 2007 para convertirse en los Tigres de Quintana Roo. Juegan en el Estadio Beto Ávila y son uno de los clubes más ganadores de la LMB, con una tradición de campeonatos que recorre sus etapas en la capital y en el Caribe mexicano. Su identidad felina y su historia itinerante los hacen únicos en la Zona Sur.",
+    "fundacion": 1955,
+    "trivias": [
+      {
+        "id": 1,
+        "pregunta": "¿En qué año se fundó la franquicia de los Tigres?",
+        "opciones": ["1970", "1955", "1988", "2007"],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 2,
+        "pregunta": "¿A qué ciudad se mudaron los Tigres en 2007?",
+        "opciones": ["Mérida", "Puebla", "Cancún", "Veracruz"],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 3,
+        "pregunta": "¿Cómo se llamaban originalmente en la Ciudad de México?",
+        "opciones": [
+          "Tigres del Norte",
+          "Tigres Capitalinos",
+          "Tigres de Chapultepec",
+          "Tigres Rojos"
+        ],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 4,
+        "pregunta": "¿Cómo se llama su estadio en Cancún?",
+        "opciones": [
+          "Estadio Andrés Quintana Roo",
+          "Estadio Beto Ávila",
+          "Parque Kukulcán Alamo",
+          "Estadio Cancún 2000"
+        ],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 5,
+        "pregunta": "¿Dónde nació la franquicia de los Tigres?",
+        "opciones": [
+          "Cancún",
+          "Puebla",
+          "Ciudad de México",
+          "Monterrey"
+        ],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 6,
+        "pregunta": "¿A qué zona de la LMB pertenecen los Tigres de Quintana Roo?",
+        "opciones": ["Zona Norte", "Zona Sur", "Zona Pacífico", "Zona Frontera"],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 7,
+        "pregunta": "¿Qué animal da identidad al equipo?",
+        "opciones": ["León", "Águila", "Tigre", "Perico"],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 8,
+        "pregunta": "¿A qué estado representan desde 2007?",
+        "opciones": ["Yucatán", "Campeche", "Quintana Roo", "Tabasco"],
+        "respuestaCorrecta": 2
+      },
+      {
+        "id": 9,
+        "pregunta": "Cancún se ubica en el…",
+        "opciones": [
+          "Pacífico mexicano",
+          "Caribe mexicano",
+          "Golfo de California",
+          "Altiplano"
+        ],
+        "respuestaCorrecta": 1
+      },
+      {
+        "id": 10,
+        "pregunta": "¿En qué liga juegan los Tigres de Quintana Roo?",
+        "opciones": [
+          "Liga del Pacífico",
+          "Liga Mexicana de Béisbol",
+          "Liga Caribeña",
+          "MLB"
+        ],
+        "respuestaCorrecta": 1
+      }
+    ]
+  }
+]
