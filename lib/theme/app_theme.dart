@@ -23,8 +23,9 @@ abstract final class AppTheme {
         onSurface: AppColors.white,
       ),
       textTheme: textTheme,
+      splashFactory: InkRipple.splashFactory,
       appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.navy,
+        backgroundColor: Colors.transparent,
         foregroundColor: AppColors.white,
         elevation: 0,
         centerTitle: true,
