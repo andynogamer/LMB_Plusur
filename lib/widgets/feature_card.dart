@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../services/feedback_service.dart';
 import '../theme/app_colors.dart';
 
 class FeatureCard extends StatelessWidget {
@@ -10,12 +11,14 @@ class FeatureCard extends StatelessWidget {
     required this.subtitle,
     required this.icon,
     required this.onTap,
+    this.playFeedback = true,
   });
 
   final String title;
   final String subtitle;
   final IconData icon;
   final VoidCallback onTap;
+  final bool playFeedback;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +27,14 @@ class FeatureCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(22),
       child: InkWell(
         borderRadius: BorderRadius.circular(22),
-        onTap: onTap,
+        splashColor: AppColors.navy.withValues(alpha: 0.18),
+        highlightColor: AppColors.navy.withValues(alpha: 0.10),
+        onTap: () {
+          if (playFeedback) {
+            FeedbackService.instance.tap();
+          }
+          onTap();
+        },
         child: Padding(
           padding: const EdgeInsets.fromLTRB(18, 20, 16, 20),
           child: Row(

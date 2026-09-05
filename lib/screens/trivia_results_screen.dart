@@ -1,22 +1,50 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../services/trivia_score_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_header.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/screen_background.dart';
 
-class TriviaResultsScreen extends StatelessWidget {
-  const TriviaResultsScreen({
-    super.key,
+class TriviaResultsArgs {
+  const TriviaResultsArgs({
     required this.puntaje,
+    required this.equipoId,
   });
 
   final int puntaje;
+  final String equipoId;
+}
+
+class TriviaResultsScreen extends StatefulWidget {
+  const TriviaResultsScreen({
+    super.key,
+    required this.puntaje,
+    required this.equipoId,
+  });
+
+  final int puntaje;
+  final String equipoId;
 
   static const int totalPreguntas = 5;
 
+  @override
+  State<TriviaResultsScreen> createState() => _TriviaResultsScreenState();
+}
+
+class _TriviaResultsScreenState extends State<TriviaResultsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    TriviaScoreService.instance.guardarUltimoPuntaje(
+      equipoId: widget.equipoId,
+      puntaje: widget.puntaje,
+    );
+  }
+
   String get _frase {
+    final puntaje = widget.puntaje;
     if (puntaje >= 5) {
       return '¡Juego Perfecto! Eres una leyenda del béisbol.';
     }
@@ -31,7 +59,8 @@ class TriviaResultsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final value = puntaje / totalPreguntas;
+    final puntaje = widget.puntaje;
+    final value = puntaje / TriviaResultsScreen.totalPreguntas;
 
     return Scaffold(
       body: ScreenBackground(
@@ -79,7 +108,7 @@ class TriviaResultsScreen extends StatelessWidget {
                                     ),
                                   ),
                                   Text(
-                                    '/ $totalPreguntas',
+                                    '/ ${TriviaResultsScreen.totalPreguntas}',
                                     style: GoogleFonts.poppins(
                                       color: AppColors.muted,
                                       fontWeight: FontWeight.w600,
@@ -102,6 +131,16 @@ class TriviaResultsScreen extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                         fontSize: 20,
                         height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Último puntaje guardado en este dispositivo.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        color: AppColors.muted,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 12,
                       ),
                     ),
                     const SizedBox(height: 48),

@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -11,10 +11,16 @@ import '../theme/app_colors.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/feature_card.dart';
 
-/// Ruta reservada para `flutter_unity_widget`.
-/// Hoy simula la detección de un logo y muestra el overlay de Flutter.
+/// Pantalla AR (Flutter-native). Hoy usa detección simulada etiquetada como
+/// modo demo hasta SP-01 / US-06.
 class ArViewScreen extends StatefulWidget {
-  const ArViewScreen({super.key});
+  const ArViewScreen({
+    super.key,
+    this.equipoHint,
+  });
+
+  /// Equipo sugerido al llegar desde el menú del club (D-11).
+  final Equipo? equipoHint;
 
   @override
   State<ArViewScreen> createState() => _ArViewScreenState();
@@ -23,6 +29,7 @@ class ArViewScreen extends StatefulWidget {
 class _ArViewScreenState extends State<ArViewScreen>
     with SingleTickerProviderStateMixin {
   Equipo? _detectedTeam;
+  bool _demoMode = false;
   Timer? _detectionTimer;
   late final AnimationController _scanController;
 
@@ -33,10 +40,21 @@ class _ArViewScreenState extends State<ArViewScreen>
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat();
-    _detectionTimer = Timer(const Duration(seconds: 2), _simularDeteccion);
+    // Detección simulada — siempre etiquetada como demo (US-02 / Known debt).
+    _detectionTimer = Timer(const Duration(seconds: 2), _simularDeteccionDemo);
   }
 
-  Future<void> _simularDeteccion() async {
+  Future<void> _simularDeteccionDemo() async {
+    final hint = widget.equipoHint;
+    if (hint != null) {
+      if (!mounted) return;
+      setState(() {
+        _detectedTeam = hint;
+        _demoMode = true;
+      });
+      return;
+    }
+
     final equipos = await DataService().cargarEquipos();
     if (!mounted) return;
 
@@ -50,7 +68,16 @@ class _ArViewScreenState extends State<ArViewScreen>
 
     setState(() {
       _detectedTeam = guerreros ?? (equipos.isNotEmpty ? equipos.first : null);
+      _demoMode = true;
     });
+  }
+
+  String get _scanHintCopy {
+    final hint = widget.equipoHint;
+    if (hint != null) {
+      return 'Apunta al logo de ${hint.nombre}';
+    }
+    return 'Apunta al logo del equipo…';
   }
 
   @override
@@ -66,7 +93,7 @@ class _ArViewScreenState extends State<ArViewScreen>
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          const _SimulatedUnityView(),
+          const _SimulatedArView(),
           if (_detectedTeam == null)
             IgnorePointer(
               child: FadeTransition(
@@ -93,6 +120,30 @@ class _ArViewScreenState extends State<ArViewScreen>
                     ),
                   ),
                   const Spacer(),
+                  if (_demoMode || _detectedTeam == null)
+                    Container(
+                      margin: const EdgeInsets.only(right: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.navyCard.withValues(alpha: 0.9),
+                        borderRadius: BorderRadius.circular(99),
+                        border: Border.all(
+                          color: AppColors.button.withValues(alpha: 0.25),
+                        ),
+                      ),
+                      child: Text(
+                        'MODO DEMO',
+                        style: GoogleFonts.poppins(
+                          color: AppColors.button,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 10,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
+                    ),
                   Container(
                     padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
@@ -122,12 +173,22 @@ class _ArViewScreenState extends State<ArViewScreen>
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      'APUNTA AL LOGO DEL EQUIPO…',
+                      _scanHintCopy.toUpperCase(),
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         color: AppColors.white,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Simulación hasta el reconocimiento real.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        color: AppColors.muted,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 12,
                       ),
                     ),
                   ],
@@ -137,7 +198,10 @@ class _ArViewScreenState extends State<ArViewScreen>
           else
             Align(
               alignment: Alignment.bottomCenter,
-              child: _ArTeamOverlay(equipo: _detectedTeam!),
+              child: _ArTeamOverlay(
+                equipo: _detectedTeam!,
+                demoMode: _demoMode,
+              ),
             ),
         ],
       ),
@@ -145,8 +209,8 @@ class _ArViewScreenState extends State<ArViewScreen>
   }
 }
 
-class _SimulatedUnityView extends StatelessWidget {
-  const _SimulatedUnityView();
+class _SimulatedArView extends StatelessWidget {
+  const _SimulatedArView();
 
   @override
   Widget build(BuildContext context) {
@@ -173,9 +237,13 @@ class _SimulatedUnityView extends StatelessWidget {
 }
 
 class _ArTeamOverlay extends StatelessWidget {
-  const _ArTeamOverlay({required this.equipo});
+  const _ArTeamOverlay({
+    required this.equipo,
+    required this.demoMode,
+  });
 
   final Equipo equipo;
+  final bool demoMode;
 
   @override
   Widget build(BuildContext context) {
@@ -211,6 +279,18 @@ class _ArTeamOverlay extends StatelessWidget {
                     letterSpacing: 0.6,
                   ),
                 ),
+                if (demoMode) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    'Detección simulada (modo demo)',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      color: AppColors.muted,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 16),
                 FeatureCard(
                   title: 'Historia',

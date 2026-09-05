@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../services/feedback_service.dart';
 import '../theme/app_colors.dart';
 
 class PrimaryButton extends StatelessWidget {
@@ -11,6 +12,7 @@ class PrimaryButton extends StatelessWidget {
     this.height = 56,
     this.backgroundColor = AppColors.button,
     this.icon,
+    this.playFeedback = true,
   });
 
   final String label;
@@ -18,6 +20,7 @@ class PrimaryButton extends StatelessWidget {
   final double height;
   final Color backgroundColor;
   final IconData? icon;
+  final bool playFeedback;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +32,14 @@ class PrimaryButton extends StatelessWidget {
       width: double.infinity,
       height: height,
       child: ElevatedButton(
-        onPressed: onPressed,
+        onPressed: onPressed == null
+            ? null
+            : () {
+                if (playFeedback) {
+                  FeedbackService.instance.tap();
+                }
+                onPressed!();
+              },
         style: ElevatedButton.styleFrom(
           backgroundColor: backgroundColor,
           foregroundColor: foreground,
@@ -37,6 +47,7 @@ class PrimaryButton extends StatelessWidget {
           disabledForegroundColor: foreground,
           elevation: 0,
           shadowColor: Colors.transparent,
+          overlayColor: AppColors.navy.withValues(alpha: 0.16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),

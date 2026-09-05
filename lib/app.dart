@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import 'models/equipo_model.dart';
 import 'routes/app_routes.dart';
@@ -37,7 +37,7 @@ class LmbPlusurApp extends StatelessWidget {
       case AppRoutes.main:
         return _page(const MainScreen(), settings);
       case AppRoutes.ar:
-        return _page(const ArViewScreen(), settings);
+        return _page(ArViewScreen(equipoHint: equipo), settings);
       case AppRoutes.teams:
         return _page(const TeamListScreen(), settings);
       case AppRoutes.teamMenu:
@@ -48,7 +48,10 @@ class LmbPlusurApp extends StatelessWidget {
         return _page(TriviaScreen(equipo: equipo!), settings);
       case AppRoutes.triviaResults:
         return _page(
-          TriviaResultsScreen(puntaje: settings.arguments as int),
+          TriviaResultsScreen(
+            puntaje: (settings.arguments as TriviaResultsArgs).puntaje,
+            equipoId: (settings.arguments as TriviaResultsArgs).equipoId,
+          ),
           settings,
         );
       case AppRoutes.highlights:

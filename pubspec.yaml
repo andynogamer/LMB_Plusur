@@ -1,5 +1,5 @@
-name: lmb_plusur
-description: Aplicación móvil LMB Plusur para la zona sur de la Liga Mexicana de Béisbol.
+﻿name: lmb_plusur
+description: AplicaciÃ³n mÃ³vil LMB Plusur para la zona sur de la Liga Mexicana de BÃ©isbol.
 publish_to: "none"
 version: 1.0.0+1
 
@@ -13,7 +13,9 @@ dependencies:
   google_fonts: ^6.2.1
   video_player: ^2.9.2
   cached_network_image: ^3.4.1
-  # Activar cuando exista el módulo de Unity exportado para AR.
+  shared_preferences: ^2.5.5
+  audioplayers: ^6.8.1
+  # Activar cuando exista el mÃ³dulo de Unity exportado para AR.
   # flutter_unity_widget: ^2022.2.1
 
 dev_dependencies:
@@ -27,3 +29,4 @@ flutter:
     - assets/
     - assets/data.json
     - assets/images/
+    - assets/sfx/

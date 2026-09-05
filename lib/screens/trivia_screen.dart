@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/equipo_model.dart';
 import '../models/trivia_model.dart';
 import '../routes/app_routes.dart';
+import '../services/feedback_service.dart';
+import 'trivia_results_screen.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_header.dart';
 import '../widgets/screen_background.dart';
@@ -52,13 +54,46 @@ class _TriviaScreenState extends State<TriviaScreen> {
   Future<void> _responder(int index) async {
     if (_bloqueado) return;
 
+    final correcto = index == _actual.respuestaCorrecta;
     setState(() {
       _bloqueado = true;
       _seleccion = index;
-      if (index == _actual.respuestaCorrecta) {
+      if (correcto) {
         _puntaje++;
       }
     });
+
+    if (correcto) {
+      await FeedbackService.instance.success();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '¡Correcto!',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            ),
+            backgroundColor: AppColors.correct,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(milliseconds: 700),
+          ),
+        );
+      }
+    } else {
+      await FeedbackService.instance.error();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Incorrecto. Sigue bateando.',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            ),
+            backgroundColor: AppColors.incorrect,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(milliseconds: 700),
+          ),
+        );
+      }
+    }
 
     await Future.delayed(const Duration(milliseconds: 500));
     if (!mounted) return;
@@ -67,7 +102,10 @@ class _TriviaScreenState extends State<TriviaScreen> {
     if (esUltima) {
       Navigator.of(context).pushReplacementNamed(
         AppRoutes.triviaResults,
-        arguments: _puntaje,
+        arguments: TriviaResultsArgs(
+          puntaje: _puntaje,
+          equipoId: widget.equipo.id,
+        ),
       );
       return;
     }

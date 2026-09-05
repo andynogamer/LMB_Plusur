@@ -20,10 +20,10 @@
 
 | ID | Tipo | Prio | Título | Estado | Checklist map |
 |---|---|---|---|---|---|
-| US-01 | 📗 | 🟠 P1 | Team list name search (D-10) | ☐ | UI |
-| US-02 | 📗 | 🟠 P1 | Abrir experiencia AR from team menu (D-11) | ☐ | AR entry |
-| US-03 | 📗 | 🟠 P1 | Last trivia score on device (D-08) | ☐ | Bonus/trivia |
-| US-04 | 📗 | 🟡 P2 | Action feedback sounds + visual states | ☐ | UX |
+| US-01 | 📗 | 🟠 P1 | Team list name search (D-10) | ☑ | UI |
+| US-02 | 📗 | 🟠 P1 | Abrir experiencia AR from team menu (D-11) | ☑ | AR entry |
+| US-03 | 📗 | 🟠 P1 | Last trivia score on device (D-08) | ☑ | Bonus/trivia |
+| US-04 | 📗 | 🟡 P2 | Action feedback sounds + visual states | ☑ | UX |
 | SP-01 | 🔧 | 🔴 P0 | Flutter-native AR spike (R-01) | ☐ | AR foundation |
 | US-05 | 📗 | 🔴 P0 | Marker + asset data model (≥3 marcadores) | ☐ | 3 markers |
 | US-06 | 📗 | 🔴 P0 | Real marker scanning replaces AR mock | ☐ | 3 markers |
@@ -47,7 +47,7 @@ R-02); supply baseball remote video URLs (R-03); author or generate GLB models
 
 # 📗 USER STORIES
 
-## US-01 · 🟠 P1 · Team list name search (D-10) · ☐ Pendiente
+## US-01 · 🟠 P1 · Team list name search (D-10) · ☑ Hecho
 
 **Prompt**
 ```
@@ -70,7 +70,7 @@ Fuera de alcance: server search, fuzzy ranking libraries, AR changes.
 
 ---
 
-## US-02 · 🟠 P1 · Abrir experiencia AR from team menu (D-11) · ☐ Pendiente
+## US-02 · 🟠 P1 · Abrir experiencia AR from team menu (D-11) · ☑ Hecho
 
 **Prompt**
 ```
@@ -95,7 +95,7 @@ Fuera de alcance: real CV tracking (SP-01 / US-06), 3D models.
 
 ---
 
-## US-03 · 🟠 P1 · Last trivia score on device (D-08) · ☐ Pendiente
+## US-03 · 🟠 P1 · Last trivia score on device (D-08) · ☑ Hecho
 
 **Prompt**
 ```
@@ -118,7 +118,7 @@ Fuera de alcance: leaderboards, cloud sync, multi-score history.
 
 ---
 
-## US-04 · 🟡 P2 · Action feedback sounds + visual states · ☐ Pendiente
+## US-04 · 🟡 P2 · Action feedback sounds + visual states · ☑ Hecho
 
 **Prompt**
 ```
