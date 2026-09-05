@@ -8,8 +8,7 @@ import '../models/trivia_model.dart';
 import '../routes/app_routes.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_header.dart';
-import '../widgets/image_placeholder.dart';
-import '../widgets/primary_button.dart';
+import '../widgets/screen_background.dart';
 
 class TriviaScreen extends StatefulWidget {
   const TriviaScreen({
@@ -32,6 +31,8 @@ class _TriviaScreenState extends State<TriviaScreen> {
   int? _seleccion;
   bool _bloqueado = false;
 
+  static const _letras = ['A', 'B', 'C', 'D'];
+
   @override
   void initState() {
     super.initState();
@@ -41,7 +42,7 @@ class _TriviaScreenState extends State<TriviaScreen> {
 
   Trivia get _actual => _partida[_indice];
 
-  Color _colorOpcion(int index) {
+  Color _fondoOpcion(int index) {
     if (_seleccion == null) return AppColors.button;
     if (index == _actual.respuestaCorrecta) return AppColors.correct;
     if (index == _seleccion) return AppColors.incorrect;
@@ -84,58 +85,151 @@ class _TriviaScreenState extends State<TriviaScreen> {
     final total = _partida.length;
 
     return Scaffold(
-      backgroundColor: AppColors.navy,
-      body: Column(
-        children: [
-          AppHeader(title: widget.equipo.displayName),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(28, 8, 28, 32),
-              children: [
-                Text(
-                  '$progreso/$total',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    color: AppColors.white,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 16,
+      body: ScreenBackground(
+        child: Column(
+          children: [
+            AppHeader(
+              title: widget.equipo.displayName,
+              subtitle: 'Trivia',
+            ),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(22, 8, 22, 32),
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        'Pregunta $progreso de $total',
+                        style: GoogleFonts.poppins(
+                          color: AppColors.muted,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        '$progreso/$total',
+                        style: GoogleFonts.poppins(
+                          color: AppColors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 16),
-                const Center(
-                  child: SizedBox(
-                    width: 180,
-                    child: ImagePlaceholder(
-                      square: true,
-                      icon: Icons.sports_baseball_outlined,
+                  const SizedBox(height: 10),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(99),
+                    child: LinearProgressIndicator(
+                      value: progreso / total,
+                      minHeight: 7,
+                      color: AppColors.button,
+                      backgroundColor: AppColors.navyCard,
                     ),
                   ),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  _actual.pregunta,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    color: AppColors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 20,
-                    height: 1.3,
+                  const SizedBox(height: 22),
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
+                    decoration: BoxDecoration(
+                      color: AppColors.navyCard.withValues(alpha: 0.78),
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(
+                        color: AppColors.button.withValues(alpha: 0.1),
+                      ),
+                    ),
+                    child: Text(
+                      _actual.pregunta,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        color: AppColors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 20,
+                        height: 1.35,
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 24),
-                for (var i = 0; i < _actual.opciones.length; i++) ...[
-                  PrimaryButton(
-                    label: _actual.opciones[i],
-                    height: 58,
-                    backgroundColor: _colorOpcion(i),
-                    onPressed: _bloqueado ? null : () => _responder(i),
-                  ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 22),
+                  for (var i = 0; i < _actual.opciones.length; i++) ...[
+                    _OpcionTile(
+                      letra: _letras[i],
+                      texto: _actual.opciones[i],
+                      background: _fondoOpcion(i),
+                      onTap: _bloqueado ? null : () => _responder(i),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                 ],
-              ],
+              ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OpcionTile extends StatelessWidget {
+  const _OpcionTile({
+    required this.letra,
+    required this.texto,
+    required this.background,
+    required this.onTap,
+  });
+
+  final String letra;
+  final String texto;
+  final Color background;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isNeutral = background == AppColors.button;
+    final Color foreground = isNeutral ? AppColors.black : AppColors.white;
+    final Color badgeColor = isNeutral ? AppColors.navy : AppColors.white.withValues(alpha: 0.2);
+    final Color badgeText = isNeutral ? AppColors.button : AppColors.white;
+
+    return Material(
+      color: background,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 12, 16, 12),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: badgeColor,
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  letra,
+                  style: GoogleFonts.poppins(
+                    color: badgeText,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  texto,
+                  style: GoogleFonts.poppins(
+                    color: foreground,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                    height: 1.25,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

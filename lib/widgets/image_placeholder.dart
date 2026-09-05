@@ -16,21 +16,27 @@ class ImagePlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final child = ColoredBox(
-      color: AppColors.imagePlaceholder,
+    final child = DecoratedBox(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.navyCard,
+            AppColors.imagePlaceholder,
+          ],
+        ),
+      ),
       child: Center(
-        child: Icon(icon, color: AppColors.white, size: 64),
+        child: Icon(icon, color: AppColors.button.withValues(alpha: 0.85), size: 64),
       ),
     );
 
-    if (square) {
-      return AspectRatio(aspectRatio: 1, child: child);
-    }
-
-    return SizedBox(
-      width: double.infinity,
-      height: height,
-      child: child,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: square
+          ? AspectRatio(aspectRatio: 1, child: child)
+          : SizedBox(width: double.infinity, height: height, child: child),
     );
   }
 }

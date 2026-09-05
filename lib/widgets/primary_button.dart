@@ -10,12 +10,14 @@ class PrimaryButton extends StatelessWidget {
     this.onPressed,
     this.height = 56,
     this.backgroundColor = AppColors.button,
+    this.icon,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final double height;
   final Color backgroundColor;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -34,21 +36,33 @@ class PrimaryButton extends StatelessWidget {
           disabledBackgroundColor: backgroundColor,
           disabledForegroundColor: foreground,
           elevation: 0,
+          shadowColor: Colors.transparent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(18),
           ),
         ),
-        child: Text(
-          label.toUpperCase(),
-          textAlign: TextAlign.center,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: GoogleFonts.poppins(
-            color: foreground,
-            fontWeight: FontWeight.w800,
-            fontSize: 15,
-            letterSpacing: 0.4,
-          ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 22, color: foreground),
+              const SizedBox(width: 10),
+            ],
+            Flexible(
+              child: Text(
+                label.toUpperCase(),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.poppins(
+                  color: foreground,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 15,
+                  letterSpacing: 0.4,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
