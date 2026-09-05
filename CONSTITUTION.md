@@ -8,7 +8,7 @@ Human-facing product overview lives in `README.md` (to be expanded). Agent
 operating rules live in `AGENTS.md`. The ordered backlog lives in
 `WORK_ITEMS.md`.
 
-**Version**: 1.1.1 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-04
+**Version**: 1.1.2 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-04
 
 ---
 
@@ -33,7 +33,7 @@ agents (`CONSTITUTION.md`, `AGENTS.md`, `WORK_ITEMS.md`) are written in
 |---|---|---|---|
 | App shell | Flutter 3 / Dart 3.3+ | `lib/` | Implemented (navigation, theme, screens). |
 | Team content | Local JSON | `assets/data.json` | Implemented for 10 Zona Sur clubs (historia + trivias). |
-| AR | **Flutter-native (D-01 A)** | `lib/screens/ar_view_screen.dart` | Simulated detection only today. |
+| AR | **Flutter-native (D-01 A)** | `lib/screens/ar_view_screen.dart` | Mock UI + SP-01 stack chosen (`ar_flutter_plugin_plus` + logo matcher). |
 | Video filters | Flutter on-device | — | Not started; graded requirement. |
 | Highlights / videos | Remote URLs (D-07) | demo data today | Placeholders until URLs are filled. |
 
@@ -386,7 +386,7 @@ Open residual (non-blocking for backlog writing):
 
 | ID | Notes |
 |---|---|
-| R-01 | Exact plugin choice for image tracking + 3D (evaluate in US-AR spike). |
+| R-01 | **Resolved in SP-01:** `ar_flutter_plugin_plus` + `LogoMatcherService`. See `docs/ar-spike.md`. |
 | R-02 | Which 3 of 10 teams (or objects) are the first scannable markers. |
 | R-03 | Final remote video URL list (baseball-themed). |
 

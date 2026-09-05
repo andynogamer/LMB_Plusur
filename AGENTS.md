@@ -82,7 +82,7 @@ Flutter-native only. Image/marker recognition + GLB/3D + Flutter overlays.
 ≥3 distinct markers for grading. AR chrome matches main UI. Manual team path
 opens scanner via **Abrir experiencia AR** — do not fake full marker AR.
 
-Residual: pick concrete plugins in the AR spike work item (R-01).
+R-01 resolved ? see `docs/ar-spike.md`. Embed ARView in US-06.
 
 ---
 

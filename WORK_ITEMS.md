@@ -172,7 +172,7 @@ Fuera de alcance: production UI polish, all 10 teams, iOS hardening, filters.
 **Prompt**
 ```
 Contexto: Grading needs ≥3 distinct scannable elements with specific content.
-Logos may still be placeholders (D-04).
+Logos are now in assets (D-04); use AppAssets.teamLogoById paths.
 
 Tarea: Extend local data with a marcadores (or ar_objetos) collection: id,
 equipoId (optional), tipo (estadio|trofeo|pelota|jugador), modelAsset path,
