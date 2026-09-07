@@ -67,7 +67,7 @@ State of the tree:
 - `lib/ar/` has the seam, registry, session machine, and `FakeArTracker`.
 - `lib/screens/ar/ar_scan_screen.dart` is the AR route. The `Timer` mock is
   deleted. Do not restore it.
-- No AR dependency in `pubspec.yaml`. Adding one is its own work item.
+- `ar_flutter_plugin_plus` is pinned at 1.1.3. Detection is not implemented yet.
 - **Markers are solved (2026-09-07).** `arcoreimg` measurement found four club
   logos scoring ≥ 75 after normalization, so ARCore can track the real logos —
   no custom matcher, no ML classifier, no redesigned art:

@@ -6,6 +6,7 @@ import '../../ar/ar_session_controller.dart';
 import '../../ar/ar_session_state.dart';
 import '../../ar/ar_tracker.dart';
 import '../../ar/marker_registry.dart';
+import '../../ar/trackers/arcore_image_tracker.dart';
 import '../../ar/trackers/fake_ar_tracker.dart';
 import '../../models/equipo_model.dart';
 import '../../models/marcador_model.dart';
@@ -18,8 +19,10 @@ import 'widgets/ar_session_body.dart';
 
 /// Scan surface driven only by [ArSessionState]. No detection booleans.
 ///
-/// This slice always uses [FakeArTracker] unless a test injects another
-/// tracker. A real camera session arrives in a later item.
+/// Production probes [ArCoreImageTracker] first. If the device cannot run
+/// ARCore, that tracker is bound so the existing failure panel shows
+/// `arCoreUnavailable`. A capable device still uses [FakeArTracker] — real
+/// detection is a later slice. Tests inject [tracker].
 class ArScanScreen extends StatefulWidget {
   const ArScanScreen({
     super.key,
@@ -69,8 +72,27 @@ class _ArScanScreenState extends State<ArScanScreen> {
     _marcadores = marcadores;
     final registry =
         widget.registry ?? MarkerRegistry.fromMarcadores(marcadores);
-    final tracker = widget.tracker ?? (_ownedTracker = FakeArTracker());
-    await _bind(tracker, registry, marcadores);
+    final choice = await _chooseTracker();
+    if (!mounted) return;
+    await _bind(
+      choice.tracker,
+      registry,
+      marcadores,
+      isDemo: choice.isDemo,
+    );
+  }
+
+  Future<({ArTracker tracker, bool isDemo})> _chooseTracker() async {
+    if (widget.tracker != null) {
+      return (tracker: widget.tracker!, isDemo: widget.isDemo);
+    }
+    final probe = ArCoreImageTracker();
+    if (await probe.isSupported()) {
+      await probe.dispose();
+      _ownedTracker = FakeArTracker();
+      return (tracker: _ownedTracker!, isDemo: true);
+    }
+    return (tracker: probe, isDemo: false);
   }
 
   Future<void> _retry() async {
@@ -78,28 +100,32 @@ class _ArScanScreenState extends State<ArScanScreen> {
     _states?.cancel();
     _controller = null;
 
-    if (widget.tracker == null) {
-      _ownedTracker = FakeArTracker();
-    }
-    final tracker = widget.tracker ?? _ownedTracker!;
+    await previous?.dispose();
+    if (!mounted) return;
     final marcadores = _marcadores;
     final registry =
         widget.registry ?? MarkerRegistry.fromMarcadores(marcadores);
-    await previous?.dispose();
+    final choice = await _chooseTracker();
     if (!mounted) return;
-    await _bind(tracker, registry, marcadores);
+    await _bind(
+      choice.tracker,
+      registry,
+      marcadores,
+      isDemo: choice.isDemo,
+    );
   }
 
   Future<void> _bind(
     ArTracker tracker,
     MarkerRegistry registry,
-    List<Marcador> marcadores,
-  ) async {
+    List<Marcador> marcadores, {
+    required bool isDemo,
+  }) async {
     final controller = ArSessionController(
       tracker: tracker,
       registry: registry,
       hintEquipo: widget.equipoHint,
-      isDemo: widget.isDemo,
+      isDemo: isDemo,
     );
     _controller = controller;
     _states = controller.states.listen((next) {

@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-09-07 · by: AR-03 session
+**Last updated:** 2026-09-07 · by: AR-04 session
 
 ---
 
@@ -55,6 +55,15 @@ Measured later, four of them were. **Never copy code from that branch.**
 **Done**
 
 - US-01…US-04 — team search, AR entry point, trivia last score, feedback sfx.
+- AR-04 (probe done, debug APK blocked) — `ar_flutter_plugin_plus` pinned
+  at **1.1.3** (no caret). It pulls `permission_handler` 12.0.3, `geolocator`,
+  `package_info_plus`. No manual `com.google.ar:core` Gradle line.
+  Native: `minSdk = 24`, `CAMERA`, ARCore meta-data `optional`, package query.
+  `ArCoreImageTracker.isSupported()` is the only implemented method; start and
+  attach throw. The plugin has no Dart availability API, so the probe uses a
+  reflection channel in `MainActivity` — not a new AAR. On a capable device the
+  scan screen still uses `FakeArTracker`. On an unsupported device it binds the
+  probe so the existing `arCoreUnavailable` panel shows.
 - AR-03 — `ArScanScreen` is the AR route. One panel per `ArSessionState`.
   Marker content (`titulo` / `infoTexto`) renders only in `ArLocked`.
   `MODO DEMO` shows while `isDemo` is true. `ArFailed` uses the §8 Spanish
@@ -90,19 +99,21 @@ Measured later, four of them were. **Never copy code from that branch.**
 - Print the 4 markers at ≥ 15 cm on **matte** paper, measure width in metres →
   becomes `anchoMetros` (JSON currently holds the planned 0.15, not a
   measurement). Gates **AR-05** only.
+- Install a **JDK 17** (not JRE 8, not JDK 11, not JBR 21). Gradle needs a
+  toolchain that matches languageVersion 17 to compile the plugin. Do **not**
+  enable foojay / `org.gradle.java.installations.auto-download` (D-17).
 
 **Next**
 
 ```
-AR-04 → AR-05 → AR-06 → AR-07   native AR
+JDK 17 install (human) → confirm flutter build apk --debug → AR-05
 ```
 
-AR-01…AR-03 are the no-plugin foundation. AR-04 is the first slice allowed to
-add `ar_flutter_plugin_plus` — in its own commit, exact pin, probe only.
+Do not start AR-05 detection until the debug APK has built. The probe code is
+in; the build failed on a missing JDK 17, not on a forbidden native change.
 
-`AppRoutes.ar` opens `ArScanScreen` on `FakeArTracker`. Demo still has no
-camera. `Simular siguiente marcador` cycles every registered marker; it is an
-explicit action, not an automatic lock.
+`AppRoutes.ar` probes ARCore first. Unsupported devices see the existing
+failure panel. Capable devices still get `FakeArTracker` until AR-05.
 
 ## 5. Environment gotchas
 
@@ -115,6 +126,14 @@ explicit action, not an automatic lock.
   exited 0 (3 tests). The symlink blocker did **not** reproduce. Still run the
   file you care about and report that result — do not assume the full suite
   was run. `flutter analyze` works fine.
+- ⚠️ **`flutter build apk --debug` fails** on this machine (AR-04, 2026-09-07):
+  `Cannot find a Java installation matching languageVersion=17`.
+  `JAVA_HOME` is a JRE 8. Microsoft JDK 11 is installed. Android Studio JBR
+  is 21 — Gradle will not use it for a 17 toolchain. Install JDK 17 and point
+  Gradle at it. **Do not** turn on toolchain auto-download (RC-4 / D-17).
+- The plugin also warns it still applies the Kotlin Gradle Plugin. Flutter
+  3.47 built past that warning; a future Flutter will not. Do not bump the
+  plugin to silence it — the pin is exact.
 - `arcoreimg` lives at `tools/bin/arcoreimg.exe` (git-ignored; re-download from
   the ARCore SDK if missing — see marker guide §4). Score markers with:
   ```powershell
@@ -162,6 +181,7 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-09-07 | **AR-04 probe.** Pinned `ar_flutter_plugin_plus: 1.1.3`. Native allowed set only (`minSdk` 24, CAMERA, ARCore optional, package query). `ArCoreImageTracker` implements `isSupported` only. Debug APK **failed**: no JDK 17 on the machine. Did not enable foojay. |
 | 2026-09-07 | **AR-03.** `ArScanScreen` replaces the Timer mock (file deleted). One panel per `ArSessionState`; marker content only in `ArLocked`; `MODO DEMO` + **Elegir equipo manualmente** on every failure. Tests: 3 passed (`ar_scan_screen_test.dart`). Constitution known debt → v2.2.1 (no rule change). |
 | 2026-09-07 | **AR-02.** `ArTracker` / `ArDetection` / failures, sealed session states, `ArSessionController` + debounce gate, `FakeArTracker` (cycles every registered reference, never a default club). Tests: 11 passed (`ar_session_controller_test.dart`). Promoted `vector_math` to a direct dependency for `Matrix4` — analyze forbids an undeclared import; still no AR plugin. |
 | 2026-09-07 | **AR-01.** `Marcador` / `TipoMarcador`, `assets/ar_markers.json` (3 active D-20 markers, spare omitted), `DataService.cargarMarcadores()`, `MarkerRegistry.resolve` exact lookup. Tests: 3 passed (`marker_registry_test.dart`). `anchoMetros` left at 0.15 — planned print, not measured. |
@@ -180,9 +200,9 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 ## 9. Current task
 
-> Implement **AR-04** (pin `ar_flutter_plugin_plus: 1.1.3` + `ArCoreImageTracker`
-> availability probe only). Read its `Prompt` block. Dependency and native
-> config are **separate commits**. Do not implement detection or 3D.
+> Install a JDK 17 (do not enable foojay), then re-run `flutter build apk --debug`.
+> When that is green, implement **AR-05**. Do not implement detection before the
+> debug APK builds.
 
 _(The human edits this line each session. Leave it pointing at the next item
 when you finish.)_
