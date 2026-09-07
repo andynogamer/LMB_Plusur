@@ -34,7 +34,7 @@
 | US-04 | 📗 | 🟡 P2 | Action feedback sounds + visual states | ☑ | UX |
 | SP-01 | 🔧 | 🔴 P0 | Flutter-native AR spike (R-01) | ☑ | AR foundation |
 | AR-00 | 📗 | 🔴 P0 | Ship the 4 measured markers (≥ 75) into `assets/markers/` | ◐ código ☑ · imprimir ☐ | 3 markers (blocks AR-05) |
-| AR-01 | 📗 | 🔴 P0 | `Marcador` data + `MarkerRegistry` — no camera | ☐ | 3 markers |
+| AR-01 | 📗 | 🔴 P0 | `Marcador` data + `MarkerRegistry` — no camera | ☑ | 3 markers |
 | AR-02 | 📗 | 🔴 P0 | `ArTracker` seam + session state machine — no plugin | ☐ | AR foundation |
 | AR-03 | 📗 | 🔴 P0 | AR scan UI on the state machine (fake tracker) | ☐ | UI / chrome |
 | AR-04 | 📗 | 🔴 P0 | Pin plugin + `ArCoreImageTracker` availability probe | ☐ | AR foundation |
@@ -240,7 +240,7 @@ required); redesigning logo art.
 
 ---
 
-## AR-01 · 📗 · 🔴 P0 · `Marcador` data + `MarkerRegistry` (no camera) · ☐ Pendiente
+## AR-01 · 📗 · 🔴 P0 · `Marcador` data + `MarkerRegistry` (no camera) · ☑ Hecho
 
 **Prompt**
 ```

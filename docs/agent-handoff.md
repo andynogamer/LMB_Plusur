@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-09-07 · by: AR reset / AR-00 session
+**Last updated:** 2026-09-07 · by: AR-01 session
 
 ---
 
@@ -55,6 +55,12 @@ Measured later, four of them were. **Never copy code from that branch.**
 **Done**
 
 - US-01…US-04 — team search, AR entry point, trivia last score, feedback sfx.
+- AR-01 — `Marcador` + `MarkerRegistry`. `assets/ar_markers.json` loads the
+  three active D-20 markers through `DataService.cargarMarcadores()`.
+  `resolve` is an exact map lookup keyed by `Marcador.id`. The spare
+  (`marcador_pelota_bravos`) is **not** in that JSON — printable only.
+  `anchoMetros` is **0.15** (the planned 15 cm print), not a measured width;
+  do not treat it as real until the human records the print (gates AR-05).
 - AR-00 (code half) — 4 ARCore reference images in `assets/markers/`, registered
   in `pubspec.yaml`, all scoring ≥ 75:
 
@@ -71,30 +77,34 @@ Measured later, four of them were. **Never copy code from that branch.**
 **Blocked on the human**
 
 - Print the 4 markers at ≥ 15 cm on **matte** paper, measure width in metres →
-  becomes `anchoMetros`. Gates **AR-05** only.
-- Enable Developer Mode so `flutter test` runs (see §5).
+  becomes `anchoMetros` (JSON currently holds the planned 0.15, not a
+  measurement). Gates **AR-05** only.
 
 **Next**
 
 ```
-AR-01 → AR-02 → AR-03      no plugin, no camera, fully unit-testable
+AR-02 → AR-03      no plugin, no camera, fully unit-testable
 AR-04 → AR-05 → AR-06 → AR-07   native AR
 ```
 
-Do **not** start AR-04 until AR-01…AR-03 are merged and green. That ordering is
-the whole point of the reset: prove the state machine before native risk enters.
+Do **not** start AR-04 until AR-02 and AR-03 are merged and green. That ordering
+is the whole point of the reset: prove the state machine before native risk
+enters.
 
-`lib/ar/` does not exist yet. `lib/screens/ar_view_screen.dart` is a pre-reset
-`Timer` mock — it gets **deleted** in AR-03, not patched.
+`lib/ar/` has `marker_registry.dart` only. `lib/screens/ar_view_screen.dart` is
+still the pre-reset `Timer` mock — it gets **deleted** in AR-03, not patched.
 
 ## 5. Environment gotchas
 
 - Shell is **PowerShell 5.1**. Chain with `;` — `&&` is invalid. `pwsh` is not
   installed; use `powershell -ExecutionPolicy Bypass -File …`.
-- ⚠️ **`flutter test` fails** before running anything:
+- ⚠️ **`flutter test` used to fail** before running anything:
   `Building with plugins requires symlink support.` Fix once with
-  `start ms-settings:developers` → enable Developer Mode. Until then, **do not
-  claim unit-test criteria pass.** `flutter analyze` works fine.
+  `start ms-settings:developers` → enable Developer Mode.
+  **2026-09-07 (AR-01):** `flutter test test/ar/marker_registry_test.dart`
+  exited 0 (3 tests). The symlink blocker did **not** reproduce. Still run the
+  file you care about and report that result — do not assume the full suite
+  was run. `flutter analyze` works fine.
 - `arcoreimg` lives at `tools/bin/arcoreimg.exe` (git-ignored; re-download from
   the ARCore SDK if missing — see marker guide §4). Score markers with:
   ```powershell
@@ -135,6 +145,7 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-09-07 | **AR-01.** `Marcador` / `TipoMarcador`, `assets/ar_markers.json` (3 active D-20 markers, spare omitted), `DataService.cargarMarcadores()`, `MarkerRegistry.resolve` exact lookup. Tests: 3 passed (`marker_registry_test.dart`). `anchoMetros` left at 0.15 — planned print, not measured. |
 | 2026-09-07 | **AR-00 code half** (commit `cd82136`). Measured all 10 logos with `arcoreimg`. 4 pass ≥ 75 after normalization; shipped to `assets/markers/`, wired into `pubspec.yaml`. Added `tools/normalize_markers.ps1` + `tools/score_markers.ps1`. **Amended D-20** (the 3 originally ratified markers scored 50/50/none — picked unmeasured) and added **D-21** (normalize + re-score). Constitution → v2.1.0. |
 | 2026-09-07 | **AR reset governance.** Attempt #1 abandoned. Wrote `ar-postmortem.md`, `ar-architecture.md`, `ar-marker-guide.md`; rewrote Article VI into 11 enforceable clauses; ratified D-12…D-20; split monolithic US-05…US-08 into slices AR-00…AR-07. Constitution → v2.0.0. Added `.cursor/rules/`. |
 | 2026-09-06 | US-01…US-04 delivered (commit `69aa1ff`). |
@@ -150,8 +161,8 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 ## 9. Current task
 
-> Implement **AR-01** (`Marcador` data + `MarkerRegistry`). Read its `Prompt`
-> block in `WORK_ITEMS.md` and follow it exactly.
+> Implement **AR-02** (`ArTracker` seam + session state machine — no plugin).
+> Read its `Prompt` block in `WORK_ITEMS.md` and follow it exactly.
 
 _(The human edits this line each session. Leave it pointing at the next item
 when you finish.)_

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "marcador_estadio_leones",
+    "equipoId": "leones_yucatan",
+    "tipo": "estadio",
+    "titulo": "Parque Kukulcán Alamo",
+    "infoTexto": "Casa de los Leones de Yucatán en Mérida desde la fundación del club en 1954. La afición yucateca convierte cada tarde en una fiesta, y aquí se han celebrado campeonatos de la Serie del Rey como los de 2018 y 2022.",
+    "markerImage": "assets/markers/marcador_estadio_leones.png",
+    "modelAsset": "assets/models/marcador_estadio_leones/modelo.glb",
+    "anchoMetros": 0.15,
+    "videoUrl": null,
+    "animaciones": ["idle", "celebracion"]
+  },
+  {
+    "id": "marcador_jugador_olmecas",
+    "equipoId": "olmecas_tabasco",
+    "tipo": "jugador",
+    "titulo": "El legado olmeca",
+    "infoTexto": "Los Olmecas de Tabasco honran a la civilización olmeca del Golfo. El club, con casa en el Estadio Centenario 27 de Febrero de Villahermosa, representa a Tabasco en la Zona Sur desde 1975.",
+    "markerImage": "assets/markers/marcador_jugador_olmecas.png",
+    "modelAsset": "assets/models/marcador_jugador_olmecas/modelo.glb",
+    "anchoMetros": 0.15,
+    "videoUrl": null,
+    "animaciones": ["idle", "gesto"]
+  },
+  {
+    "id": "marcador_trofeo_piratas",
+    "equipoId": "piratas_campeche",
+    "tipo": "trofeo",
+    "titulo": "Serie del Rey",
+    "infoTexto": "Los Piratas de Campeche, nombrados por la historia corsaria del puerto amurallado, fueron campeones de la Liga Mexicana de Béisbol en 1983 y 2004. Juegan de local en el Estadio Nelson Barrera Romellón.",
+    "markerImage": "assets/markers/marcador_trofeo_piratas.png",
+    "modelAsset": "assets/models/marcador_trofeo_piratas/modelo.glb",
+    "anchoMetros": 0.15,
+    "videoUrl": null,
+    "animaciones": ["idle", "celebracion"]
+  }
+]

@@ -28,6 +28,7 @@ flutter:
   assets:
     - assets/
     - assets/data.json
+    - assets/ar_markers.json
     - assets/images/
     - assets/sfx/
     # AR reference images (D-20/D-21). Filename stem == Marcador.id.
