@@ -16,6 +16,8 @@ dependencies:
   shared_preferences: ^2.5.5
   audioplayers: ^6.8.1
   image: ^4.9.2
+  camera: ^0.12.1
+  permission_handler: ^13.0.2
   # Activar cuando exista el mÃ³dulo de Unity exportado para AR.
   # flutter_unity_widget: ^2022.2.1
 
@@ -29,6 +31,7 @@ flutter:
   assets:
     - assets/
     - assets/data.json
+    - assets/ar_markers.json
     - assets/images/
     - assets/sfx/
     - assets/images/team-logos/bravos_leon/

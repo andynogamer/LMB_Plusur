@@ -67,6 +67,12 @@ correct `equipoId`.
 Keep the iOS project healthy (`NSCameraUsageDescription`). Full IPA polish is
 later; primary testing remains Android (D-02).
 
+## Status after US-06
+
+`ArViewScreen` now uses the device camera + `LogoMatcherService` against
+the 3 grading markers. Demo mode is opt-in only (no Guerreros hardcode).
+`ar_flutter_plugin_plus` pose anchoring remains for US-07+.
+
 ## Next work items
 
 - **US-05** ? marcadores data model (?3) pointing at these logo paths + 3D assets

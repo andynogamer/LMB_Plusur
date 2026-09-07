@@ -1,0 +1,1 @@
+Placeholder GLB paths referenced by `assets/ar_markers.json`.\nReplace with real student/AI models before US-07 device demos.\n

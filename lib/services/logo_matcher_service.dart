@@ -1,22 +1,22 @@
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
 
+import '../models/marcador_model.dart';
 import '../theme/app_assets.dart';
 
-/// Offline logo recognition helper for the AR spike (SP-01).
+/// Image recognition helper (SP-01 / US-06).
 ///
-/// Uses average-hash distance against bundled team logos. This proves
-/// image?equipoId matching for tests and as a camera-frame fallback.
-/// Production AR pose/anchoring remains with [ar_flutter_plugin_plus]
-/// (see docs/ar-spike.md).
+/// Average-hash matching against team logos and/or [Marcador.markerImage]
+/// assets. Used with camera frames until ARCore image tracking is embedded.
 class LogoMatcherService {
   LogoMatcherService();
 
   final Map<String, BigInt> _hashesByEquipoId = {};
-  bool _loaded = false;
+  final Map<String, BigInt> _hashesByMarcadorId = {};
+  bool _equiposLoaded = false;
 
-  Future<void> ensureLoaded() async {
-    if (_loaded) return;
+  Future<void> ensureEquipoLogosLoaded() async {
+    if (_equiposLoaded) return;
     for (final entry in AppAssets.teamLogoById.entries) {
       final bytes = await rootBundle.load(entry.value);
       final hash = averageHash(bytes.buffer.asUint8List());
@@ -24,21 +24,65 @@ class LogoMatcherService {
         _hashesByEquipoId[entry.key] = hash;
       }
     }
-    _loaded = true;
+    _equiposLoaded = true;
   }
 
-  /// Returns best matching equipo id, or null if no logo is close enough.
+  Future<void> loadMarcadores(List<Marcador> marcadores) async {
+    _hashesByMarcadorId.clear();
+    for (final marcador in marcadores) {
+      final bytes = await rootBundle.load(marcador.markerImage);
+      final hash = averageHash(bytes.buffer.asUint8List());
+      if (hash != null) {
+        _hashesByMarcadorId[marcador.id] = hash;
+      }
+    }
+  }
+
   Future<String?> matchBytes(
     Uint8List bytes, {
     int maxHammingDistance = 12,
   }) async {
-    await ensureLoaded();
+    await ensureEquipoLogosLoaded();
+    return _bestMatch(
+      bytes,
+      _hashesByEquipoId,
+      maxHammingDistance: maxHammingDistance,
+    );
+  }
+
+  Future<String?> matchMarcadorBytes(
+    Uint8List bytes, {
+    int maxHammingDistance = 14,
+  }) async {
+    if (_hashesByMarcadorId.isEmpty) return null;
+    return _bestMatch(
+      bytes,
+      _hashesByMarcadorId,
+      maxHammingDistance: maxHammingDistance,
+    );
+  }
+
+  Future<String?> matchAsset(String assetPath) async {
+    final data = await rootBundle.load(assetPath);
+    return matchBytes(data.buffer.asUint8List());
+  }
+
+  Future<String?> matchMarcadorAsset(String assetPath) async {
+    final data = await rootBundle.load(assetPath);
+    return matchMarcadorBytes(data.buffer.asUint8List());
+  }
+
+  String? _bestMatch(
+    Uint8List bytes,
+    Map<String, BigInt> catalog, {
+    required int maxHammingDistance,
+  }) {
     final probe = averageHash(bytes);
-    if (probe == null || _hashesByEquipoId.isEmpty) return null;
+    if (probe == null || catalog.isEmpty) return null;
 
     String? bestId;
     var bestDistance = 65;
-    _hashesByEquipoId.forEach((id, hash) {
+    catalog.forEach((id, hash) {
       final distance = hammingDistance(probe, hash);
       if (distance < bestDistance) {
         bestDistance = distance;
@@ -50,12 +94,6 @@ class LogoMatcherService {
     return bestId;
   }
 
-  Future<String?> matchAsset(String assetPath) async {
-    final data = await rootBundle.load(assetPath);
-    return matchBytes(data.buffer.asUint8List());
-  }
-
-  /// 8x8 average hash (64-bit) ? fast and dependency-light.
   static BigInt? averageHash(Uint8List bytes) {
     final decoded = img.decodeImage(bytes);
     if (decoded == null) return null;
@@ -90,6 +128,6 @@ class LogoMatcherService {
     return count;
   }
 
-  /// Convenience for debug UIs.
   int get catalogSize => _hashesByEquipoId.length;
+  int get marcadorCatalogSize => _hashesByMarcadorId.length;
 }

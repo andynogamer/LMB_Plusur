@@ -1,0 +1,35 @@
+[
+  {
+    "id": "marcador_estadio_diablos",
+    "equipoId": "diablos_rojos",
+    "tipo": "estadio",
+    "titulo": "Estadio Alfredo Harp Hel?",
+    "infoTexto": "Casa de los Diablos Rojos del M?xico desde 2019. Escenario de Series del Rey y una de las sedes m?s modernas de la LMB Zona Sur.",
+    "markerImage": "assets/images/team-logos/diablos_rojos_mexico/logo_base.png",
+    "modelAsset": "assets/models/placeholders/estadio.glb",
+    "videoUrl": "https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4",
+    "animaciones": ["idle", "celebracion", "rotar360"]
+  },
+  {
+    "id": "marcador_jugador_guerreros",
+    "equipoId": "guerreros_oaxaca",
+    "tipo": "jugador",
+    "titulo": "Guerrero hist?rico de Oaxaca",
+    "infoTexto": "Figura inspirada en la identidad de los Guerreros de Oaxaca. Activa animaciones de celebraci?n y gestos en la experiencia AR.",
+    "markerImage": "assets/images/team-logos/guerreros_oaxaca/guerreros_oaxaca.png",
+    "modelAsset": "assets/models/placeholders/jugador.glb",
+    "videoUrl": null,
+    "animaciones": ["idle", "baile", "saludo"]
+  },
+  {
+    "id": "marcador_trofeo_pericos",
+    "equipoId": "pericos_puebla",
+    "tipo": "trofeo",
+    "titulo": "Trofeo de la Serie del Rey",
+    "infoTexto": "Representaci?n del trofeo de campe?n de la LMB. Ideal para mostrar efectos de part?culas y datos del club poblano.",
+    "markerImage": "assets/images/team-logos/pericos_puebla/pericos_puebla.png",
+    "modelAsset": "assets/models/placeholders/trofeo.glb",
+    "videoUrl": "https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4",
+    "animaciones": ["idle", "brillo", "rotar360"]
+  }
+]
