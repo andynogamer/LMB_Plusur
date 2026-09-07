@@ -92,6 +92,28 @@ void main() {
     );
   });
 
+  test('a missing or failed model has Spanish copy and does not pretend it placed', () {
+    expect(modelFallbackCopy(null), isNull);
+    expect(
+      modelFallbackCopy(
+        const ArModelAttach(ArModelAttachKind.placed, 'marcador_estadio_leones'),
+      ),
+      isNull,
+    );
+    expect(
+      modelFallbackCopy(
+        const ArModelAttach(ArModelAttachKind.missing, 'marcador_estadio_leones'),
+      ),
+      contains('Aún no hay modelo 3D'),
+    );
+    expect(
+      modelFallbackCopy(
+        const ArModelAttach(ArModelAttachKind.failed, 'marcador_estadio_leones'),
+      ),
+      contains('El escaneo sigue activo'),
+    );
+  });
+
   test('continuous tracking is on so the debounce gate can confirm', () {
     expect(kContinuousImageTracking, isTrue);
     expect(kImageTrackingUpdateIntervalMs, inInclusiveRange(50, 400));

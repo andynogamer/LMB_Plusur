@@ -39,7 +39,7 @@
 | AR-03 | 📗 | 🔴 P0 | AR scan UI on the state machine (fake tracker) | ☑ | UI / chrome |
 | AR-04 | 📗 | 🔴 P0 | Pin plugin + `ArCoreImageTracker` availability probe | ☑ | AR foundation |
 | AR-05 | 📗 | 🔴 P0 | Real detection → deterministic lock (kills BUG-01) | ☑ | 3 markers |
-| AR-06 | 📗 | 🔴 P0 | In-session 3D anchored on the marker pose | ☐ | Buttons / UI |
+| AR-06 | 📗 | 🔴 P0 | In-session 3D anchored on the marker pose | ◐ código · dispositivo ☐ | Buttons / UI |
 | AR-07 | 📗 | 🔴 P0 | ≥2 AR action types (anim, info+TTS, …) | ☐ | 2 action types |
 | US-09 | 📗 | 🟠 P1 | Simulated live stats in AR / team | ☐ | Actions |
 | US-10 | 📗 | 🟠 P1 | Multiple AR modes (galería / trivia / video) | ☐ | Bonus + modes |
@@ -460,7 +460,7 @@ Device acceptance table (architecture §7). Human, physical Android,
 
 ---
 
-## AR-06 · 📗 · 🔴 P0 · In-session 3D anchored on the marker pose · ☐ Pendiente
+## AR-06 · 📗 · 🔴 P0 · In-session 3D anchored on the marker pose · ◐ Código listo · falta el dispositivo
 
 **Prompt**
 ```
@@ -490,6 +490,20 @@ Archivos: lib/ar/trackers/arcore_image_tracker.dart (attachModel),
 lib/screens/ar/, assets/models/<marcador_id>/
 Fuera de alcance: the action buttons (AR-07), VFX spectacle (US-13).
 ```
+
+**Code landed 2026-09-07. Device confirmation not run.**
+
+On `ArLocked`, `ArCoreImageTracker.attachModel` places that marker's GLB on
+the last fully-tracked image pose and updates the node as new poses arrive.
+A missing or failed GLB sets a Spanish overlay and leaves the session up.
+`model_viewer_plus` is not used. Placeholder GLBs (one colored box each,
+well under 4 MB / 50k tris) live at `assets/models/<marcador_id>/modelo.glb`.
+They are not authored stadium/player/trophy art (D-03).
+
+Device checks still open:
+
+- each printed marker shows its own model, stuck to the card as the phone moves
+- enter and leave AR 5 times without a crash
 
 ---
 

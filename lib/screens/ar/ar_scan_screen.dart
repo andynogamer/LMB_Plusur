@@ -56,6 +56,7 @@ class _ArScanScreenState extends State<ArScanScreen> {
   ArTracker? _ownedTracker;
   ArCoreImageTracker? _cameraTracker;
   bool _liveIsDemo = false;
+  String? _modelNote;
   final ValueNotifier<ArSessionState> _uiState =
       ValueNotifier<ArSessionState>(const ArPreparing());
 
@@ -149,6 +150,9 @@ class _ArScanScreenState extends State<ArScanScreen> {
     _controller = controller;
     _states = controller.states.listen((next) {
       _uiState.value = next;
+      if (next is ArLocked) {
+        unawaited(_attachLockedModel(tracker, next));
+      }
     });
 
     await controller.start(
@@ -162,6 +166,22 @@ class _ArScanScreenState extends State<ArScanScreen> {
       ],
     );
     _uiState.value = controller.state;
+    if (controller.state is ArLocked) {
+      await _attachLockedModel(tracker, controller.state as ArLocked);
+    }
+  }
+
+  Future<void> _attachLockedModel(ArTracker tracker, ArLocked locked) async {
+    await tracker.attachModel(
+      trackerName: locked.marcador.id,
+      glbAsset: locked.marcador.modelAsset,
+    );
+    if (!mounted) return;
+    final note = tracker is ArCoreImageTracker
+        ? modelFallbackCopy(tracker.modelAttach)
+        : null;
+    if (_modelNote == note) return;
+    setState(() => _modelNote = note);
   }
 
   void _simulateNext() {
@@ -277,6 +297,10 @@ class _ArScanScreenState extends State<ArScanScreen> {
                                 equipoHint: widget.equipoHint,
                                 onSimulateNext:
                                     _liveIsDemo ? _simulateNext : null,
+                                modelNote: state is ArLocked ? _modelNote : null,
+                                onExit: state is ArLocked
+                                    ? () => Navigator.of(context).maybePop()
+                                    : null,
                               )
                             : ArFailedPanel(
                                 failure: failed,

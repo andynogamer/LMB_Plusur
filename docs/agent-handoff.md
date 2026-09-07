@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-09-07 · by: AR-05 session
+**Last updated:** 2026-09-07 · by: AR-06 session
 
 ---
 
@@ -20,7 +20,7 @@ These are **binding**, not advisory:
 
 | # | File | What it gives you |
 |---|---|---|
-| 1 | `CONSTITUTION.md` | Governance, v2.2.3, decisions D-01…D-21 |
+| 1 | `CONSTITUTION.md` | Governance, v2.2.4, decisions D-01…D-21 |
 | 2 | `AGENTS.md` | How to work here (auto-loaded as a workspace rule) |
 | 3 | `WORK_ITEMS.md` | The backlog. Each item's `Prompt` block **is** the spec |
 | 4 | `docs/ar-postmortem.md` | Why AR attempt #1 was thrown away (RC-1…RC-7) |
@@ -69,7 +69,7 @@ Measured later, four of them were. **Never copy code from that branch.**
   `updateImageTrackingSettings`. Identity is the tracker name unchanged.
   Human device run: Leones, Olmecas and Piratas locked on their own content.
   Blank wall and a non-registered club logo triggered nothing. Lock time was
-  not stopwatched. `attachModel` still throws (AR-06).
+  not stopwatched.
 - AR-03 — `ArScanScreen` is the AR route. One panel per `ArSessionState`.
   Marker content (`titulo` / `infoTexto`) renders only in `ArLocked`.
   `MODO DEMO` shows while `isDemo` is true. `ArFailed` uses the §8 Spanish
@@ -87,6 +87,12 @@ Measured later, four of them were. **Never copy code from that branch.**
   (`marcador_pelota_bravos`) is **not** in that JSON — printable only.
   `anchoMetros` is **0.15** (the planned 15 cm print), not a measured width;
   do not treat it as real until the human records the print (gates AR-05).
+- AR-06 (code) — On `ArLocked`, `attachModel` places that marker's GLB on the
+  last fully-tracked pose and moves the node with later poses. A missing or
+  failed file shows Spanish overlay copy; the session stays up. No
+  `model_viewer_plus`. Placeholder boxes are in
+  `assets/models/<marcador_id>/modelo.glb` (not authored D-03 art). Device
+  hold-to-card and the 5× enter/leave run are not done.
 - AR-00 (code half) — 4 ARCore reference images in `assets/markers/`, registered
   in `pubspec.yaml`, all scoring ≥ 75:
 
@@ -104,13 +110,14 @@ Measured later, four of them were. **Never copy code from that branch.**
 
 - Measure printed width in metres → `anchoMetros` (JSON still holds the planned
   0.15, not a measurement). Does not block AR-06.
-- Author or supply GLB models for the three markers (D-03). Gates how AR-06
-  looks, not whether the slice can start.
+- Confirm AR-06 on a device: each marker's model stays on the card, and
+  entering/leaving AR 5 times does not crash. Placeholder boxes are enough
+  for that check; authored D-03 models can replace the files later.
 
 **Next**
 
 ```
-AR-06 → AR-07
+AR-06 device check → AR-07
 ```
 
 Debug APK from earlier today does **not** include this session. Rebuild after
@@ -201,6 +208,7 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-09-07 | **AR-06 code.** `attachModel` places a per-marker GLB on the fully-tracked pose. Missing/failed GLB → Spanish overlay, session stays up. No WebView. Device hold/dispose checks not run. |
 | 2026-09-07 | **AR-05 accepted.** Human: Leones, Olmecas and Piratas locked. Blank wall and a non-registered club logo triggered nothing. Lock time not stopwatched. Next is AR-06. |
 | 2026-09-07 | **AR-05 human scan.** Leones, Olmecas and Piratas each locked on a physical device. Control rows not run. Time to lock not timed. |
 | 2026-09-07 | **AR-05 code.** Real tracker starts a session; identity is the ARCore name. Continuous tracking 200 ms so debounce can lock. Width patch required (`tools/patch_arcore_image_width.ps1`) because 1.1.3 hardcodes 0.2 m. Tests: 21 passed (detection event + session + scan + registry). Device table **not** filled. Constitution → v2.2.2. Architecture §11 order clarified (null-path init, then precompile). |
@@ -208,7 +216,6 @@ Rules of thumb:
 | 2026-09-07 | **AR-04 probe.** Pinned `ar_flutter_plugin_plus: 1.1.3`. Native allowed set only (`minSdk` 24, CAMERA, ARCore optional, package query). `ArCoreImageTracker` implements `isSupported` only. First debug APK failed on missing JDK 17. Did not enable foojay. |
 | 2026-09-07 | **AR-03.** `ArScanScreen` replaces the Timer mock (file deleted). One panel per `ArSessionState`; marker content only in `ArLocked`; `MODO DEMO` + **Elegir equipo manualmente** on every failure. Tests: 3 passed (`ar_scan_screen_test.dart`). Constitution known debt → v2.2.1 (no rule change). |
 | 2026-09-07 | **AR-02.** `ArTracker` / `ArDetection` / failures, sealed session states, `ArSessionController` + debounce gate, `FakeArTracker` (cycles every registered reference, never a default club). Tests: 11 passed (`ar_session_controller_test.dart`). Promoted `vector_math` to a direct dependency for `Matrix4` — analyze forbids an undeclared import; still no AR plugin. |
-| 2026-09-07 | **AR-01.** `Marcador` / `TipoMarcador`, `assets/ar_markers.json` (3 active D-20 markers, spare omitted), `DataService.cargarMarcadores()`, `MarkerRegistry.resolve` exact lookup. Tests: 3 passed (`marker_registry_test.dart`). `anchoMetros` left at 0.15 — planned print, not measured. |
 | 2026-09-07 | **AR reset governance.** Attempt #1 abandoned. Wrote `ar-postmortem.md`, `ar-architecture.md`, `ar-marker-guide.md`; rewrote Article VI into 11 enforceable clauses; ratified D-12…D-20; split monolithic US-05…US-08 into slices AR-00…AR-07. Constitution → v2.0.0. Added `.cursor/rules/`. |
 
 ## 8. How to work
@@ -222,8 +229,9 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 ## 9. Current task
 
-> Implement **AR-06** (in-session 3D on the marker pose). Tracker scene graph
-> only. Do not use `model_viewer_plus` as AR.
+> Confirm **AR-06** on a device: scan each of the three markers, check the
+> model stays on the card, then enter and leave AR 5 times. Then AR-07.
+> Do not use a WebView as AR.
 
 _(The human edits this line each session. Leave it pointing at the next item
 when you finish.)_

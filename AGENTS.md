@@ -65,8 +65,8 @@ State of the tree:
 - UI shell, historia, trivia, last-score persistence, feedback sfx: **present**
   (US-01 … US-04 done).
 - `lib/ar/` has the seam, registry, session machine, `FakeArTracker`, and
-  `ArCoreImageTracker`. AR-05 is accepted on device (three markers + both
-  controls). 3D is AR-06.
+  `ArCoreImageTracker`. AR-05 is accepted on device. AR-06 places a GLB on
+  the tracked pose; the device hold/dispose check is still open.
 - `lib/screens/ar/ar_scan_screen.dart` is the AR route. The `Timer` mock is
   deleted. Do not restore it. Capable devices use the real tracker; demo is
   `--dart-define=LMB_AR_DEMO=true` only.

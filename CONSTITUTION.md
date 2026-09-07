@@ -17,7 +17,7 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 | [`docs/ar-architecture.md`](./docs/ar-architecture.md) | The AR technical contract: layers, `ArTracker` seam, state machine, error taxonomy, budgets. |
 | [`docs/ar-marker-guide.md`](./docs/ar-marker-guide.md) | How to author printable markers ARCore can actually track. |
 
-**Version**: 2.2.3 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-07
+**Version**: 2.2.4 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-07
 
 > **v2.0.0 — AR reset.** AR attempt #1 (branch `ar-have-too-many-errors`) was
 > abandoned and work restarted on `fresh-start`. Article VI was rewritten from
@@ -57,6 +57,10 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 > Leones, Olmecas and Piratas lock, and that a blank wall and a non-registered
 > club logo trigger nothing. Lock time was not stopwatched. Debt #1 no longer
 > says the acceptance table is empty. 3D remains AR-06.
+>
+> **v2.2.4 — AR-06 code.** No rule changed. In-session 3D is a tracker `ARNode`
+> plus GLB, never a WebView. Placeholder boxes ship so each marker has its own
+> file. Device hold and dispose checks are still open.
 
 ---
 
@@ -81,7 +85,7 @@ agents (`CONSTITUTION.md`, `AGENTS.md`, `WORK_ITEMS.md`) are written in
 |---|---|---|---|
 | App shell | Flutter 3 / Dart 3.3+ | `lib/` | Implemented (navigation, theme, screens). |
 | Team content | Local JSON | `assets/data.json` | Implemented for 10 Zona Sur clubs (historia + trivias). |
-| AR | **Flutter-native (D-01)** — ARCore/ARKit Augmented Images behind an `ArTracker` seam (D-12) | `lib/ar/`, `lib/screens/ar/` | AR-05 accepted on device. Demo only with `LMB_AR_DEMO`. 3D is AR-06. |
+| AR | **Flutter-native (D-01)** — ARCore/ARKit Augmented Images behind an `ArTracker` seam (D-12) | `lib/ar/`, `lib/screens/ar/` | AR-05 accepted on device. AR-06 places a GLB on the pose; device hold/dispose not checked. Demo only with `LMB_AR_DEMO`. |
 | Video filters | Flutter on-device | — | Not started; graded requirement. |
 | Highlights / videos | Remote URLs (D-07) | demo data today | Placeholders until URLs are filled. |
 
@@ -541,14 +545,13 @@ MUST NOT:
 
 ## Known debt (do not "fix" casually)
 
-1. **3D is not in the session yet (AR-06).** Detection is accepted: capable
-   devices bind `ArCoreImageTracker`. `FakeArTracker` is only
-   `--dart-define=LMB_AR_DEMO=true` or a test injection — not the fallback
-   when a real session fails. Human, 2026-09-07: Leones, Olmecas and Piratas
-   lock; a blank wall and a non-registered club logo trigger nothing. Lock
-   time was not stopwatched. Plugin 1.1.3 hardcodes width at 0.2 m; re-run
-   `tools/patch_arcore_image_width.ps1` after `flutter pub get`. Do not bump
-   the pin and do not write a matcher.
+1. **In-session 3D is coded, not device-checked (AR-06).** `attachModel`
+   places a per-marker GLB on the fully-tracked pose. Files under
+   `assets/models/` are placeholder boxes, not authored D-03 art — replace
+   the GLB, do not put a WebView on the camera. Still open: model holds on
+   the card, and enter/leave AR 5 times does not crash. Plugin 1.1.3
+   hardcodes width at 0.2 m; re-run `tools/patch_arcore_image_width.ps1`
+   after `flutter pub get`. Do not bump the pin and do not write a matcher.
 2. **Markers shipped; prints pending.** Four references are in
    `assets/markers/` scoring 100/100/100/90 (D-20/D-21) and registered in
    `pubspec.yaml`. Marker art is **no longer a blocker**. Remaining: print at

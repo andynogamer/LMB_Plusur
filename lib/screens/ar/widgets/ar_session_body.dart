@@ -13,11 +13,18 @@ class ArSessionBody extends StatelessWidget {
     required this.state,
     required this.equipoHint,
     this.onSimulateNext,
+    this.modelNote,
+    this.onExit,
   });
 
   final ArSessionState state;
   final Equipo? equipoHint;
   final VoidCallback? onSimulateNext;
+
+  /// Spanish copy when the GLB is missing or failed. Null when the model is
+  /// placed, or when this is not a real session.
+  final String? modelNote;
+  final VoidCallback? onExit;
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +57,8 @@ class ArSessionBody extends StatelessWidget {
       ArLocked(:final marcador) => _LockedPanel(
           marcadorTitulo: marcador.titulo,
           infoTexto: marcador.infoTexto,
+          modelNote: modelNote,
+          onExit: onExit,
         ),
       ArLost(:final marcador) => _StatusPanel(
           panelKey: const Key('ar-lost'),
@@ -124,10 +133,14 @@ class _LockedPanel extends StatelessWidget {
   const _LockedPanel({
     required this.marcadorTitulo,
     required this.infoTexto,
+    this.modelNote,
+    this.onExit,
   });
 
   final String marcadorTitulo;
   final String infoTexto;
+  final String? modelNote;
+  final VoidCallback? onExit;
 
   @override
   Widget build(BuildContext context) {
@@ -165,6 +178,28 @@ class _LockedPanel extends StatelessWidget {
             height: 1.35,
           ),
         ),
+        if (modelNote != null) ...[
+          const SizedBox(height: 10),
+          Text(
+            modelNote!,
+            key: const Key('ar-model-fallback'),
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              color: AppColors.white,
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+              height: 1.35,
+            ),
+          ),
+        ],
+        if (onExit != null) ...[
+          const SizedBox(height: 14),
+          PrimaryButton(
+            label: 'Salir',
+            icon: Icons.close_rounded,
+            onPressed: onExit,
+          ),
+        ],
       ],
     );
   }

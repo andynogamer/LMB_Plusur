@@ -2,7 +2,10 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:ar_flutter_plugin_plus/datatypes/config_planedetection.dart';
+import 'package:ar_flutter_plugin_plus/datatypes/node_types.dart';
+import 'package:ar_flutter_plugin_plus/managers/ar_object_manager.dart';
 import 'package:ar_flutter_plugin_plus/managers/ar_session_manager.dart';
+import 'package:ar_flutter_plugin_plus/models/ar_node.dart';
 import 'package:ar_flutter_plugin_plus/ar_flutter_plugin_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -39,6 +42,28 @@ bool imageIsFullyTracked({
   if (trackingState == 'PAUSED' || trackingState == 'STOPPED') return false;
   if (trackingMethod == 'LAST_KNOWN_POSE') return false;
   return trackingMethod == 'FULL_TRACKING';
+}
+
+/// Outcome of [ArTracker.attachModel]. Missing or failed GLB must not
+/// kill the session — the overlay shows Spanish copy instead.
+enum ArModelAttachKind { placed, missing, failed }
+
+class ArModelAttach {
+  const ArModelAttach(this.kind, this.trackerName);
+
+  final ArModelAttachKind kind;
+  final String trackerName;
+}
+
+/// Overlay copy when a GLB cannot be placed. Null means show the model only.
+String? modelFallbackCopy(ArModelAttach? attach) {
+  return switch (attach?.kind) {
+    ArModelAttachKind.missing =>
+      'Aún no hay modelo 3D para este marcador. El escaneo sigue activo.',
+    ArModelAttachKind.failed =>
+      'No pudimos colocar el modelo. El escaneo sigue activo.',
+    _ => null,
+  };
 }
 
 /// Rejects a database that cannot be built. Does not read pixels.
@@ -81,7 +106,11 @@ class ArCoreImageTracker implements ArTracker {
   final Completer<void> _viewReady = Completer<void>();
 
   ARSessionManager? _session;
+  ARObjectManager? _objects;
   MethodChannel? _sessionChannel;
+  final Map<String, Matrix4> _poses = {};
+  final Map<String, ARNode> _nodes = {};
+  ArModelAttach? modelAttach;
   List<ArReferenceImage> _references = const [];
   Widget? _surface;
   bool _stopped = false;
@@ -174,9 +203,14 @@ class ArCoreImageTracker implements ArTracker {
     await _configure(session);
   }
 
-  void _onViewCreated(ARSessionManager session, MethodChannel channel) {
+  void _onViewCreated(
+    ARSessionManager session,
+    ARObjectManager objects,
+    MethodChannel channel,
+  ) {
     if (_stopped) return;
     _session = session;
+    _objects = objects;
     _sessionChannel = channel;
     if (!_viewReady.isCompleted) _viewReady.complete();
   }
@@ -287,6 +321,11 @@ class ArCoreImageTracker implements ArTracker {
     )) {
       return;
     }
+    _poses[imageName] = transformation;
+    final node = _nodes[imageName];
+    if (node != null) {
+      node.transform = _anchoredPose(transformation);
+    }
     _detections.add(
       ArDetection(
         trackerName: imageName,
@@ -294,6 +333,13 @@ class ArCoreImageTracker implements ArTracker {
         isFullyTracked: true,
       ),
     );
+  }
+
+  /// Image pose plus a small lift so the model sits on the card, not in it.
+  Matrix4 _anchoredPose(Matrix4 imagePose) {
+    final pose = Matrix4.fromFloat64List(imagePose.storage);
+    pose.translateByDouble(0, 0.01, 0, 1);
+    return pose;
   }
 
   ArTrackerFailure _availabilityFailure() {
@@ -319,13 +365,56 @@ class ArCoreImageTracker implements ArTracker {
   Future<void> attachModel({
     required String trackerName,
     required String glbAsset,
-  }) {
-    throw UnimplementedError('ArCoreImageTracker.attachModel is AR-06');
+  }) async {
+    final pose = _poses[trackerName];
+    if (pose == null) {
+      // Not fully tracked yet — do not place.
+      return;
+    }
+    if (_nodes.containsKey(trackerName)) {
+      _nodes[trackerName]!.transform = _anchoredPose(pose);
+      modelAttach = ArModelAttach(ArModelAttachKind.placed, trackerName);
+      return;
+    }
+    try {
+      await rootBundle.load(glbAsset);
+    } on Object {
+      modelAttach = ArModelAttach(ArModelAttachKind.missing, trackerName);
+      return;
+    }
+    final objects = _objects;
+    if (objects == null || _stopped) {
+      modelAttach = ArModelAttach(ArModelAttachKind.failed, trackerName);
+      return;
+    }
+    final node = ARNode(
+      type: NodeType.localGLB,
+      uri: glbAsset,
+      name: 'modelo_$trackerName',
+      transformation: _anchoredPose(pose),
+    );
+    final bool added;
+    try {
+      added = await objects.addNode(node) ?? false;
+    } on Object {
+      modelAttach = ArModelAttach(ArModelAttachKind.failed, trackerName);
+      return;
+    }
+    if (!added) {
+      modelAttach = ArModelAttach(ArModelAttachKind.failed, trackerName);
+      return;
+    }
+    _nodes[trackerName] = node;
+    modelAttach = ArModelAttach(ArModelAttachKind.placed, trackerName);
   }
 
   @override
   Future<void> stop() async {
     _stopped = true;
+    _nodes.clear();
+    _poses.clear();
+    _objects = null;
+    modelAttach = null;
     final session = _session;
     _session = null;
     if (session != null) {
@@ -354,8 +443,11 @@ class ArCoreImageTracker implements ArTracker {
 class _ArCoreSurface extends StatelessWidget {
   const _ArCoreSurface({required this.onCreated});
 
-  final void Function(ARSessionManager session, MethodChannel channel)
-      onCreated;
+  final void Function(
+    ARSessionManager session,
+    ARObjectManager objects,
+    MethodChannel channel,
+  ) onCreated;
 
   @override
   Widget build(BuildContext context) {
@@ -366,8 +458,11 @@ class _ArCoreSurface extends StatelessWidget {
       creationParams: const <String, dynamic>{},
       creationParamsCodec: const StandardMessageCodec(),
       onPlatformViewCreated: (id) {
+        final objects = ARObjectManager(id);
+        objects.onInitialize(androidScaleFactor: 1, iosScaleFactor: 1);
         onCreated(
           ARSessionManager(id, context, PlaneDetectionConfig.none),
+          objects,
           MethodChannel('arsession_$id'),
         );
       },
