@@ -16,7 +16,8 @@ trivia, simulated stats. **No Unity. No API. No logins.**
 
 | Path | What it is |
 |---|---|
-| `CONSTITUTION.md` | Non-negotiable principles + decisions log (v2.0.0). |
+| `docs/agent-handoff.md` | **Session entry point.** Current state + env gotchas. Read first, update last. |
+| `CONSTITUTION.md` | Non-negotiable principles + decisions log (v2.2.0). |
 | `AGENTS.md` | This file. |
 | `WORK_ITEMS.md` | Backlog as copy-paste agent prompts. |
 | `docs/ar-postmortem.md` | Why AR attempt #1 failed. **Read before any AR work.** |
@@ -34,6 +35,7 @@ trivia, simulated stats. **No Unity. No API. No logins.**
 
 ## Spec-anchored workflow
 
+0. Read `docs/agent-handoff.md` — current state, what's next, env gotchas.
 1. Read `CONSTITUTION.md` (especially Decisions log + grading checklist).
 2. **If the item touches AR**, also read `docs/ar-postmortem.md` and
    `docs/ar-architecture.md` before writing code. Non-optional.
@@ -41,8 +43,9 @@ trivia, simulated stats. **No Unity. No API. No logins.**
 4. Implement only that item. One item per branch / PR / commit.
 5. Update constitution/data if the domain contract changes.
 6. Do not mix bugfix + feature. Do not expand league scope.
-7. Finish by running the relevant review checklist (Article VI.9 /
+7. Run the relevant review checklist (Article VI.9 /
    `docs/ar-architecture.md` §14 for AR).
+8. **Do the documentation pass** below. The task is not done without it.
 
 If the request conflicts with the constitution, **stop and ask**.
 
@@ -118,6 +121,29 @@ any AR feature work, then filters, then bonus/polish/APK.
   parallel English domain slated for removal (Article IV, Known debt #9).
 - **Forbidden video filters must never appear** (B&W, grayscale, sepia,
  exposure, invert). See Constitution Article VII.
+
+## Documentation pass — mandatory before you report done
+
+Context dies when an agent finishes and leaves the next one to rediscover
+everything. Sessions are expensive; rediscovery is the waste. **A task is not
+complete until the docs match reality.**
+
+| Update | When |
+|---|---|
+| `docs/agent-handoff.md` — state (§4), session log (§7), gotchas (§5), `Last updated` | **Always** |
+| `WORK_ITEMS.md` — item status ☐/◐/☑ **and** its índice row | Always |
+| `CONSTITUTION.md` — Known debt, Decisions log, version bump + Last Amended | Only if a decision or contract changed |
+| `docs/ar-architecture.md` | Only if the AR contract changed |
+| `docs/ar-marker-guide.md` §7 | Only if markers changed |
+| `docs/ar-postmortem.md` | **Append** a new failure class. Never delete or soften |
+| `README.md` | Only if how-to-run changed |
+
+- Anything that cost you >15 minutes to discover goes in the handoff, so the
+  next agent gets it free.
+- **Reversing an earlier decision must be stated explicitly, with the reason.**
+  A silent correction teaches nobody and invites the same mistake again.
+- Never quietly delete governance — amend it, with rationale and a version bump.
+- Leave `docs/agent-handoff.md` §9 pointing at the next work item.
 
 ## Scope discipline
 

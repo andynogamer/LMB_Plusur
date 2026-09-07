@@ -12,11 +12,12 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 
 | Document | Purpose |
 |---|---|
+| [`docs/agent-handoff.md`](./docs/agent-handoff.md) | **Session entry point.** Current state, next item, environment gotchas. Read first, update last (Governance §8). |
 | [`docs/ar-postmortem.md`](./docs/ar-postmortem.md) | Why AR attempt #1 failed. Every Article VI rule traces to a root cause here. **Read before touching AR.** |
 | [`docs/ar-architecture.md`](./docs/ar-architecture.md) | The AR technical contract: layers, `ArTracker` seam, state machine, error taxonomy, budgets. |
 | [`docs/ar-marker-guide.md`](./docs/ar-marker-guide.md) | How to author printable markers ARCore can actually track. |
 
-**Version**: 2.1.0 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-07
+**Version**: 2.2.0 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-07
 
 > **v2.0.0 — AR reset.** AR attempt #1 (branch `ar-have-too-many-errors`) was
 > abandoned and work restarted on `fresh-start`. Article VI was rewritten from
@@ -33,6 +34,11 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 > the three *worst* logos, one of which yields no keypoints at all) and **D-21**
 > adds a mandatory normalization-and-measure step. Minor bump: no rule was
 > loosened, and Article VI is unchanged.
+>
+> **v2.2.0 — context continuity.** Work on this repo is handed between different
+> agents and models, so keeping documentation current is now a **governance
+> obligation** (Governance §8), not a courtesy. `docs/agent-handoff.md` is the
+> session entry point and MUST be updated before any task is reported done.
 
 ---
 
@@ -607,3 +613,12 @@ Open residual (non-blocking for backlog writing):
    must also pass.
 7. **Repeating a postmortem root cause is a blocking review failure**, even if
    the code works locally. Cite the RC id when rejecting.
+8. **Context continuity is part of the deliverable.** No task is complete until
+   the documentation matches reality. Every session MUST update
+   `docs/agent-handoff.md` (state, session log, environment gotchas) and the
+   status of its item in `WORK_ITEMS.md`; other documents are updated when the
+   change touches them (see `AGENTS.md` → "Documentation pass"). Work is
+   frequently handed between different agents and models, so an undocumented
+   discovery is a discovery that will be paid for twice. Reversing a previous
+   decision MUST be stated explicitly with its rationale, never applied
+   silently.
