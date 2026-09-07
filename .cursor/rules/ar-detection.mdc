@@ -1,0 +1,62 @@
+---
+description: AR detection and session-state rules for LMB Plusur (Constitution Article VI)
+globs: lib/ar/**/*.dart,lib/screens/ar/**/*.dart,test/ar/**/*.dart
+alwaysApply: false
+---
+
+# AR detection rules
+
+Full contract: `docs/ar-architecture.md`. Why these exist: `docs/ar-postmortem.md`.
+
+**Flutter decides what to show. The tracker decides what is there.**
+
+## Identity is an exact lookup, never a score
+
+```dart
+// ❌ BAD — this is the 612-line matcher that sank AR attempt #1 (RC-2)
+final score = hashScore * 0.22 + hueScore * 0.24 + shapeScore * 0.34;
+if (score > 28) return null;
+if (margin < 5 && score > 22) return null;
+return best.id;
+
+// ✅ GOOD — the tracker already resolved identity; we just map it
+Marcador? resolve(String trackerName) => _byTrackerName[trackerName];
+```
+
+No perceptual hashes, hue histograms, "edge energy", weighted similarity,
+tuned thresholds, nearest-neighbour fallbacks, or hint-based tie-breaking.
+No `package:image` at runtime. Dart never decodes camera frames.
+
+## State lives in the sealed `ArSessionState`
+
+```dart
+// ❌ BAD — attempt #1's widget fields; every bad combination was a bug
+Equipo? _detectedTeam;
+bool _demoMode = false;
+Timer? _detectionTimer;
+
+// ✅ GOOD
+ArSessionState state; // ArPreparing | ArSearching | ArCandidate
+                      // | ArLocked | ArLost | ArFailed
+```
+
+- Content renders **only** in `ArLocked`. `ArPreparing → ArLocked` is illegal.
+- Lock requires the debounce gate (same `trackerName` N times in a row).
+- Never add a detection boolean to a widget.
+
+## Keep the plugin behind the seam
+
+Only files in `lib/ar/trackers/` may import an AR plugin. Verify:
+
+```bash
+rg -l "ar_flutter_plugin" lib/ | rg -v "^lib/ar/trackers/"   # must print nothing
+```
+
+## Failures are typed, Spanish, and escapable
+
+Map every `ArTrackerFailure` to the copy in `docs/ar-architecture.md` §8, always
+offering the manual team path. A failed real session becomes `ArFailed` — it
+**never** silently falls back to demo mode. Demo mode requires `isDemo == true`,
+the `MODO DEMO` badge, and cycling all markers (never one hardcoded club).
+
+"Marker not recognised" is not an error — stay in `ArSearching`.

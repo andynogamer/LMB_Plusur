@@ -30,3 +30,7 @@ flutter:
     - assets/data.json
     - assets/images/
     - assets/sfx/
+    # AR reference images (D-20/D-21). Filename stem == Marcador.id.
+    # Only the first three go in the active tracking database; bravos is the
+    # printable spare. See docs/ar-marker-guide.md.
+    - assets/markers/

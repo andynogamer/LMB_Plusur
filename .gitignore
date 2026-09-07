@@ -19,6 +19,9 @@ build/
 .DS_Store
 Thumbs.db
 
+# Downloaded dev tooling (arcoreimg is ~4.5 MB from Google's ARCore SDK)
+tools/bin/
+
 # Secrets
 .env
 *.jks

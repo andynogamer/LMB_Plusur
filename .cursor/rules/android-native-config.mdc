@@ -1,0 +1,62 @@
+---
+description: Android/Gradle configuration limits for LMB Plusur (Constitution D-17)
+globs: android/**,pubspec.yaml
+alwaysApply: false
+---
+
+# Native config limits
+
+Each rule below exists because it broke AR attempt #1. See
+`docs/ar-postmortem.md` RC-4 and RC-5.
+
+## Never disable debugging to smooth AR tracking
+
+```kotlin
+// ❌ BAD — breaks the debugger repo-wide, for every feature, forever (RC-5)
+buildTypes {
+    debug { isDebuggable = false }
+}
+```
+
+Tracking-smoothness work belongs in `profile` / `release`.
+
+## Never let a dependency pull the toolchain forward
+
+```kotlin
+// ❌ BAD — all four are independent build-break vectors (RC-4)
+compileSdk = 37                                      // ahead of Flutter stable
+implementation("com.google.ar:core:1.52.0")          // races the plugin's own
+id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+```
+
+```properties
+# ❌ BAD — silent JDK provisioning
+org.gradle.java.installations.auto-download=true
+```
+
+```kotlin
+// ✅ GOOD — track the Flutter template
+compileSdk = flutter.compileSdkVersion
+minSdk = 24   // ARCore floor: the one deliberate override
+```
+
+Let the AR plugin supply its own ARCore version transitively.
+
+## Allowed AR config
+
+`minSdk = 24` · `CAMERA` permission · `com.google.ar.core` meta-data set to
+`optional` · `com.google.ar.core` in `<queries>`.
+
+Anything beyond that list needs a constitution amendment.
+
+## Pin AR plugin versions exactly
+
+```yaml
+ar_flutter_plugin_plus: 1.1.3   # ✅ exact — no caret
+ar_flutter_plugin_plus: ^1.1.3  # ❌ a silent minor bump mid-demo
+```
+
+## One concern per commit
+
+Dependency additions and native/Gradle edits are **separate commits**, each
+stating the reason and the rollback.

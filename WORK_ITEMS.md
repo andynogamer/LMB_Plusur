@@ -1,6 +1,6 @@
 ﻿# LMB Plusur — Work Items para Agentes
 
-> Backlog after Constitution **v1.1.0** (decisions D-01…D-11 + professor
+> Backlog after Constitution **v2.0.0** (decisions D-01…D-20 + professor
 > checklist). Each item is a **copy-paste prompt**. One item per branch/PR.
 > Format: contexto → tarea → criterios de aceptación → archivos → fuera de alcance.
 >
@@ -8,11 +8,19 @@
 > leftover from the old brief — meet those *technical* bars with baseball
 > content only (Constitution theme note).
 
+> **AR reset (2026-09-07).** Attempt #1 was abandoned. The old monolithic AR
+> items (US-05 … US-08) are replaced by the **AR-00 … AR-07** slices below.
+> Each slice is independently verifiable, and the first three need **no plugin
+> and no camera** — so the risky native work lands on a foundation that is
+> already proven. Before starting any `AR-*` item, read
+> [`docs/ar-postmortem.md`](./docs/ar-postmortem.md) and
+> [`docs/ar-architecture.md`](./docs/ar-architecture.md).
+
 ## Leyenda
 
 | Campo | Valores |
 |---|---|
-| **Tipo** | 🐛 Bug · 📗 User Story · 🔧 Spike |
+| **Tipo** | 🐛 Bug · 📗 User Story · 🔧 Spike · 🧍 Human task |
 | **Prioridad** | 🔴 P0 · 🟠 P1 · 🟡 P2 · 🟢 P3 |
 | **Estado** | ☐ Pendiente · ◐ En progreso · ☑ Hecho |
 
@@ -24,11 +32,15 @@
 | US-02 | 📗 | 🟠 P1 | Abrir experiencia AR from team menu (D-11) | ☑ | AR entry |
 | US-03 | 📗 | 🟠 P1 | Last trivia score on device (D-08) | ☑ | Bonus/trivia |
 | US-04 | 📗 | 🟡 P2 | Action feedback sounds + visual states | ☑ | UX |
-| SP-01 | 🔧 | 🔴 P0 | Flutter-native AR spike (R-01) | ☐ | AR foundation |
-| US-05 | 📗 | 🔴 P0 | Marker + asset data model (≥3 marcadores) | ☐ | 3 markers |
-| US-06 | 📗 | 🔴 P0 | Real marker scanning replaces AR mock | ☐ | 3 markers |
-| US-07 | 📗 | 🔴 P0 | AR window: 3D model + style-matched controls | ☐ | Buttons / UI |
-| US-08 | 📗 | 🔴 P0 | ≥2 AR action types (anim, info+TTS, …) | ☐ | 2 action types |
+| SP-01 | 🔧 | 🔴 P0 | Flutter-native AR spike (R-01) | ☑ | AR foundation |
+| AR-00 | 📗 | 🔴 P0 | Ship the 4 measured markers (≥ 75) into `assets/markers/` | ◐ código ☑ · imprimir ☐ | 3 markers (blocks AR-05) |
+| AR-01 | 📗 | 🔴 P0 | `Marcador` data + `MarkerRegistry` — no camera | ☐ | 3 markers |
+| AR-02 | 📗 | 🔴 P0 | `ArTracker` seam + session state machine — no plugin | ☐ | AR foundation |
+| AR-03 | 📗 | 🔴 P0 | AR scan UI on the state machine (fake tracker) | ☐ | UI / chrome |
+| AR-04 | 📗 | 🔴 P0 | Pin plugin + `ArCoreImageTracker` availability probe | ☐ | AR foundation |
+| AR-05 | 📗 | 🔴 P0 | Real detection → deterministic lock (kills BUG-01) | ☐ | 3 markers |
+| AR-06 | 📗 | 🔴 P0 | In-session 3D anchored on the marker pose | ☐ | Buttons / UI |
+| AR-07 | 📗 | 🔴 P0 | ≥2 AR action types (anim, info+TTS, …) | ☐ | 2 action types |
 | US-09 | 📗 | 🟠 P1 | Simulated live stats in AR / team | ☐ | Actions |
 | US-10 | 📗 | 🟠 P1 | Multiple AR modes (galería / trivia / video) | ☐ | Bonus + modes |
 | US-11 | 📗 | 🔴 P0 | Video archive UI (remote URLs) | ☐ | Videos |
@@ -37,11 +49,17 @@
 | US-14 | 📗 | 🟡 P2 | Performance pass (load / stability) | ☐ | 15pt perf |
 | US-15 | 📗 | 🟡 P2 | Android APK release build | ☐ | Packaging |
 | US-16 | 📗 | 🟢 P3 | README product brief for humans | ☐ | Docs |
-| BUG-01 | 🐛 | 🟡 P2 | AR mock detects only Guerreros / first team | ☐ | Fixed by US-06 |
+| DEBT-01 | 🐛 | 🟡 P2 | Remove parallel English domain (`Team`, `TriviaQuestion`) | ☐ | Article IV |
+| ~~US-05…US-08~~ | — | — | ~~Old monolithic AR items~~ | ⊘ | Replaced by AR-01…AR-07 |
+| ~~BUG-01~~ | — | — | ~~AR mock always Guerreros~~ | ⊘ | Deleted with the mock in AR-03 |
 
-**Human blockers (not agent-solo):** collect ≥3 printable logos/markers (D-04 /
-R-02); supply baseball remote video URLs (R-03); author or generate GLB models
-(D-03); record explanatory demo video (10pt).
+**Human blockers (not agent-solo):** **print** the 4 markers from AR-00 at
+≥ 15 cm on matte paper and measure their width (blocks AR-05 only, so agents can
+run AR-01…AR-04 in parallel); supply baseball remote video URLs (R-03); author
+or generate GLB models (D-03); record explanatory demo video (10pt).
+
+> Marker art is **no longer a blocker** — `arcoreimg` measurement on 2026-09-07
+> found four club logos scoring ≥ 75 after normalization (D-20/D-21).
 
 ---
 
@@ -76,7 +94,7 @@ Fuera de alcance: server search, fuzzy ranking libraries, AR changes.
 ```
 Contexto: D-11 — manual path must offer “Abrir experiencia AR” that launches
 the scanner (optionally hinting the team logo). Full marker AR still requires
-a real scan (or labeled demo until US-06).
+a real scan (or labeled demo until AR-05).
 
 Tarea: Add a FeatureCard on TeamMenuScreen that navigates to the AR route,
 passing the selected Equipo as a hint argument. AR screen shows Spanish copy
@@ -90,7 +108,7 @@ Criterios de aceptación:
 
 Archivos: lib/screens/team_menu_screen.dart, lib/screens/ar_view_screen.dart,
 lib/app.dart or routes if arguments need wiring
-Fuera de alcance: real CV tracking (SP-01 / US-06), 3D models.
+Fuera de alcance: real marker tracking (now AR-05), 3D models.
 ```
 
 ---
@@ -142,120 +160,337 @@ Fuera de alcance: full design rewrite, background music.
 
 ---
 
-## SP-01 · 🔴 P0 · Flutter-native AR spike (R-01) · ☐ Pendiente
+## SP-01 · 🔧 · 🔴 P0 · Flutter-native AR spike (R-01) · ☑ Hecho
 
-**Prompt**
+Closed 2026-09-07. Outcome: **D-12** ratified ARCore/ARKit Augmented Images via
+an exactly-pinned `ar_flutter_plugin_plus` behind the `ArTracker` seam. R-01 and
+R-02 resolved (R-02 → **D-20**). Deliverables landed as
+[`docs/ar-architecture.md`](./docs/ar-architecture.md),
+[`docs/ar-marker-guide.md`](./docs/ar-marker-guide.md) and
+[`docs/ar-postmortem.md`](./docs/ar-postmortem.md). The obsolete
+`docs/ar-spike.md` from attempt #1 is superseded — its recommendation to
+hash-match club logos is the root cause recorded as RC-1/RC-2.
+
+---
+
+# 🥎 AR SLICES (replaces US-05 … US-08)
+
+> Ordering rationale: **AR-01 → AR-03 need no plugin and no camera.** They are
+> fully unit-testable, so the state machine and content mapping are proven
+> *before* any native risk is introduced. AR-04 adds the dependency and nothing
+> else. Only AR-05 turns on real detection. Attempt #1 did all of this at once
+> and had no known-good state to fall back to (RC-6).
+
+## AR-00 · 📗 · 🔴 P0 · Ship the 4 measured markers into `assets/markers/` · ◐ Código hecho · falta imprimir
+
+**Agent work COMPLETE (2026-09-07).** Measured, normalized, named, shipped and
+re-verified at exit 0. **Only the human printing step remains.**
+
+| Done | |
+|---|---|
+| ✅ | All 10 logos measured with `arcoreimg` |
+| ✅ | `tools/normalize_markers.ps1` + `tools/score_markers.ps1` |
+| ✅ | 4 references in `assets/markers/` under their `marcador_*` ids |
+| ✅ | Registered in `pubspec.yaml`; `flutter pub get` clean |
+| ✅ | Re-scored in place: 100 / 100 / 100 / 90 — exit 0 |
+| ✅ | Recorded in `docs/ar-marker-guide.md` §7 |
+| ⏳ | **HUMAN:** print at ≥ 15 cm matte, measure width in metres → `anchoMetros` |
+
+There were no stale raw-logo PNGs to delete — `assets/markers/` did not exist.
+
 ```
-Contexto: D-01 ratified Flutter-native AR. Need a concrete plugin path for
-Android-first image-marker tracking + GLB display that agents can maintain.
+Contexto: Constitution D-13/D-20/D-21 + docs/ar-marker-guide.md §1-§3.
+arcoreimg was run against all ten logos. Results (raw -> normalized):
+  leones_yucatan    90 -> 100   PASS
+  olmecas_tabasco   50 -> 100   PASS
+  piratas_campeche  35 -> 100   PASS
+  bravos_leon     fail -> 90    PASS  (spare / 4th)
+  tigres            75 -> 50    keep RAW if ever needed
+  guerreros / diablos              50  too flat
+  conspiradores / aguila / pericos  no keypoints at all — never usable
 
-Tarea: Spike only — compare 1–2 Flutter-compatible approaches (e.g. ARCore
-augmented images / community plugins / camera + on-device matcher + model
-viewer). Document choice in a short markdown note under docs/ar-spike.md
-(or amend Constitution R-01). Prove on Android: detect one test image and
-show one placeholder GLB or primitive. No Unity.
+The dominant defect was asset hygiene, not art: 9 of 10 logos were below
+ARCore's 300x300 minimum, and 4 were 8bpp indexed PNGs whose transparency
+flattened to BLACK, erasing keypoints.
+
+Tarea: Commit the normalized references under their D-20 marker ids and delete
+the stale raw-logo PNGs currently loose in assets/markers/.
+  1) powershell -ExecutionPolicy Bypass -File tools/normalize_markers.ps1
+  2) copy build/markers-normalized/<club>.png to assets/markers/ renamed:
+       leones_yucatan.png    -> marcador_estadio_leones.png
+       olmecas_tabasco.png   -> marcador_jugador_olmecas.png
+       piratas_campeche.png  -> marcador_trofeo_piratas.png
+       bravos_leon.png       -> marcador_pelota_bravos.png
+  3) register assets/markers/ in pubspec.yaml
+  4) re-score assets/markers/ and confirm all PASS
 
 Criterios de aceptación:
-- Written recommendation with pros/cons and chosen stack.
-- Minimal runnable Android demo path documented (commands + permissions).
-- Constitution R-01 updated or spike doc linked from AGENTS.md Current phase.
+- Exactly those 4 files in assets/markers/; no raw club logos left there.
+- All 4 score >= 75:
+    $env:ARCOREIMG = "$PWD\tools\bin\arcoreimg.exe"
+    powershell -ExecutionPolicy Bypass -File tools/score_markers.ps1
+  (exit code 0)
+- docs/ar-marker-guide.md §7 updated with shipped variant + printed width.
+- HUMAN: printed >= 15 cm on MATTE paper, flat, width measured in metres and
+  recorded as anchoMetros for AR-01.
 
-Archivos: docs/ar-spike.md (create), pubspec experimental deps OK on a branch,
-android manifest permissions as needed
-Fuera de alcance: production UI polish, all 10 teams, iOS hardening, filters.
+Fuera de alcance: any Dart code; marker cards (not needed — no logo below 75 is
+required); redesigning logo art.
 ```
 
 ---
 
-## US-05 · 📗 · 🔴 P0 · Marker + asset data model (≥3 marcadores) · ☐ Pendiente
+## AR-01 · 📗 · 🔴 P0 · `Marcador` data + `MarkerRegistry` (no camera) · ☐ Pendiente
 
 **Prompt**
 ```
-Contexto: Grading needs ≥3 distinct scannable elements with specific content.
-Logos may still be placeholders (D-04).
+Contexto: Constitution Article VI.3/VI.4 + docs/ar-architecture.md §5. Grading
+needs >=3 distinct scannable elements with specific content. Identity resolution
+must be a deterministic exact lookup — never a similarity score (D-14).
 
-Tarea: Extend local data with a marcadores (or ar_objetos) collection: id,
-equipoId (optional), tipo (estadio|trofeo|pelota|jugador), modelAsset path,
-markerImage path, titulo, infoTexto, videoUrl?, animaciones[]. Wire models +
-DataService. Seed **at least 3** entries (placeholder images/models OK).
+Tarea: Add the Marcador model and assets/ar_markers.json with the three D-20
+entries: id, equipoId, tipo (estadio|trofeo|pelota|jugador), titulo, infoTexto,
+markerImage, modelAsset, anchoMetros, videoUrl?, animaciones[]. Load it through
+DataService. Add lib/ar/marker_registry.dart exposing
+`Marcador? resolve(String trackerName)` as a plain exact Map lookup.
 
 Criterios de aceptación:
-- JSON parses into typed Dart models.
-- Three markers load in app debug (list or log).
-- Ids stable and documented in constitution Known debt / R-02 if team picks
-  change.
+- JSON parses into typed Dart models; 3 marcadores load.
+- MarkerRegistry.resolve returns null for an unknown name — no nearest match,
+  no fallback, no scoring, no threshold anywhere in the file.
+- Unit test walks ar_markers.json and asserts, for every entry, that the
+  markerImage filename stem == the marcador id. (This invariant is what makes
+  detection deterministic later.)
+- Unit test asserts resolve('no_existe') == null.
+- flutter analyze clean; flutter test green.
 
-Archivos: assets/data.json (or assets/ar_markers.json), lib/models/, 
-lib/services/data_service.dart
-Fuera de alcance: real CV, fancy meshes (placeholders fine).
+Archivos: assets/ar_markers.json, lib/models/marcador_model.dart,
+lib/ar/marker_registry.dart, lib/services/data_service.dart, pubspec assets,
+test/ar/marker_registry_test.dart
+Fuera de alcance: camera, plugin, UI, 3D. Placeholder GLB paths are fine (the
+files need not exist yet).
 ```
 
 ---
 
-## US-06 · 📗 · 🔴 P0 · Real marker scanning replaces AR mock · ☐ Pendiente
+## AR-02 · 📗 · 🔴 P0 · `ArTracker` seam + session state machine (no plugin) · ☐ Pendiente
 
 **Prompt**
 ```
-Contexto: ArViewScreen uses a Timer fake detection. SP-01 chose the stack.
+Contexto: docs/ar-architecture.md §3 and §4. Attempt #1 kept AR state in three
+loose fields on a StatefulWidget (_detectedTeam / _demoMode / _detectionTimer)
+and every unrepresentable combination was a bug. This slice builds the correct
+core in pure Dart, with zero native risk.
 
-Tarea: Replace mock with real image/marker recognition for the ≥3 markers
-from US-05. On detect, resolve marcador id → show AR session content. Keep
-Spanish failure/retry UX and link to manual team select. Label demo mode if
-fallback remains.
+Tarea:
+1) lib/ar/ar_tracker.dart — the ArTracker interface, ArDetection,
+   ArTrackerFailure, ArTrackerException, exactly as specified in §3. It must
+   NOT import flutter/material.dart.
+2) lib/ar/ar_session_state.dart — the sealed states from §4 (ArPreparing,
+   ArSearching, ArCandidate, ArLocked, ArLost, ArFailed).
+3) lib/ar/ar_session_controller.dart — the state machine with only the legal
+   transitions from §4, plus the debounce gate (same trackerName N consecutive
+   times inside a 2 s window, default N=2, injectable clock). Reuse the proven
+   ImageDetectionGate idea from attempt #1 — it was one of the good parts.
+4) lib/ar/trackers/fake_ar_tracker.dart — scripted detections for tests and
+   demo mode; cycles ALL registered markers, never defaults to one club.
 
-Criterios de aceptación:
-- Detecting each of 3 test markers yields the correct specific content id.
-- Unknown image does not crash; user can retry.
-- BUG-01 behavior (always Guerreros) is gone in non-demo mode.
+Criterios de aceptación (all unit tests, no device needed):
+- Repeated identical detections: ArSearching -> ArCandidate -> ArLocked.
+- Unknown trackerName never leaves ArSearching.
+- Two markers alternating never reach ArLocked.
+- ArPreparing -> ArLocked is impossible (this is the BUG-01 class of bug).
+- Every ArTrackerFailure maps to ArFailed.
+- dispose() cancels subscriptions and calls tracker.stop().
+- No hash, histogram, score or tuned threshold anywhere in lib/ar/.
+- flutter analyze clean; flutter test green.
 
-Archivos: lib/screens/ar_view_screen.dart, AR facade/service, Android
-permissions/Gradle as required by plugin
-Fuera de alcance: all filter work, full VFX pack (US-13).
+Archivos: lib/ar/*.dart, lib/ar/trackers/fake_ar_tracker.dart,
+test/ar/ar_session_controller_test.dart
+Fuera de alcance: any plugin dependency, any camera code, any UI.
 ```
 
 ---
 
-## US-07 · 📗 · 🔴 P0 · AR window 3D + style-matched controls · ☐ Pendiente
+## AR-03 · 📗 · 🔴 P0 · AR scan UI driven by the state machine · ☐ Pendiente
 
 **Prompt**
 ```
-Contexto: Professor — AR UI must match main page style; show 3D for scanned
-content.
+Contexto: Article VI.5/VI.6/VI.7 + Article IX. AR-02 landed the state machine;
+now give it a face, still on FakeArTracker so it runs on any device or
+emulator. This slice DELETES the old Timer mock (closes BUG-01 by removal).
 
-Tarea: After detection, render the marker’s 3D model in the AR/view surface
-and overlay controls using AppColors, Poppins, FeatureCard/PrimaryButton
-patterns (not a foreign Material default look). Include clear back/exit.
+Tarea: Create lib/screens/ar/ar_scan_screen.dart (+ widgets/) that renders one
+widget per ArSessionState, and delete lib/screens/ar_view_screen.dart, wiring
+AppRoutes.ar to the new screen. Keep the D-11 equipoHint copy
+("Apunta al logo de {nombre}"). Reuse AppColors, Poppins, FeatureCard,
+PrimaryButton — the old overlay chrome in ar_view_screen.dart is a good
+reference for the visual language, so read it before deleting it.
+Render the full ArFailed -> Spanish copy table from docs/ar-architecture.md §8,
+each with its recovery actions, always including "Elegir equipo manualmente".
+Show the MODO DEMO badge whenever ArLocked.isDemo is true.
 
 Criterios de aceptación:
-- Model for the detected marker appears (placeholder GLB OK).
-- Overlay visually consistent with MainScreen language.
-- Works on Android test device/emulator path documented in spike.
+- Every ArSessionState has a distinct rendered state; ArCandidate shows scan
+  progress (hits/needed).
+- Widget test: pumping a FakeArTracker through to ArLocked shows marker content.
+- Widget test: each ArFailed failure shows its Spanish copy AND an escape to the
+  manual team path.
+- Content cannot appear on screen without ArLocked.
+- lib/screens/ar_view_screen.dart is gone; no dangling imports.
+- flutter analyze clean; flutter test green.
 
-Archivos: AR screen/widgets/theme reuse
-Fuera de alcance: implementing every action (US-08), particle spectacle (US-13).
+Archivos: lib/screens/ar/, lib/routes/app_routes.dart, lib/app.dart,
+delete lib/screens/ar_view_screen.dart, test/ar/ar_scan_screen_test.dart
+Fuera de alcance: plugin, real camera, 3D rendering, AR actions.
 ```
 
 ---
 
-## US-08 · 📗 · 🔴 P0 · ≥2 AR action types · ☐ Pendiente
+## AR-04 · 📗 · 🔴 P0 · Pin the plugin + `ArCoreImageTracker` availability probe · ☐ Pendiente
 
 **Prompt**
 ```
-Contexto: Checklist — interactive buttons with ≥2 action types.
+Contexto: D-12, D-17 and docs/ar-architecture.md §11. Attempt #1's native
+config caused "bug: compabilty with android device" (RC-4/RC-5). This slice
+introduces the dependency and the platform probe and NOTHING else, so a build
+break here is unambiguous.
+
+Tarea:
+1) Add the dependency EXACTLY pinned (no caret):  ar_flutter_plugin_plus: 1.1.3
+   in its own commit, stating what it pulls in.
+2) Native config, own commit, allowed set only: minSdk = 24, CAMERA permission,
+   com.google.ar.core meta-data value "optional", com.google.ar.core in
+   <queries>. Message must state the reason and the rollback.
+3) lib/ar/trackers/arcore_image_tracker.dart implementing ONLY isSupported()
+   for now (ARCore availability + camera permission). Everything else throws
+   UnimplementedError. This is the only file allowed to import the plugin.
+
+FORBIDDEN (Article VI.8 — each of these broke attempt #1):
+- isDebuggable = false on the debug build type
+- hardcoding compileSdk past the Flutter stable default
+- a manual implementation("com.google.ar:core:x") Gradle dependency
+- org.gradle.java.installations.auto-download / foojay-resolver
+
+Criterios de aceptación:
+- flutter build apk --debug succeeds; debug build remains debuggable.
+- App still launches and every existing screen works (no regressions).
+- On a device WITHOUT ARCore, isSupported() == false and the AR route shows the
+  arCoreUnavailable copy with the manual-path escape.
+- Layering check prints nothing:
+  rg -l "ar_flutter_plugin" lib/ | rg -v "^lib/ar/trackers/"
+- flutter analyze clean.
+
+Archivos: pubspec.yaml, android/app/build.gradle.kts,
+android/app/src/main/AndroidManifest.xml,
+lib/ar/trackers/arcore_image_tracker.dart
+Fuera de alcance: detection, the image database, 3D, UI changes.
+```
+
+---
+
+## AR-05 · 📗 · 🔴 P0 · Real detection → deterministic lock · ☐ Pendiente
+
+**Prompt**
+```
+Contexto: D-12/D-14/D-18. Depends on AR-00 (4 markers scoring >= 75, printed)
+and AR-04. This is the slice attempt #1 got wrong by hash-matching logos in Dart
+(RC-1/RC-2). Detection is native; Dart only receives a name.
+
+Tarea: Complete ArCoreImageTracker: build the tracking database from
+assets/markers/ and stream ArDetection. Mandatory per docs/ar-architecture.md §11:
+- call arSessionManager.precompileImageTrackingDatabase(...) BEFORE onInitialize
+  (attempt #1 never did this — a known non-detection path)
+- pass each marker's real physical width (anchoMetros) to ARCore
+- expose isFullyTracked from the tracking state; never report a paused image as
+  fully tracked
+- record the continuousImageTracking / imageTrackingUpdateIntervalMs values you
+  chose, and why, in the PR
+Detected image name -> MarkerRegistry.resolve -> debounce -> ArLocked.
+
+FORBIDDEN: any Dart-side image comparison. No package:image at runtime, no
+frame decoding, no hashes, no scores, no thresholds, no "prefer this equipo"
+tie-breaking. If detection is unreliable, fix the marker art (AR-00) or invoke
+the D-19 contingency — do NOT write a matcher.
+
+Criterios de aceptación:
+- Device acceptance table from docs/ar-architecture.md §7 filled in and pasted
+  into the PR, on a physical Android device with Play Services for AR:
+    * each of the 3 printed markers locks onto its OWN content
+      (marcador_estadio_leones / marcador_jugador_olmecas / marcador_trofeo_piratas)
+    * blank wall for 30 s -> ZERO detections
+    * a wrong-club logo (use el_aguila, 0 keypoints) -> ZERO detections
+    * time to lock <= 2 s at 25% frame fill
+    * if one marker underperforms in print, swap in the spare
+      marcador_pelota_bravos rather than accepting a weak target
+- Unknown image never crashes and never guesses; session keeps searching.
+- Zero Dart frame-processing work on the UI isolate.
+- flutter analyze clean; AR-02 unit tests still green.
+
+Archivos: lib/ar/trackers/arcore_image_tracker.dart, assets/markers/,
+assets/ar_markers.json (anchoMetros), pubspec assets
+Fuera de alcance: 3D placement (AR-06), actions (AR-07), filters.
+```
+
+---
+
+## AR-06 · 📗 · 🔴 P0 · In-session 3D anchored on the marker pose · ☐ Pendiente
+
+**Prompt**
+```
+Contexto: Article VI.2 + D-16. Professor requires 3D on the scanned content
+with AR chrome matching the main app. Attempt #1 shipped a WebView
+(model_viewer_plus) beside a hash guess and called it AR (RC-3) — a WebView
+cannot composite into a camera scene graph and is NOT acceptable here.
+
+Tarea: On ArLocked, attach the marcador's GLB to the tracked image pose using
+the tracker's own scene graph (ARNode + GLB via ArTracker.attachModel). Only
+place the model once isFullyTracked is true. Overlay Flutter controls
+(AppColors / Poppins / FeatureCard / PrimaryButton) with a clear exit. Handle a
+missing GLB with a themed fallback, never a red screen.
+
+Criterios de aceptación:
+- Each of the 3 markers shows ITS OWN model, anchored to the printed card and
+  holding position as the phone moves.
+- No model is placed while tracking state is paused.
+- Missing/failed GLB -> themed Spanish fallback, session survives.
+- Overlay is visually consistent with MainScreen.
+- GLBs are <= 4 MB and <= 50k tris.
+- model_viewer_plus does not appear anywhere in the AR session path.
+- Device run confirms no crash after entering/leaving AR 5 times (dispose is
+  correct).
+
+Archivos: lib/ar/trackers/arcore_image_tracker.dart (attachModel),
+lib/screens/ar/, assets/models/<marcador_id>/
+Fuera de alcance: the action buttons (AR-07), VFX spectacle (US-13).
+```
+
+---
+
+## AR-07 · 📗 · 🔴 P0 · ≥2 AR action types · ☐ Pendiente
+
+**Prompt**
+```
+Contexto: Checklist — interactive buttons with >=2 action types (10 pts).
 
 Tarea: In the AR overlay implement at least two of:
 1) Activar animación del modelo (idle → celebración/gesto).
-2) Información: rotate 360° + dialog with datos + TTS/narración aloud.
-3) Reproducir video promocional/histórico (URL).
-4) Efecto VFX simple (particles/light/banner).
-Wire FeedbackService. Spanish labels.
+2) Información: rotate 360° + panel with datos from marcador.infoTexto + TTS.
+3) Reproducir video promocional/histórico (marcador.videoUrl).
+4) Efecto VFX simple (particles / light / banner).
+Wire FeedbackService (US-04) for audio + visual feedback. Spanish labels.
+Actions are available only in ArLocked.
 
 Criterios de aceptación:
-- ≥2 distinct action types work end-to-end on a detected marker.
-- Info action shows dialog with content from data, not hardcoded English.
-- Actions give visual and/or audio feedback.
+- >=2 distinct action types work end-to-end on a real detected marker.
+- Info action reads from assets/ar_markers.json — no hardcoded strings, no
+  English in user-facing copy.
+- Every action gives visual and/or audio feedback and shows a pressed state.
+- Actions are unreachable outside ArLocked.
+- One VFX at a time; toggling actions repeatedly does not drop the session.
+- Controllers (TTS, video, animation) disposed.
 
-Archivos: AR overlay widgets, services (tts/video), marker JSON fields
+Archivos: lib/screens/ar/widgets/, services (tts/video), assets/ar_markers.json
 Fuera de alcance: full multi-mode switcher (US-10) unless cheap to stub.
 ```
 
@@ -437,36 +672,57 @@ Fuera de alcance: marketing site.
 
 ---
 
-# 🐛 BUGS
+# 🐛 BUGS / DEBT
 
-## BUG-01 · 🟡 P2 · AR mock always Guerreros / first team · ☐ Pendiente
+## BUG-01 · ⊘ Cerrado por diseño
+
+`ArViewScreen`'s timer mock always resolved to `guerreros_oaxaca` or the first
+equipo. The screen is **deleted** in AR-03 and the architecture makes the bug
+class unrepresentable: content can only render in `ArLocked`, `ArPreparing →
+ArLocked` is an illegal transition, and demo mode must cycle all markers
+(Article VI.5/VI.6). No separate fix needed — do not reopen.
+
+---
+
+## DEBT-01 · 🐛 · 🟡 P2 · Remove the parallel English domain · ☐ Pendiente
 
 **Prompt**
 ```
-Contexto: ArViewScreen timer sets guerreros_oaxaca or first equipo. Wrong for
-multi-marker grading.
+Contexto: Article IV — Spanish domain, English engineering. Known debt #9.
+lib/models/team.dart (Team: name/city/history) and
+lib/models/trivia_question.dart (TriviaQuestion: prompt) duplicate Equipo and
+Trivia in English, and are reachable from lib/data/mock_data.dart and
+lib/data/demo_highlights.dart.
 
-Tarea: Do not “fix” in isolation if US-06 is next — prefer closing this by
-implementing US-06. If US-06 slips, temporarily map demo detection to a
-selectable marker id list instead of a single hardcode.
+Tarea: Consolidate onto the Spanish domain (Equipo, Trivia). Migrate or delete
+the mock/demo helpers that depend on the English types. Do not rename any
+assets/data.json keys.
 
 Criterios de aceptación:
-- Non-demo path never forces a single team.
-- Demo path labeled in UI.
+- Team and TriviaQuestion no longer exist.
+- No behaviour change on any screen; existing tests still green.
+- Constitution Known debt #9 removed in the same commit.
+- flutter analyze clean.
 
-Archivos: lib/screens/ar_view_screen.dart
-Fuera de alcance: filter feature.
+Archivos: lib/models/, lib/data/, any importing screen, CONSTITUTION.md
+Fuera de alcance: AR work, renaming JSON keys, redesigning the data layer.
 ```
 
 ---
 
 ## Suggested sequence
 
-1. US-01 → US-02 → US-03 → US-04 (quick wins on existing shell)
-2. SP-01 → US-05 → US-06 → US-07 → US-08 (AR grading core)
-3. US-11 → US-12 (video + filters grading core)
-4. US-09 → US-10 → US-13 (depth / bonus)
-5. US-14 → US-15 → US-16 (ship)
+1. ~~US-01 → US-02 → US-03 → US-04~~ ✅ done (existing shell)
+2. **AR foundation, no native risk:** AR-01 → AR-02 → AR-03
+   *(human works AR-00 in parallel — it only blocks AR-05)*
+3. **AR native:** AR-04 → AR-05 → AR-06 → AR-07 (grading core)
+4. US-11 → US-12 (video + filters grading core)
+5. US-09 → US-10 → US-13 (depth / bonus — all build on AR-07)
+6. DEBT-01 → US-14 → US-15 → US-16 (cleanup / ship)
 
-Human in parallel: print 3 markers, make/get 3 GLBs, gather baseball video URLs,
-plan demo recording.
+Do not start AR-04 until AR-01…AR-03 are merged and green. That ordering is the
+whole point of the reset: the state machine and content mapping are proven
+before native risk enters the repo.
+
+Human in parallel: author + print the 3 marker cards (AR-00), make/get 3 GLBs,
+gather baseball video URLs, plan demo recording.
