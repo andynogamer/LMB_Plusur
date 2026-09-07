@@ -60,6 +60,10 @@ or generate GLB models (D-03); record explanatory demo video (10pt).
 
 > Marker art is **no longer a blocker** — `arcoreimg` measurement on 2026-09-07
 > found four club logos scoring ≥ 75 after normalization (D-20/D-21).
+>
+> **Branch `full-project` (D-22).** Scan targets stay the three measured
+> markers. The model catalog is all 10 Zona Sur clubs × 2 GLBs (static
+> stadium + animated player). Prompts: [`docs/model-prompts.md`](./docs/model-prompts.md).
 
 ---
 

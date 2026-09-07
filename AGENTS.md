@@ -42,7 +42,8 @@ trivia, simulated stats. **No Unity. No API. No logins.**
 3. Take **one** item from `WORK_ITEMS.md`; the `Prompt` block is the spec.
 4. Implement only that item. One item per branch / PR / commit.
 5. Update constitution/data if the domain contract changes.
-6. Do not mix bugfix + feature. Do not expand league scope.
+6. Do not mix bugfix + feature. Do not add Zona Norte. On branch
+   `full-project`, the model catalog covers all 10 Zona Sur clubs (D-22).
 7. Run the relevant review checklist (Article VI.9 /
    `docs/ar-architecture.md` §14 for AR).
 8. **Do the documentation pass** below. The task is not done without it.

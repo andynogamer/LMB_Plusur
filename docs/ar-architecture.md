@@ -369,7 +369,7 @@ Enforced in the device acceptance run; regressions block the slice.
 | Time from `ArSearching` to `ArLocked` | ≤ 2 s at 25 % frame fill | ARCore's own detection floor |
 | Simultaneous tracked images | 1 | ARCore allows 20; we need one. Fewer = less CPU |
 | GLB size per marker | ≤ 4 MB, ≤ 50 k tris | mid-tier Android thermals |
-| Reference images in the active DB | 3 (the grading markers) | unused entries cost CPU |
+| Reference images in the active DB | 3 (the grading markers, D-20) | unused entries cost CPU. D-22 does not raise this; the other clubs are models, not scan targets |
 | Concurrent particle/VFX effects | 1 | Article on low-end devices |
 
 `package:image` is **dev-tooling and test only**. It must not appear in a

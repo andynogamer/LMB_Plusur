@@ -1,102 +1,103 @@
-# AI 3D prompts — three AR models
+# AI 3D prompts — full-project catalog (D-22)
 
-**Need exactly 3 GLBs.** One file per grading marker. The spare Bravos card
-is printable only and does **not** need a model.
+Branch `full-project`. **20 GLBs.** Every Zona Sur club gets the same two
+models. Only the colors and the crest change.
 
-Replace the placeholder box at each path. Do not rename the file or the clips.
+This is not 10 scan targets. The camera still locks only the measured markers
+(Leones, Olmecas, Piratas). The other clubs open these models from the team
+menu. Do not generate extra marker images, and do not ask the tool to “make
+the logo trackable.”
 
-| Marker | File | Clips inside the same GLB |
+| Club id | Stadium (no animation) | Player (`idle` + `gesto`) |
 |---|---|---|
-| Estadio · Leones de Yucatán | `assets/models/marcador_estadio_leones/modelo.glb` | `idle`, `celebracion` |
-| Jugador · Olmecas de Tabasco | `assets/models/marcador_jugador_olmecas/modelo.glb` | `idle`, `gesto` |
-| Trofeo · Piratas de Campeche | `assets/models/marcador_trofeo_piratas/modelo.glb` | `idle`, `celebracion` |
+| `diablos_rojos` | `assets/models/diablos_rojos/estadio.glb` | `assets/models/diablos_rojos/jugador.glb` |
+| `bravos_leon` | `assets/models/bravos_leon/estadio.glb` | `assets/models/bravos_leon/jugador.glb` |
+| `conspiradores_queretaro` | `assets/models/conspiradores_queretaro/estadio.glb` | `assets/models/conspiradores_queretaro/jugador.glb` |
+| `aguila_veracruz` | `assets/models/aguila_veracruz/estadio.glb` | `assets/models/aguila_veracruz/jugador.glb` |
+| `guerreros_oaxaca` | `assets/models/guerreros_oaxaca/estadio.glb` | `assets/models/guerreros_oaxaca/jugador.glb` |
+| `leones_yucatan` | `assets/models/leones_yucatan/estadio.glb` | `assets/models/leones_yucatan/jugador.glb` |
+| `olmecas_tabasco` | `assets/models/olmecas_tabasco/estadio.glb` | `assets/models/olmecas_tabasco/jugador.glb` |
+| `pericos_puebla` | `assets/models/pericos_puebla/estadio.glb` | `assets/models/pericos_puebla/jugador.glb` |
+| `piratas_campeche` | `assets/models/piratas_campeche/estadio.glb` | `assets/models/piratas_campeche/jugador.glb` |
+| `tigres_quintana_roo` | `assets/models/tigres_quintana_roo/estadio.glb` | `assets/models/tigres_quintana_roo/jugador.glb` |
 
-## Technical brief (paste with every prompt)
+## Shared technical brief
 
 ```
-Export one binary glTF file (.glb), not GLTF+separate bin, not FBX, not USDZ.
+Export one binary glTF file (.glb). Not GLTF+bin, not FBX, not USDZ.
 
 Limits: under 4 MB, under 50,000 triangles. Prefer under 20,000 triangles
-and 1024 textures so a mid-tier Android phone stays cool.
+and 1024 textures.
 
-Coordinate system: Y-up. Origin at the bottom center of the model so it sits
-on a table, not floating and not buried. Real-world scale: about 10 to 12 cm
-tall. This will be viewed on a 15 cm printed card through a phone camera.
+Y-up. Origin at the bottom center, sitting on the ground. About 10 to 12 cm
+tall. No ground plane, no backdrop, no card, no readable text, no watermark.
+One object, centered. Bake textures into the file.
 
-No ground plane, no backdrop, no card, no text, no logo watermark.
-Single object, centered. Clean topology. Bake textures into the GLB.
-
-Include two animation clips in the SAME file. Clip names must be exactly
-these strings, lowercase, no spaces:
-- idle — seamless loop, 2 to 4 seconds
-- <second clip named below> — 1.5 to 3 seconds, may play once
-
-Do not add extra clips. Do not name them Idle, Celebrate, or Animation.
+Reuse the same stadium mesh for every club. Reuse the same player mesh for
+every club. Change only the kit colors and a simple crest on the cap or wall.
 ```
 
-## 1. Parque Kukulcán — estadio
+## Stadium — generate once, recolor 10 times
+
+No animation clips. If the tool forces a clip, do not export it.
 
 ```
 A small stylized baseball stadium, night game, Mexican Liga baseball, not soccer.
 
-Compact ballpark: diamond, mound, two dugouts, low stands, outfield wall,
-a few light towers. Green grass, brown dirt, gold and forest-green seats
-and wall trim (Leones de Yucatán). Empty of spectators so the mesh stays light.
-No team wordmark, no readable text.
+Same building every time: diamond, mound, two dugouts, low stands, outfield
+wall, a few light towers. Empty of spectators. No wordmark.
 
-Animation clip "idle": slow pulse of the stadium lights and a barely moving
-flag on the center-field wall. Loop.
+Team treatment for <CLUB>: seats, wall stripe, and a simple crest on the
+center-field wall in <COLORS>.
 
-Animation clip "celebracion": the lights flare, the scoreboard glow pulses,
-and a small burst of confetti rises over the diamond, then settles. One shot.
+No animation.
 
-<paste the technical brief above>
+<paste the shared technical brief>
 ```
 
-## 2. El legado olmeca — jugador
+| Club | Colors |
+|---|---|
+| Diablos Rojos | red and black |
+| Bravos de León | red and navy |
+| Conspiradores de Querétaro | burgundy and black |
+| El Águila de Veracruz | red and white |
+| Guerreros de Oaxaca | burgundy and gold |
+| Leones de Yucatán | forest green and gold |
+| Olmecas de Tabasco | navy and orange |
+| Pericos de Puebla | green and yellow |
+| Piratas de Campeche | red and black |
+| Tigres de Quintana Roo | navy and orange |
+
+## Player — generate once, recolor 10 times
+
+The only animated model. Two clips in the same file, names exact:
+
+- `idle` — seamless loop, 2 to 4 seconds
+- `gesto` — one shot, 1.5 to 3 seconds, returns to the idle pose
+
+No other clips. Do not name them `Idle` or `Celebrate`.
 
 ```
-A stylized baseball player, full body, standing on a circular base.
-Classic Olmec-inspired headdress suggestion kept subtle: a baseball cap
-with a strong brow, not a sculpture replica. Navy and orange uniform
-(Olmecas de Tabasco). Bat resting on the shoulder. No readable numbers,
-no sponsor logos, no face of a real person.
+A stylized baseball player, full body, standing on a small circular base.
+Generic face, not a real person. One figure. Baseball cap, jersey, bat on
+the shoulder. No readable number, no sponsor logos.
 
-Neutral, proud stance. One figure only.
+Team treatment for <CLUB>: jersey, cap, and a simple crest in <COLORS>.
 
-Animation clip "idle": breathing, slight weight shift, bat tip moving.
-Loop. Seamless.
+Animation clip "idle": breathing and a slight weight shift. Loop.
+Animation clip "gesto": tip the cap or point the bat toward the field, then
+return to the idle pose.
 
-Animation clip "gesto": a clear baseball gesture — tip the cap with the free
-hand, or point the bat toward the field. Reads in under 3 seconds. One shot,
-returns to the idle pose at the end.
-
-<paste the technical brief above>
+<paste the shared technical brief>
 ```
 
-## 3. Serie del Rey — trofeo
-
-```
-A baseball championship trophy, not a soccer cup. A gold cup with two handles
-on a dark wooden or metal base, a baseball sitting in the cup or beside it,
-a small laurel. Red and black accents (Piratas de Campeche). No readable
-engraving.
-
-Animation clip "idle": a slow gleam traveling across the gold metal, cup
-almost still. Loop.
-
-Animation clip "celebracion": the trophy lifts slightly, rotates a quarter
-turn, and a short gold sparkle rises and fades. One shot.
-
-<paste the technical brief above>
-```
+Use the same color table as the stadium.
 
 ## After export
 
-1. Overwrite `modelo.glb` in the matching folder. Keep the filename.
-2. Confirm the file is under 4 MB.
-3. In Blender or the exporter, check the clip list shows only `idle` and
-   `celebracion` or `gesto`, spelled exactly as above.
-4. Scan that marker in the app. The model should sit on the card, not under it.
-   If it is huge or microscopic, the exporter used the wrong unit — re-export
-   at 10–12 cm, do not scale it in Dart.
+1. Save under the path in the table. Filename is `estadio.glb` or `jugador.glb`.
+2. Confirm each file is under 4 MB.
+3. On the player, the clip list is exactly `idle` and `gesto`.
+4. The stadium has no clips.
+5. If a model is huge or buried in the card, fix the export scale. Do not
+   scale it in Dart.

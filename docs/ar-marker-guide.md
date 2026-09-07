@@ -76,6 +76,11 @@ Chosen from the passing logos, covering three distinct `tipo` values:
 > keypoint, so that marker could never have worked. D-20 was amended on
 > 2026-09-07 to the set above.
 
+This is the **scan** set. It is not the model catalog. Branch `full-project`
+(D-22) gives every club a stadium and a player GLB even when that logo cannot
+be a target. Do not add the other seven logos to the tracking database to
+“complete” the league, and do not write a matcher.
+
 Keep `marcador_pelota_bravos` as a spare: if one of the three underperforms on
 the physical print, swap it in rather than accepting a weak target.
 

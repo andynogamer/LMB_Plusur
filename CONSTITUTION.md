@@ -17,7 +17,7 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 | [`docs/ar-architecture.md`](./docs/ar-architecture.md) | The AR technical contract: layers, `ArTracker` seam, state machine, error taxonomy, budgets. |
 | [`docs/ar-marker-guide.md`](./docs/ar-marker-guide.md) | How to author printable markers ARCore can actually track. |
 
-**Version**: 2.2.4 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-07
+**Version**: 2.3.0 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-07
 
 > **v2.0.0 — AR reset.** AR attempt #1 (branch `ar-have-too-many-errors`) was
 > abandoned and work restarted on `fresh-start`. Article VI was rewritten from
@@ -61,6 +61,13 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 > **v2.2.4 — AR-06 code.** No rule changed. In-session 3D is a tracker `ARNode`
 > plus GLB, never a WebView. Placeholder boxes ship so each marker has its own
 > file. Device hold and dispose checks are still open.
+>
+> **v2.3.0 — full-project model catalog (branch `full-project`).** **D-03 is
+> amended** and **D-22** is added. The grading *scan* minimum stays three
+> measured markers (D-20). The product catalog on this branch is every Zona
+> Sur club: one static stadium GLB and one animated player GLB. Same mesh
+> family, team color and crest only. This does **not** make the other seven
+> logos scannable. A matcher is still forbidden.
 
 ---
 
@@ -340,10 +347,12 @@ Anything else requires an amendment.
 - Multiple interaction modes (e.g. galería AR, trivia AR, videos inmersivos).
 - AR chrome MUST match main app style (colors, type, icons, layout language).
 
-**3D content (D-03):** Prefer baseball-coherent models — estadios, trofeos,
-pelotas, jugadores históricos — authored by the student (or AI-assisted).
-Animations: celebrate, gestures, idle loops, 360° turn on “Información”, etc.
-Budget: ≤ 4 MB and ≤ 50 k triangles per GLB.
+**3D content (D-03, D-22):** On `full-project`, every Zona Sur club has two
+GLBs — a static stadium and an animated player. Same mesh family; team color
+and crest are the only differences. Only the player has clips (`idle`,
+`gesto`). Budget: ≤ 4 MB and ≤ 50 k triangles per GLB. The scan database stays
+the three measured markers (D-20); the other clubs get these models from the
+manual team path.
 
 ### VII. Video archive and filters (D-05) — not still-photo grading
 
@@ -545,31 +554,37 @@ MUST NOT:
 
 ## Known debt (do not "fix" casually)
 
-1. **In-session 3D is coded, not device-checked (AR-06).** `attachModel`
+1. **Model catalog is specified, not generated (D-22).** Docs require 20 GLBs
+   (`estadio.glb` static, `jugador.glb` with `idle` and `gesto`) for all 10
+   clubs. Only placeholder boxes exist today, and only for the three scan
+   markers. Do not treat a missing file as a reason to add a scan target or
+   a matcher.
+2. **In-session 3D is coded, not device-checked (AR-06).** `attachModel`
    places a per-marker GLB on the fully-tracked pose. Files under
    `assets/models/` are placeholder boxes, not authored D-03 art — replace
    the GLB, do not put a WebView on the camera. Still open: model holds on
    the card, and enter/leave AR 5 times does not crash. Plugin 1.1.3
    hardcodes width at 0.2 m; re-run `tools/patch_arcore_image_width.ps1`
    after `flutter pub get`. Do not bump the pin and do not write a matcher.
-2. **Markers shipped; prints pending.** Four references are in
+3. **Markers shipped; prints pending.** Four references are in
    `assets/markers/` scoring 100/100/100/90 (D-20/D-21) and registered in
    `pubspec.yaml`. Marker art is **no longer a blocker**. Remaining: print at
    ≥ 15 cm matte and record `anchoMetros`.
    `conspiradores_queretaro`, `el_aguila_veracruz` and `pericos_puebla` yield
    **no keypoints at all** and can never be direct targets — they would need
    marker cards, which today they do not.
-3. **Timer mock deleted (AR-03).** `lib/screens/ar_view_screen.dart` is gone.
+4. **Timer mock deleted (AR-03).** `lib/screens/ar_view_screen.dart` is gone.
    The AR route is `ArScanScreen`. Do not restore the `Timer` or the Guerreros
    default. Scan UI must keep reading `ArSessionState` only.
-4. **Video filter UI missing.**
-5. **Highlights/videos still demo** — swap to real remote URLs (R-03).
-6. **Tests exist for the AR core** (`marker_registry`, session controller, scan
-   screen). Device acceptance for real detection is still unfilled.
-7. **README still Flutter template.**
-8. **`flutter_unity_widget` comment in `pubspec.yaml`** — leave unused; do not
+5. **Video filter UI missing.**
+6. **Highlights/videos still demo** — swap to real remote URLs (R-03).
+7. **Tests exist for the AR core** (`marker_registry`, session controller, scan
+   screen). Device acceptance for real detection is recorded on AR-05; do not
+   treat an asset-vs-itself test as proof.
+8. **README still Flutter template.**
+9. **`flutter_unity_widget` comment in `pubspec.yaml`** — leave unused; do not
    activate. Delete it when Article VI work lands.
-9. **Parallel English domain (Article IV violation)** — `models/team.dart`
+10. **Parallel English domain (Article IV violation)** — `models/team.dart`
    (`Team`, `name`, `city`, `history`) and `models/trivia_question.dart`
    (`TriviaQuestion`, `prompt`) duplicate `Equipo` / `Trivia`, and are reachable
    from `data/mock_data.dart` and `data/demo_highlights.dart`. Consolidate onto
@@ -585,7 +600,8 @@ Track fixes via `WORK_ITEMS.md`.
 |---|---|---|
 | D-01 | AR engine = **Flutter-native (A)**. Unity rejected. | **Ratified 2026-09-04** |
 | D-02 | **Android + iOS**; primary testing **Android**. | **Ratified 2026-09-04** |
-| D-03 | 3D = estadios / trofeos / pelotas / jugadores históricos; student- or AI-authored; interactive animations. | **Ratified 2026-09-04** |
+| ~~D-03 (v2.2.4)~~ | ~~3D = estadios / trofeos / pelotas / jugadores históricos; student- or AI-authored; interactive animations.~~ **Amended by D-22** on `full-project` — required models are stadium + player per club. | ~~Ratified 2026-09-04~~ |
+| D-03 | 3D is student- or AI-authored. On `full-project`: **one stadium and one player per Zona Sur club** (20 GLBs). Shared mesh, team color and crest only. Only the player is animated. | **Amended 2026-09-07** |
 | D-04 | Scholar use OK for marks; logos **not yet collected** — blocking real scan QA until ≥3 markers exist. | **Ratified 2026-09-04** |
 | D-05 | Graded feature = **video catalog + filters** (allowed/forbidden lists). Still photos out of MVP. | **Ratified 2026-09-04** |
 | D-06 | **No API**; local JSON + assets; media via URLs only. | **Ratified 2026-09-04** |
@@ -605,6 +621,7 @@ Track fixes via `WORK_ITEMS.md`.
 | ~~D-20 (v2.0.0)~~ | ~~First grading markers = estadio/Diablos Rojos, jugador/Guerreros de Oaxaca, trofeo/Pericos de Puebla.~~ **Superseded** — chosen before measuring; they score 50, 50 and *no keypoints*. | ~~Ratified 2026-09-07~~ |
 | D-20 | First grading markers = **estadio/Leones de Yucatán (100)**, **jugador/Olmecas de Tabasco (100)**, **trofeo/Piratas de Campeche (100)**, spare **pelota/Bravos de León (90)** — three distinct `tipo`, all measured with `arcoreimg`. Resolves R-02. | **Amended 2026-09-07** |
 | D-21 | Reference images MUST be **normalized and measured** before use: alpha flattened onto **white**, short side ≥ 512 px, 24-bit no-alpha, then re-scored. Ship whichever variant scores higher and record it. Normalization is not assumed to help — it lowered one logo 75 → 50. | **Ratified 2026-09-07** |
+| D-22 | **Full-project catalog** (branch `full-project`): every club gets `estadio.glb` (static) and `jugador.glb` (clips `idle` + `gesto` only). Same meshes, color and crest differ. Scan targets stay the measured D-20 set. Clubs whose logos cannot be tracked still receive both models on the manual path. Do not add scan targets to “cover” all 10 logos, and do not write a matcher. | **Ratified 2026-09-07** |
 
 Open residual (non-blocking for backlog writing):
 

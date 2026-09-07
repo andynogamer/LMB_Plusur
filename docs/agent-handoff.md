@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-09-07 · by: AR-06 session
+**Last updated:** 2026-09-07 · by: full-project docs session
 
 ---
 
@@ -12,7 +12,7 @@ one item, then **updates this file before finishing** (§6 — mandatory).
 Flutter 3.47 / Dart 3.13 mobile app. AR fan app for **LMB Zona Sur** (10 Mexican
 baseball clubs). A scholar project that must also behave like a real product.
 
-Repo: `C:\Users\T450SCMPTRC\Desktop\LMB_Plusur` — branch **`fresh-start`**.
+Repo: `C:\Users\T450SCMPTRC\Desktop\LMB_Plusur` — branch **`full-project`**.
 
 ## 2. Read before writing any code
 
@@ -20,7 +20,7 @@ These are **binding**, not advisory:
 
 | # | File | What it gives you |
 |---|---|---|
-| 1 | `CONSTITUTION.md` | Governance, v2.2.4, decisions D-01…D-21 |
+| 1 | `CONSTITUTION.md` | Governance, v2.3.0, decisions D-01…D-22 |
 | 2 | `AGENTS.md` | How to work here (auto-loaded as a workspace rule) |
 | 3 | `WORK_ITEMS.md` | The backlog. Each item's `Prompt` block **is** the spec |
 | 4 | `docs/ar-postmortem.md` | Why AR attempt #1 was thrown away (RC-1…RC-7) |
@@ -110,14 +110,14 @@ Measured later, four of them were. **Never copy code from that branch.**
 
 - Measure printed width in metres → `anchoMetros` (JSON still holds the planned
   0.15, not a measurement). Does not block AR-06.
-- Confirm AR-06 on a device: each marker's model stays on the card, and
-  entering/leaving AR 5 times does not crash. Placeholder boxes are enough
-  for that check; authored D-03 models can replace the files later.
+- Generate the D-22 catalog: 10 static `estadio.glb` + 10 animated
+  `jugador.glb`. Prompts in `docs/model-prompts.md`. Do not add the other
+  seven logos to the scan database.
 
 **Next**
 
 ```
-AR-06 device check → AR-07
+human: 20 GLBs from docs/model-prompts.md
 ```
 
 Debug APK from earlier today does **not** include this session. Rebuild after
@@ -208,6 +208,7 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-09-07 | **D-22 / branch `full-project`.** Model catalog is all 10 clubs × stadium (static) + player (`idle`, `gesto`). Scan set stays D-20. Not a matcher. Constitution → v2.3.0. |
 | 2026-09-07 | **AR-06 code.** `attachModel` places a per-marker GLB on the fully-tracked pose. Missing/failed GLB → Spanish overlay, session stays up. No WebView. Device hold/dispose checks not run. |
 | 2026-09-07 | **AR-05 accepted.** Human: Leones, Olmecas and Piratas locked. Blank wall and a non-registered club logo triggered nothing. Lock time not stopwatched. Next is AR-06. |
 | 2026-09-07 | **AR-05 human scan.** Leones, Olmecas and Piratas each locked on a physical device. Control rows not run. Time to lock not timed. |
@@ -229,9 +230,8 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 ## 9. Current task
 
-> Confirm **AR-06** on a device: scan each of the three markers, check the
-> model stays on the card, then enter and leave AR 5 times. Then AR-07.
-> Do not use a WebView as AR.
+> Generate the **D-22** models from `docs/model-prompts.md` (20 GLBs). Do not
+> add unmeasured logos to the scan database. Do not write a matcher.
 
 _(The human edits this line each session. Leave it pointing at the next item
 when you finish.)_
