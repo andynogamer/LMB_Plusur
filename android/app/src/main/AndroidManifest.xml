@@ -1,5 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- ARCore image tracking (D-17). Rollback: delete this permission. -->
+    <uses-permission android:name="android.permission.CAMERA"/>
     <application
         android:label="LMB Plusur"
         android:name="${applicationName}"
@@ -31,6 +33,11 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- AR Optional: the app still installs on devices without ARCore.
+             Rollback: delete this meta-data. Do not set the value to "required". -->
+        <meta-data
+            android:name="com.google.ar.core"
+            android:value="optional" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
@@ -42,5 +49,7 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- ARCore availability check on API 30+. Rollback: delete this package query. -->
+        <package android:name="com.google.ar.core" />
     </queries>
 </manifest>
