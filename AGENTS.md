@@ -64,10 +64,14 @@ State of the tree:
 
 - UI shell, historia, trivia, last-score persistence, feedback sfx: **present**
   (US-01 … US-04 done).
-- `lib/ar/` has the seam, registry, session machine, and `FakeArTracker`.
+- `lib/ar/` has the seam, registry, session machine, `FakeArTracker`, and
+  `ArCoreImageTracker`. AR-05 is accepted on device (three markers + both
+  controls). 3D is AR-06.
 - `lib/screens/ar/ar_scan_screen.dart` is the AR route. The `Timer` mock is
-  deleted. Do not restore it.
-- `ar_flutter_plugin_plus` is pinned at 1.1.3. Detection is not implemented yet.
+  deleted. Do not restore it. Capable devices use the real tracker; demo is
+  `--dart-define=LMB_AR_DEMO=true` only.
+- `ar_flutter_plugin_plus` is pinned at 1.1.3. After `flutter pub get`, re-run
+  `tools/patch_arcore_image_width.ps1` so `anchoMetros` reaches ARCore.
 - **Markers are solved (2026-09-07).** `arcoreimg` measurement found four club
   logos scoring ≥ 75 after normalization, so ARCore can track the real logos —
   no custom matcher, no ML classifier, no redesigned art:

@@ -19,10 +19,9 @@ import 'widgets/ar_session_body.dart';
 
 /// Scan surface driven only by [ArSessionState]. No detection booleans.
 ///
-/// Production probes [ArCoreImageTracker] first. If the device cannot run
-/// ARCore, that tracker is bound so the existing failure panel shows
-/// `arCoreUnavailable`. A capable device still uses [FakeArTracker] — real
-/// detection is a later slice. Tests inject [tracker].
+/// Production uses [ArCoreImageTracker] when ARCore is installed. Demo mode
+/// is [FakeArTracker], entered only with `--dart-define=LMB_AR_DEMO=true`
+/// or an injected [tracker]. Tests inject [tracker].
 class ArScanScreen extends StatefulWidget {
   const ArScanScreen({
     super.key,
@@ -36,7 +35,7 @@ class ArScanScreen extends StatefulWidget {
   /// Equipo sugerido al llegar desde el menú del club (D-11).
   final Equipo? equipoHint;
 
-  /// Injected tracker for tests. Production uses [FakeArTracker].
+  /// Injected tracker for tests. Production uses [ArCoreImageTracker].
   final ArTracker? tracker;
 
   final MarkerRegistry? registry;
@@ -54,7 +53,9 @@ class _ArScanScreenState extends State<ArScanScreen> {
   StreamSubscription<ArSessionState>? _states;
   List<Marcador> _marcadores = const [];
   int _cycleIndex = 0;
-  FakeArTracker? _ownedTracker;
+  ArTracker? _ownedTracker;
+  ArCoreImageTracker? _cameraTracker;
+  bool _liveIsDemo = false;
   final ValueNotifier<ArSessionState> _uiState =
       ValueNotifier<ArSessionState>(const ArPreparing());
 
@@ -74,25 +75,26 @@ class _ArScanScreenState extends State<ArScanScreen> {
         widget.registry ?? MarkerRegistry.fromMarcadores(marcadores);
     final choice = await _chooseTracker();
     if (!mounted) return;
-    await _bind(
-      choice.tracker,
-      registry,
-      marcadores,
-      isDemo: choice.isDemo,
-    );
+    await _presentAndBind(choice, registry, marcadores);
   }
 
-  Future<({ArTracker tracker, bool isDemo})> _chooseTracker() async {
+  Future<({ArTracker tracker, bool isDemo, bool camera})> _chooseTracker() async {
     if (widget.tracker != null) {
-      return (tracker: widget.tracker!, isDemo: widget.isDemo);
+      return (tracker: widget.tracker!, isDemo: widget.isDemo, camera: false);
     }
-    final probe = ArCoreImageTracker();
-    if (await probe.isSupported()) {
-      await probe.dispose();
+    // Architecture §9: demo is explicit, never the fallback for a real session.
+    const demo = bool.fromEnvironment('LMB_AR_DEMO');
+    if (demo) {
       _ownedTracker = FakeArTracker();
-      return (tracker: _ownedTracker!, isDemo: true);
+      return (tracker: _ownedTracker!, isDemo: true, camera: false);
     }
-    return (tracker: probe, isDemo: false);
+    final tracker = ArCoreImageTracker();
+    _ownedTracker = tracker;
+    if (!await tracker.isSupported()) {
+      return (tracker: tracker, isDemo: false, camera: false);
+    }
+    final camera = await tracker.prepareCamera();
+    return (tracker: tracker, isDemo: false, camera: camera);
   }
 
   Future<void> _retry() async {
@@ -100,6 +102,9 @@ class _ArScanScreenState extends State<ArScanScreen> {
     _states?.cancel();
     _controller = null;
 
+    if (mounted) {
+      setState(() => _cameraTracker = null);
+    }
     await previous?.dispose();
     if (!mounted) return;
     final marcadores = _marcadores;
@@ -107,6 +112,20 @@ class _ArScanScreenState extends State<ArScanScreen> {
         widget.registry ?? MarkerRegistry.fromMarcadores(marcadores);
     final choice = await _chooseTracker();
     if (!mounted) return;
+    await _presentAndBind(choice, registry, marcadores);
+  }
+
+  Future<void> _presentAndBind(
+    ({ArTracker tracker, bool isDemo, bool camera}) choice,
+    MarkerRegistry registry,
+    List<Marcador> marcadores,
+  ) async {
+    _liveIsDemo = choice.isDemo;
+    _cameraTracker =
+        choice.camera && choice.tracker is ArCoreImageTracker
+            ? choice.tracker as ArCoreImageTracker
+            : null;
+    if (mounted) setState(() {});
     await _bind(
       choice.tracker,
       registry,
@@ -181,71 +200,96 @@ class _ArScanScreenState extends State<ArScanScreen> {
   }
 
   Widget _scaffold(BuildContext context, ArSessionState state) {
-    final showDemoBadge = widget.isDemo || state is ArLocked && state.isDemo;
+    final showDemoBadge = _liveIsDemo || state is ArLocked && state.isDemo;
     final failed = state is ArFailed ? state : null;
+    final camera = _cameraTracker;
 
     return Scaffold(
       backgroundColor: AppColors.navy,
-      body: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF1C2048), Color(0xFF0B0D1F)],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => Navigator.of(context).maybePop(),
-                      style: IconButton.styleFrom(
-                        backgroundColor: AppColors.navy.withValues(alpha: 0.55),
-                      ),
-                      icon: const Icon(
-                        Icons.arrow_back_rounded,
-                        color: AppColors.white,
-                      ),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (camera != null) Positioned.fill(child: camera.buildSurface()),
+          DecoratedBox(
+            decoration: camera == null
+                ? const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Color(0xFF1C2048), Color(0xFF0B0D1F)],
                     ),
-                    const Spacer(),
-                    if (showDemoBadge) ...[
-                      const ArDemoBadge(),
-                      const SizedBox(width: 10),
-                    ],
-                    Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppColors.button.withValues(alpha: 0.4),
+                  )
+                : const BoxDecoration(),
+            child: SafeArea(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          onPressed: () => Navigator.of(context).maybePop(),
+                          style: IconButton.styleFrom(
+                            backgroundColor:
+                                AppColors.navy.withValues(alpha: 0.55),
+                          ),
+                          icon: const Icon(
+                            Icons.arrow_back_rounded,
+                            color: AppColors.white,
+                          ),
                         ),
-                      ),
-                      child: const AppLogo(size: 46),
+                        const Spacer(),
+                        if (showDemoBadge) ...[
+                          const ArDemoBadge(),
+                          const SizedBox(width: 10),
+                        ],
+                        Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.button.withValues(alpha: 0.4),
+                            ),
+                          ),
+                          child: const AppLogo(size: 46),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-              const Spacer(),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
-                child: failed == null
-                    ? ArSessionBody(
-                        state: state,
-                        equipoHint: widget.equipoHint,
-                        onSimulateNext: widget.isDemo ? _simulateNext : null,
-                      )
-                    : ArFailedPanel(
-                        failure: failed,
-                        onRetry: _retry,
+                  ),
+                  const Spacer(),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
+                    child: DecoratedBox(
+                      decoration: camera == null
+                          ? const BoxDecoration()
+                          : BoxDecoration(
+                              color: AppColors.navy.withValues(alpha: 0.78),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: camera == null ? 0 : 16,
+                          vertical: camera == null ? 0 : 16,
+                        ),
+                        child: failed == null
+                            ? ArSessionBody(
+                                state: state,
+                                equipoHint: widget.equipoHint,
+                                onSimulateNext:
+                                    _liveIsDemo ? _simulateNext : null,
+                              )
+                            : ArFailedPanel(
+                                failure: failed,
+                                onRetry: _retry,
+                              ),
                       ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

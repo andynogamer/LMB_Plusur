@@ -38,7 +38,7 @@
 | AR-02 | 📗 | 🔴 P0 | `ArTracker` seam + session state machine — no plugin | ☑ | AR foundation |
 | AR-03 | 📗 | 🔴 P0 | AR scan UI on the state machine (fake tracker) | ☑ | UI / chrome |
 | AR-04 | 📗 | 🔴 P0 | Pin plugin + `ArCoreImageTracker` availability probe | ☑ | AR foundation |
-| AR-05 | 📗 | 🔴 P0 | Real detection → deterministic lock (kills BUG-01) | ☐ | 3 markers |
+| AR-05 | 📗 | 🔴 P0 | Real detection → deterministic lock (kills BUG-01) | ☑ | 3 markers |
 | AR-06 | 📗 | 🔴 P0 | In-session 3D anchored on the marker pose | ☐ | Buttons / UI |
 | AR-07 | 📗 | 🔴 P0 | ≥2 AR action types (anim, info+TTS, …) | ☐ | 2 action types |
 | US-09 | 📗 | 🟠 P1 | Simulated live stats in AR / team | ☐ | Actions |
@@ -389,7 +389,7 @@ Fuera de alcance: detection, the image database, 3D, UI changes.
 
 ---
 
-## AR-05 · 📗 · 🔴 P0 · Real detection → deterministic lock · ☐ Pendiente
+## AR-05 · 📗 · 🔴 P0 · Real detection → deterministic lock · ☑ Hecho
 
 **Prompt**
 ```
@@ -431,6 +431,32 @@ Archivos: lib/ar/trackers/arcore_image_tracker.dart, assets/markers/,
 assets/ar_markers.json (anchoMetros), pubspec assets
 Fuera de alcance: 3D placement (AR-06), actions (AR-07), filters.
 ```
+
+**Closed 2026-09-07.** Human device run: three grading markers locked on their own content. Blank wall and a non-registered club logo triggered nothing. Lock time was not stopwatched.
+
+Recorded tracker settings (`lib/ar/trackers/arcore_image_tracker.dart`):
+
+- `continuousImageTracking: true` — a one-shot emission never reaches the
+  debounce gate (N=2), so `ArLocked` would be unreachable.
+- `imageTrackingUpdateIntervalMs: 200` — the second hit stays inside the ≤ 2 s
+  lock budget without copying a pose onto the UI isolate every frame.
+
+Plugin 1.1.3 creates the session inside `onInitialize` and hardcodes width at
+0.2 m. Legal order: null-path `onInitialize` → `precompileImageTrackingDatabase`
+→ `updateImageTrackingSettings`. Widths go through `setImageWidths` after
+`tools/patch_arcore_image_width.ps1`. `anchoMetros` is still the planned 0.15,
+not a measured print.
+
+Device acceptance table (architecture §7). Human, physical Android,
+2026-09-07. Lock time was not stopwatched; the human accepted the scans.
+
+| Marker | Detected correctly | Time to lock | False positives in 30 s | Notes |
+|---|---|---|---|---|
+| `marcador_estadio_leones` | yes | not timed | none reported | human scan |
+| `marcador_jugador_olmecas` | yes | not timed | none reported | human scan |
+| `marcador_trofeo_piratas` | yes | not timed | none reported | human scan |
+| blank wall (control) | none | — | none | human: nothing triggered |
+| wrong-club logo (control) | none | — | none | human: nothing triggered |
 
 ---
 

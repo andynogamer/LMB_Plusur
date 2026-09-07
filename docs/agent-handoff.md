@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-09-07 · by: AR-04 session
+**Last updated:** 2026-09-07 · by: AR-05 session
 
 ---
 
@@ -20,7 +20,7 @@ These are **binding**, not advisory:
 
 | # | File | What it gives you |
 |---|---|---|
-| 1 | `CONSTITUTION.md` | Governance, v2.2.0, decisions D-01…D-21 |
+| 1 | `CONSTITUTION.md` | Governance, v2.2.3, decisions D-01…D-21 |
 | 2 | `AGENTS.md` | How to work here (auto-loaded as a workspace rule) |
 | 3 | `WORK_ITEMS.md` | The backlog. Each item's `Prompt` block **is** the spec |
 | 4 | `docs/ar-postmortem.md` | Why AR attempt #1 was thrown away (RC-1…RC-7) |
@@ -59,11 +59,17 @@ Measured later, four of them were. **Never copy code from that branch.**
   at **1.1.3** (no caret). It pulls `permission_handler` 12.0.3, `geolocator`,
   `package_info_plus`. No manual `com.google.ar:core` Gradle line.
   Native: `minSdk = 24`, `CAMERA`, ARCore meta-data `optional`, package query.
-  `ArCoreImageTracker.isSupported()` is the only implemented method; start and
-  attach throw. The plugin has no Dart availability API, so the probe uses a
-  reflection channel in `MainActivity` — not a new AAR. On a capable device the
-  scan screen still uses `FakeArTracker`. On an unsupported device it binds the
-  probe so the existing `arCoreUnavailable` panel shows.
+  The plugin has no Dart availability API, so the probe uses a reflection
+  channel in `MainActivity` — not a new AAR.
+- AR-05 — `ArCoreImageTracker.start` builds the image database and streams
+  `ArDetection`. A capable device uses this tracker, not `FakeArTracker`.
+  Demo is only `--dart-define=LMB_AR_DEMO=true`. Settings:
+  `continuousImageTracking: true`, `imageTrackingUpdateIntervalMs: 200`.
+  Order: null-path `onInitialize` → `precompileImageTrackingDatabase` →
+  `updateImageTrackingSettings`. Identity is the tracker name unchanged.
+  Human device run: Leones, Olmecas and Piratas locked on their own content.
+  Blank wall and a non-registered club logo triggered nothing. Lock time was
+  not stopwatched. `attachModel` still throws (AR-06).
 - AR-03 — `ArScanScreen` is the AR route. One panel per `ArSessionState`.
   Marker content (`titulo` / `infoTexto`) renders only in `ArLocked`.
   `MODO DEMO` shows while `isDemo` is true. `ArFailed` uses the §8 Spanish
@@ -96,21 +102,23 @@ Measured later, four of them were. **Never copy code from that branch.**
 
 **Blocked on the human**
 
-- Print the 4 markers at ≥ 15 cm on **matte** paper, measure width in metres →
-  becomes `anchoMetros` (JSON currently holds the planned 0.15, not a
-  measurement). Gates **AR-05** only.
+- Measure printed width in metres → `anchoMetros` (JSON still holds the planned
+  0.15, not a measurement). Does not block AR-06.
+- Author or supply GLB models for the three markers (D-03). Gates how AR-06
+  looks, not whether the slice can start.
 
 **Next**
 
 ```
-AR-05 → AR-06 → AR-07
+AR-06 → AR-07
 ```
 
-Debug APK built 2026-09-07 (`build\app\outputs\flutter-apk\app-debug.apk`).
-Detection is still unimplemented — AR-05 fills `ArCoreImageTracker.start`.
+Debug APK from earlier today does **not** include this session. Rebuild after
+the width patch before installing.
 
 `AppRoutes.ar` probes ARCore first. Unsupported devices see the existing
-failure panel. Capable devices still get `FakeArTracker` until AR-05.
+failure panel. Capable devices start `ArCoreImageTracker` (camera behind the
+chrome). Do not fall back to the fake tracker when that session fails.
 
 ## 5. Environment gotchas
 
@@ -147,6 +155,21 @@ failure panel. Capable devices still get `FakeArTracker` until AR-05.
 - Never commit `build/`, `.dart_tool/`, `android/.gradle/`, `tools/bin/`.
 - `flutter pub get` dirties `windows/flutter/generated_*` with line-ending-only
   noise. Restore with `git checkout -- windows/`.
+- ⚠️ **Plugin 1.1.3 hardcodes reference width at 0.2 m** and `precompile`
+  errors with `Session not initialized` if called before any `onInitialize`.
+  AR-05 sends `anchoMetros` via `setImageWidths`, which exists only after:
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File tools/patch_arcore_image_width.ps1
+  ```
+  Re-run that after every `flutter pub get` (pub restores the unpatched
+  plugin). Do not bump the pin. Do not skip precompile. `start()` fails
+  closed if the method is missing, so a lock never uses the 0.2 m default
+  by accident. Plugin 1.1.3 also never tells Dart about paused images, so
+  `ArLost` will not fire from a real session until a later plugin change —
+  paused is still never reported as fully tracked.
+- **Superseded AR-04 wiring:** a capable device no longer uses
+  `FakeArTracker`. That was temporary until AR-05. Demo is
+  `--dart-define=LMB_AR_DEMO=true` only.
 
 ## 6. Before you finish — update the docs (mandatory)
 
@@ -178,14 +201,15 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-09-07 | **AR-05 accepted.** Human: Leones, Olmecas and Piratas locked. Blank wall and a non-registered club logo triggered nothing. Lock time not stopwatched. Next is AR-06. |
+| 2026-09-07 | **AR-05 human scan.** Leones, Olmecas and Piratas each locked on a physical device. Control rows not run. Time to lock not timed. |
+| 2026-09-07 | **AR-05 code.** Real tracker starts a session; identity is the ARCore name. Continuous tracking 200 ms so debounce can lock. Width patch required (`tools/patch_arcore_image_width.ps1`) because 1.1.3 hardcodes 0.2 m. Tests: 21 passed (detection event + session + scan + registry). Device table **not** filled. Constitution → v2.2.2. Architecture §11 order clarified (null-path init, then precompile). |
 | 2026-09-07 | **AR-04 APK green.** Human installed JDK 17. `flutter build apk --debug` built `app-debug.apk`. The earlier failure was a missing JDK 17 toolchain, not the native config. KGP warning from the plugin is still only a warning. Device install and the no-ARCore path were not run. |
 | 2026-09-07 | **AR-04 probe.** Pinned `ar_flutter_plugin_plus: 1.1.3`. Native allowed set only (`minSdk` 24, CAMERA, ARCore optional, package query). `ArCoreImageTracker` implements `isSupported` only. First debug APK failed on missing JDK 17. Did not enable foojay. |
 | 2026-09-07 | **AR-03.** `ArScanScreen` replaces the Timer mock (file deleted). One panel per `ArSessionState`; marker content only in `ArLocked`; `MODO DEMO` + **Elegir equipo manualmente** on every failure. Tests: 3 passed (`ar_scan_screen_test.dart`). Constitution known debt → v2.2.1 (no rule change). |
 | 2026-09-07 | **AR-02.** `ArTracker` / `ArDetection` / failures, sealed session states, `ArSessionController` + debounce gate, `FakeArTracker` (cycles every registered reference, never a default club). Tests: 11 passed (`ar_session_controller_test.dart`). Promoted `vector_math` to a direct dependency for `Matrix4` — analyze forbids an undeclared import; still no AR plugin. |
 | 2026-09-07 | **AR-01.** `Marcador` / `TipoMarcador`, `assets/ar_markers.json` (3 active D-20 markers, spare omitted), `DataService.cargarMarcadores()`, `MarkerRegistry.resolve` exact lookup. Tests: 3 passed (`marker_registry_test.dart`). `anchoMetros` left at 0.15 — planned print, not measured. |
-| 2026-09-07 | **AR-00 code half** (commit `cd82136`). Measured all 10 logos with `arcoreimg`. 4 pass ≥ 75 after normalization; shipped to `assets/markers/`, wired into `pubspec.yaml`. Added `tools/normalize_markers.ps1` + `tools/score_markers.ps1`. **Amended D-20** (the 3 originally ratified markers scored 50/50/none — picked unmeasured) and added **D-21** (normalize + re-score). Constitution → v2.1.0. |
 | 2026-09-07 | **AR reset governance.** Attempt #1 abandoned. Wrote `ar-postmortem.md`, `ar-architecture.md`, `ar-marker-guide.md`; rewrote Article VI into 11 enforceable clauses; ratified D-12…D-20; split monolithic US-05…US-08 into slices AR-00…AR-07. Constitution → v2.0.0. Added `.cursor/rules/`. |
-| 2026-09-06 | US-01…US-04 delivered (commit `69aa1ff`). |
 
 ## 8. How to work
 
@@ -198,9 +222,8 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 ## 9. Current task
 
-> Implement **AR-05** (real detection → deterministic lock). Read its `Prompt`
-> block. Detection is native; Dart only receives a tracker name. Do not write a
-> matcher.
+> Implement **AR-06** (in-session 3D on the marker pose). Tracker scene graph
+> only. Do not use `model_viewer_plus` as AR.
 
 _(The human edits this line each session. Leave it pointing at the next item
 when you finish.)_

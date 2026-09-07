@@ -1,7 +1,7 @@
 # AR architecture contract
 
 **Status:** binding. Referenced by Constitution **Article VI**.
-**Version:** 1.0 · 2026-09-07
+**Version:** 1.0.1 · 2026-09-07
 **Scope:** everything under `lib/ar/`, plus AR-related native config.
 **Read first:** [`ar-postmortem.md`](./ar-postmortem.md) — this document is its remedy.
 
@@ -395,9 +395,16 @@ ar_flutter_plugin_plus: 1.1.3
 
 Mandatory usage notes, learned the hard way:
 
-- Call **`arSessionManager.precompileImageTrackingDatabase(...)`** before
-  `onInitialize`. Attempt #1 never did; passing raw asset paths to
-  `trackingImagePaths` without precompiling is a known non-detection path.
+- Precompile the image database **before any call that registers
+  `trackingImagePaths`**. Attempt #1 never did; passing raw asset paths to
+  `onInitialize` without precompiling is a known non-detection path.
+  Plugin 1.1.3 cannot precompile until a session exists, and the session is
+  created inside `onInitialize`. The legal order is therefore:
+  1. `onInitialize(trackingImagePaths: null)` — session only, no images
+  2. `precompileImageTrackingDatabase(paths)`
+  3. `updateImageTrackingSettings(trackingImagePaths: paths)` — applies the cache
+  Calling `precompile` first fails with `Session not initialized`. Do not
+  "fix" that by skipping precompile and passing the paths to step 1.
 - Pass a physical width for each reference image. ARCore explicitly improves
   detection when real-world size is supplied.
 - Gate model placement on `isFullyTracked` (`AugmentedImage` full tracking

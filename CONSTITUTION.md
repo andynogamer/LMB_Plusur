@@ -17,7 +17,7 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 | [`docs/ar-architecture.md`](./docs/ar-architecture.md) | The AR technical contract: layers, `ArTracker` seam, state machine, error taxonomy, budgets. |
 | [`docs/ar-marker-guide.md`](./docs/ar-marker-guide.md) | How to author printable markers ARCore can actually track. |
 
-**Version**: 2.2.1 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-07
+**Version**: 2.2.3 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-07
 
 > **v2.0.0 — AR reset.** AR attempt #1 (branch `ar-have-too-many-errors`) was
 > abandoned and work restarted on `fresh-start`. Article VI was rewritten from
@@ -44,6 +44,19 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 > and #3 still described a tree that no longer exists (`lib/ar/` missing, the
 > `Timer` mock still the AR screen). Those statements are corrected so the next
 > agent does not revive `ar_view_screen.dart`.
+>
+> **v2.2.2 — AR-05 code, detection not yet accepted.** No rule changed. Debt #1
+> still said every capable device used `FakeArTracker`. That wiring is
+> superseded: a capable device now starts `ArCoreImageTracker`. The device
+> acceptance table is still empty (prints not measured). Plugin 1.1.3 hardcodes
+> physical width at 0.2 m; `tools/patch_arcore_image_width.ps1` is the
+> sanctioned way to pass `anchoMetros` — do not bump the pin and do not write a
+> matcher to compensate.
+>
+> **v2.2.3 — AR-05 accepted on device.** No rule changed. The human confirmed
+> Leones, Olmecas and Piratas lock, and that a blank wall and a non-registered
+> club logo trigger nothing. Lock time was not stopwatched. Debt #1 no longer
+> says the acceptance table is empty. 3D remains AR-06.
 
 ---
 
@@ -68,7 +81,7 @@ agents (`CONSTITUTION.md`, `AGENTS.md`, `WORK_ITEMS.md`) are written in
 |---|---|---|---|
 | App shell | Flutter 3 / Dart 3.3+ | `lib/` | Implemented (navigation, theme, screens). |
 | Team content | Local JSON | `assets/data.json` | Implemented for 10 Zona Sur clubs (historia + trivias). |
-| AR | **Flutter-native (D-01)** — ARCore/ARKit Augmented Images behind an `ArTracker` seam (D-12) | `lib/ar/`, `lib/screens/ar/` | Attempt #1 abandoned; rebuilding from `fresh-start`. Labelled demo detection only today. |
+| AR | **Flutter-native (D-01)** — ARCore/ARKit Augmented Images behind an `ArTracker` seam (D-12) | `lib/ar/`, `lib/screens/ar/` | AR-05 accepted on device. Demo only with `LMB_AR_DEMO`. 3D is AR-06. |
 | Video filters | Flutter on-device | — | Not started; graded requirement. |
 | Highlights / videos | Remote URLs (D-07) | demo data today | Placeholders until URLs are filled. |
 
@@ -443,7 +456,7 @@ Splash → Main
 | Historia | Implemented | `equipo.historia` + fundación. |
 | Trivia / retos | Implemented (extend) | From `trivias`; last score only; AR trivia mode planned. |
 | Video archive + filters | Planned | Remote URL catalog; allowed filters only. |
-| AR markers (≥3) | Planned (attempt #1 reverted) | Distinct content per marker; designed cards scoring ≥ 75 (D-13, D-20). |
+| AR markers (≥3) | Accepted on device (AR-05) | Distinct content per marker; references scoring ≥ 75 (D-13, D-20). Human: three markers lock; blank wall and a non-registered logo do not. |
 | AR controls | Planned | ≥2 action types; style-matched overlay. |
 | Simulated live stats | Planned | Local mock “tiempo real”. |
 | Multiple AR modes | Planned | e.g. galería, trivia AR, video inmersivo. |
@@ -528,9 +541,14 @@ MUST NOT:
 
 ## Known debt (do not "fix" casually)
 
-1. **AR tracking is still simulated** — `ArScanScreen` is driven by
-   `FakeArTracker` (AR-03). Real ARCore detection and in-session 3D are
-   AR-04…AR-06. Do not treat the demo badge as production recognition.
+1. **3D is not in the session yet (AR-06).** Detection is accepted: capable
+   devices bind `ArCoreImageTracker`. `FakeArTracker` is only
+   `--dart-define=LMB_AR_DEMO=true` or a test injection — not the fallback
+   when a real session fails. Human, 2026-09-07: Leones, Olmecas and Piratas
+   lock; a blank wall and a non-registered club logo trigger nothing. Lock
+   time was not stopwatched. Plugin 1.1.3 hardcodes width at 0.2 m; re-run
+   `tools/patch_arcore_image_width.ps1` after `flutter pub get`. Do not bump
+   the pin and do not write a matcher.
 2. **Markers shipped; prints pending.** Four references are in
    `assets/markers/` scoring 100/100/100/90 (D-20/D-21) and registered in
    `pubspec.yaml`. Marker art is **no longer a blocker**. Remaining: print at
