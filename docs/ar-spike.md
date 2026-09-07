@@ -78,3 +78,9 @@ the 3 grading markers. Demo mode is opt-in only (no Guerreros hardcode).
 - **US-05** ? marcadores data model (?3) pointing at these logo paths + 3D assets
 - **US-06** ? wire `ar_flutter_plugin_plus` into `ArViewScreen`, remove silent demo
 - **US-07 / US-08** ? styled controls + ?2 actions on the AR window
+
+## US-07 device check
+
+1. `flutter run` on Android
+2. Open AR (scan or modo demo)
+3. Confirm auto-rotating GLB + navy overlay controls (FeatureCard / PrimaryButton)

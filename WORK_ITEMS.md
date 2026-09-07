@@ -27,7 +27,7 @@
 | SP-01 | 🔧 | 🔴 P0 | Flutter-native AR spike (R-01) | ☐ | AR foundation |
 | US-05 | 📗 | 🔴 P0 | Marker + asset data model (≥3 marcadores) | ☐ | 3 markers |
 | US-06 | 📗 | 🔴 P0 | Real marker scanning replaces AR mock | ☐ | 3 markers |
-| US-07 | 📗 | 🔴 P0 | AR window: 3D model + style-matched controls | ☐ | Buttons / UI |
+| US-07 | ?? | ?? P0 | AR window: 3D model + style-matched controls | ? | Buttons / UI |
 | US-08 | 📗 | 🔴 P0 | ≥2 AR action types (anim, info+TTS, …) | ☐ | 2 action types |
 | US-09 | 📗 | 🟠 P1 | Simulated live stats in AR / team | ☐ | Actions |
 | US-10 | 📗 | 🟠 P1 | Multiple AR modes (galería / trivia / video) | ☐ | Bonus + modes |
@@ -215,7 +215,7 @@ Fuera de alcance: all filter work, full VFX pack (US-13).
 
 ---
 
-## US-07 · 📗 · 🔴 P0 · AR window 3D + style-matched controls · ☐ Pendiente
+## US-07 ? ?? ? ?? P0 ? AR window 3D + style-matched controls ? ? Hecho
 
 **Prompt**
 ```

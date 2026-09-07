@@ -6,7 +6,8 @@ plugins {
 
 android {
     namespace = "mx.lmb.plusur.lmb_plusur"
-    compileSdk = flutter.compileSdkVersion
+    // permission_handler_android requires API 37; Flutter default is still 36.
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

@@ -8,7 +8,7 @@ Human-facing product overview lives in `README.md` (to be expanded). Agent
 operating rules live in `AGENTS.md`. The ordered backlog lives in
 `WORK_ITEMS.md`.
 
-**Version**: 1.1.4 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-04
+**Version**: 1.1.5 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-07
 
 ---
 

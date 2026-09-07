@@ -15,10 +15,11 @@ import '../services/feedback_service.dart';
 import '../services/logo_matcher_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_logo.dart';
+import '../widgets/ar_model_viewport.dart';
 import '../widgets/feature_card.dart';
 import '../widgets/primary_button.dart';
 
-/// AR scan screen (US-06): camera + logo/marker recognition for grading markers.
+/// AR scan + 3D stage (US-06 / US-07).
 class ArViewScreen extends StatefulWidget {
   const ArViewScreen({
     super.key,
@@ -75,7 +76,8 @@ class _ArViewScreenState extends State<ArViewScreen>
       debugPrint('AR bootstrap failed: $error\n$stack');
       if (!mounted) return;
       setState(() {
-        _statusMessage = 'No se pudo iniciar el esc?ner. Prueba el modo demo.';
+        _statusMessage =
+            'No se pudo iniciar el esc?ner. Prueba el modo demo.';
       });
     }
   }
@@ -96,7 +98,8 @@ class _ArViewScreenState extends State<ArViewScreen>
     if (cameras.isEmpty) {
       if (!mounted) return;
       setState(() {
-        _statusMessage = 'No hay c?mara disponible. Usa el modo demo o elige un equipo.';
+        _statusMessage =
+            'No hay c?mara disponible. Usa el modo demo o elige un equipo.';
       });
       return;
     }
@@ -160,13 +163,11 @@ class _ArViewScreenState extends State<ArViewScreen>
     try {
       final shot = await controller.takePicture();
       final bytes = await File(shot.path).readAsBytes();
-      // Clean temp file when possible.
       try {
         await File(shot.path).delete();
       } catch (_) {}
 
       var marcadorId = await _matcher.matchMarcadorBytes(bytes);
-      // Fallback: match equipo logo then map to marcador.
       if (marcadorId == null) {
         final equipoId = await _matcher.matchBytes(bytes);
         if (equipoId != null) {
@@ -211,7 +212,6 @@ class _ArViewScreenState extends State<ArViewScreen>
       });
     } catch (error) {
       debugPrint('Scan frame failed: $error');
-      // Unknown / failed frame must not crash ? keep scanning.
     } finally {
       _busy = false;
     }
@@ -270,6 +270,10 @@ class _ArViewScreenState extends State<ArViewScreen>
     }
   }
 
+  void _cerrarExperiencia() {
+    Navigator.of(context).maybePop();
+  }
+
   String get _scanHintCopy {
     final hint = widget.equipoHint;
     if (hint != null) {
@@ -305,6 +309,8 @@ class _ArViewScreenState extends State<ArViewScreen>
 
   @override
   Widget build(BuildContext context) {
+    final detected = _detectedMarcador;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -314,7 +320,9 @@ class _ArViewScreenState extends State<ArViewScreen>
             CameraPreview(_camera!)
           else
             const _ArFallbackBackground(),
-          if (_detectedMarcador == null)
+          if (detected != null)
+            const ColoredBox(color: Color(0x9914183B))
+          else
             IgnorePointer(
               child: FadeTransition(
                 opacity: Tween<double>(begin: 0.12, end: 0.4).animate(
@@ -327,84 +335,103 @@ class _ArViewScreenState extends State<ArViewScreen>
               ),
             ),
           SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () => Navigator.of(context).maybePop(),
-                    style: IconButton.styleFrom(
-                      backgroundColor: AppColors.navy.withValues(alpha: 0.55),
-                    ),
-                    icon: const Icon(
-                      Icons.arrow_back_rounded,
-                      color: AppColors.white,
-                      size: 22,
-                    ),
-                  ),
-                  const Spacer(),
-                  if (_demoMode)
-                    Container(
-                      margin: const EdgeInsets.only(right: 10),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.navyCard.withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(99),
-                        border: Border.all(
-                          color: AppColors.button.withValues(alpha: 0.25),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: _cerrarExperiencia,
+                        tooltip: 'Salir',
+                        style: IconButton.styleFrom(
+                          backgroundColor:
+                              AppColors.navy.withValues(alpha: 0.55),
+                        ),
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: AppColors.white,
+                          size: 22,
                         ),
                       ),
-                      child: Text(
-                        'MODO DEMO',
-                        style: GoogleFonts.poppins(
-                          color: AppColors.button,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 10,
-                          letterSpacing: 1.1,
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          detected == null ? 'ESCANEO AR' : 'EXPERIENCIA AR',
+                          style: GoogleFonts.poppins(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                            letterSpacing: 1.1,
+                          ),
                         ),
                       ),
-                    ),
-                  Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: AppColors.button.withValues(alpha: 0.4),
+                      if (_demoMode)
+                        Container(
+                          margin: const EdgeInsets.only(right: 10),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.navyCard.withValues(alpha: 0.9),
+                            borderRadius: BorderRadius.circular(99),
+                            border: Border.all(
+                              color: AppColors.button.withValues(alpha: 0.25),
+                            ),
+                          ),
+                          child: Text(
+                            'MODO DEMO',
+                            style: GoogleFonts.poppins(
+                              color: AppColors.button,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 10,
+                              letterSpacing: 1.1,
+                            ),
+                          ),
+                        ),
+                      Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColors.button.withValues(alpha: 0.4),
+                          ),
+                        ),
+                        child: const AppLogo(size: 46),
+                      ),
+                    ],
+                  ),
+                ),
+                if (detected != null) ...[
+                  const SizedBox(height: 8),
+                  Expanded(child: ArModelViewport(marcador: detected)),
+                  _ArMarcadorOverlay(
+                    marcador: detected,
+                    equipo: _detectedEquipo,
+                    demoMode: _demoMode,
+                    onRetry: _reintentar,
+                    onClose: _cerrarExperiencia,
+                  ),
+                ] else
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: _ScanControls(
+                        hint: _scanHintCopy,
+                        statusMessage: _statusMessage,
+                        permissionDenied: _permissionDenied,
+                        onDemo: _activarDemo,
+                        onRetryPermission: _initCamera,
+                        onPickTeam: () {
+                          Navigator.of(context).pushNamed(AppRoutes.teams);
+                        },
                       ),
                     ),
-                    child: const AppLogo(size: 46),
                   ),
-                ],
-              ),
+              ],
             ),
           ),
-          if (_detectedMarcador == null)
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: _ScanControls(
-                hint: _scanHintCopy,
-                statusMessage: _statusMessage,
-                permissionDenied: _permissionDenied,
-                onDemo: _activarDemo,
-                onRetryPermission: _initCamera,
-                onPickTeam: () {
-                  Navigator.of(context).pushNamed(AppRoutes.teams);
-                },
-              ),
-            )
-          else
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: _ArMarcadorOverlay(
-                marcador: _detectedMarcador!,
-                equipo: _detectedEquipo,
-                demoMode: _demoMode,
-                onRetry: _reintentar,
-              ),
-            ),
         ],
       ),
     );
@@ -525,6 +552,7 @@ class _ArMarcadorOverlay extends StatelessWidget {
     required this.marcador,
     required this.demoMode,
     required this.onRetry,
+    required this.onClose,
     this.equipo,
   });
 
@@ -532,6 +560,7 @@ class _ArMarcadorOverlay extends StatelessWidget {
   final Equipo? equipo;
   final bool demoMode;
   final VoidCallback onRetry;
+  final VoidCallback onClose;
 
   @override
   Widget build(BuildContext context) {
@@ -541,8 +570,8 @@ class _ArMarcadorOverlay extends StatelessWidget {
         filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
         child: Container(
           width: double.infinity,
-          color: AppColors.navy.withValues(alpha: 0.88),
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+          color: AppColors.navy.withValues(alpha: 0.92),
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 10),
           child: SafeArea(
             top: false,
             child: Column(
@@ -556,20 +585,20 @@ class _ArMarcadorOverlay extends StatelessWidget {
                     borderRadius: BorderRadius.circular(99),
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
                 Text(
                   marcador.titulo.toUpperCase(),
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
                     color: AppColors.white,
                     fontWeight: FontWeight.w800,
-                    fontSize: 18,
+                    fontSize: 17,
                     letterSpacing: 0.6,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${marcador.tipo.name.toUpperCase()} ? ${marcador.id}',
+                  '${marcador.tipo.name.toUpperCase()} ? modelo 3D listo',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
                     color: AppColors.muted,
@@ -589,24 +618,11 @@ class _ArMarcadorOverlay extends StatelessWidget {
                     ),
                   ),
                 ],
-                const SizedBox(height: 10),
-                Text(
-                  marcador.infoTexto,
-                  textAlign: TextAlign.center,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.poppins(
-                    color: AppColors.button,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 13,
-                    height: 1.35,
-                  ),
-                ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 if (equipo != null) ...[
                   FeatureCard(
                     title: 'Historia',
-                    subtitle: 'Conoce el origen del equipo.',
+                    subtitle: 'El origen y la identidad del club.',
                     icon: Icons.menu_book_rounded,
                     onTap: () {
                       Navigator.of(context).pushNamed(
@@ -628,23 +644,18 @@ class _ArMarcadorOverlay extends StatelessWidget {
                     },
                   ),
                   const SizedBox(height: 10),
-                  FeatureCard(
-                    title: 'Highlights',
-                    subtitle: 'Reproduce los momentos clave.',
-                    icon: Icons.play_circle_fill_rounded,
-                    onTap: () {
-                      Navigator.of(context).pushNamed(
-                        AppRoutes.highlights,
-                        arguments: equipo,
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 10),
                 ],
-                TextButton(
+                PrimaryButton(
+                  label: 'Escanear otro marcador',
+                  icon: Icons.center_focus_strong_rounded,
+                  height: 52,
                   onPressed: onRetry,
+                ),
+                const SizedBox(height: 6),
+                TextButton(
+                  onPressed: onClose,
                   child: Text(
-                    'Escanear otro marcador',
+                    'Salir de la experiencia AR',
                     style: GoogleFonts.poppins(
                       color: AppColors.button,
                       fontWeight: FontWeight.w600,
