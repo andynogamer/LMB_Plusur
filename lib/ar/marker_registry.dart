@@ -3,8 +3,7 @@ import '../models/marcador_model.dart';
 /// The ONLY place a tracker name becomes app content.
 ///
 /// Lookup is an exact map hit (D-14). An unknown name returns null — the
-/// session stays searching. There is no nearest match, no score and no
-/// threshold in this file.
+/// session stays searching. There is no nearest match and no fuzzy fallback.
 class MarkerRegistry {
   const MarkerRegistry(this._byTrackerName);
 

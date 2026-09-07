@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-09-07 · by: AR-01 session
+**Last updated:** 2026-09-07 · by: AR-02 session
 
 ---
 
@@ -55,6 +55,12 @@ Measured later, four of them were. **Never copy code from that branch.**
 **Done**
 
 - US-01…US-04 — team search, AR entry point, trivia last score, feedback sfx.
+- AR-02 — `ArTracker` seam, sealed `ArSessionState`, `ArSessionController`
+  (debounce: same name N times in 2 s, default N=2, injectable clock),
+  `FakeArTracker`. No plugin. `ArLocked` is reachable only after a confirmed
+  detection. Spanish failure copy lives on `ArFailed.copy` (architecture §8).
+  `vector_math` is now a **direct** dependency so `ArDetection.pose` is
+  `Matrix4` without importing `material.dart`. Not an AR plugin.
 - AR-01 — `Marcador` + `MarkerRegistry`. `assets/ar_markers.json` loads the
   three active D-20 markers through `DataService.cargarMarcadores()`.
   `resolve` is an exact map lookup keyed by `Marcador.id`. The spare
@@ -83,16 +89,17 @@ Measured later, four of them were. **Never copy code from that branch.**
 **Next**
 
 ```
-AR-02 → AR-03      no plugin, no camera, fully unit-testable
+AR-03      no plugin, no camera, fully unit-testable
 AR-04 → AR-05 → AR-06 → AR-07   native AR
 ```
 
-Do **not** start AR-04 until AR-02 and AR-03 are merged and green. That ordering
-is the whole point of the reset: prove the state machine before native risk
-enters.
+Do **not** start AR-04 until AR-03 is merged and green. That ordering is the
+whole point of the reset: prove the state machine before native risk enters.
 
-`lib/ar/` has `marker_registry.dart` only. `lib/screens/ar_view_screen.dart` is
-still the pre-reset `Timer` mock — it gets **deleted** in AR-03, not patched.
+`lib/ar/` has the seam, the state machine, the registry, and `trackers/fake_ar_tracker.dart`.
+`lib/screens/ar_view_screen.dart` is still the pre-reset `Timer` mock — it gets
+**deleted** in AR-03, not patched. Wire the scan UI to `ArSessionController`,
+not to new detection booleans.
 
 ## 5. Environment gotchas
 
@@ -111,6 +118,11 @@ still the pre-reset `Timer` mock — it gets **deleted** in AR-03, not patched.
   $env:ARCOREIMG = "$PWD\tools\bin\arcoreimg.exe"
   powershell -ExecutionPolicy Bypass -File tools/score_markers.ps1
   ```
+- `FakeArTracker` uses a **sync** detection stream so `emit()` is applied before
+  the call returns. Do not `await` a frame to observe a scripted detection.
+- `ArLost` is `isFullyTracked: false` on the locked marker. There is no
+  background lost-timer. The 2 s debounce window is checked on the next
+  detection, not by a `Timer`.
 - Never commit `build/`, `.dart_tool/`, `android/.gradle/`, `tools/bin/`.
 - `flutter pub get` dirties `windows/flutter/generated_*` with line-ending-only
   noise. Restore with `git checkout -- windows/`.
@@ -145,6 +157,7 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-09-07 | **AR-02.** `ArTracker` / `ArDetection` / failures, sealed session states, `ArSessionController` + debounce gate, `FakeArTracker` (cycles every registered reference, never a default club). Tests: 11 passed (`ar_session_controller_test.dart`). Promoted `vector_math` to a direct dependency for `Matrix4` — analyze forbids an undeclared import; still no AR plugin. |
 | 2026-09-07 | **AR-01.** `Marcador` / `TipoMarcador`, `assets/ar_markers.json` (3 active D-20 markers, spare omitted), `DataService.cargarMarcadores()`, `MarkerRegistry.resolve` exact lookup. Tests: 3 passed (`marker_registry_test.dart`). `anchoMetros` left at 0.15 — planned print, not measured. |
 | 2026-09-07 | **AR-00 code half** (commit `cd82136`). Measured all 10 logos with `arcoreimg`. 4 pass ≥ 75 after normalization; shipped to `assets/markers/`, wired into `pubspec.yaml`. Added `tools/normalize_markers.ps1` + `tools/score_markers.ps1`. **Amended D-20** (the 3 originally ratified markers scored 50/50/none — picked unmeasured) and added **D-21** (normalize + re-score). Constitution → v2.1.0. |
 | 2026-09-07 | **AR reset governance.** Attempt #1 abandoned. Wrote `ar-postmortem.md`, `ar-architecture.md`, `ar-marker-guide.md`; rewrote Article VI into 11 enforceable clauses; ratified D-12…D-20; split monolithic US-05…US-08 into slices AR-00…AR-07. Constitution → v2.0.0. Added `.cursor/rules/`. |
@@ -161,8 +174,9 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 ## 9. Current task
 
-> Implement **AR-02** (`ArTracker` seam + session state machine — no plugin).
-> Read its `Prompt` block in `WORK_ITEMS.md` and follow it exactly.
+> Implement **AR-03** (AR scan UI on the state machine, fake tracker). Read its
+> `Prompt` block in `WORK_ITEMS.md` and follow it exactly. Delete the Timer mock;
+> do not patch it.
 
 _(The human edits this line each session. Leave it pointing at the next item
 when you finish.)_

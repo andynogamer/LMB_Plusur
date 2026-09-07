@@ -35,7 +35,7 @@
 | SP-01 | 🔧 | 🔴 P0 | Flutter-native AR spike (R-01) | ☑ | AR foundation |
 | AR-00 | 📗 | 🔴 P0 | Ship the 4 measured markers (≥ 75) into `assets/markers/` | ◐ código ☑ · imprimir ☐ | 3 markers (blocks AR-05) |
 | AR-01 | 📗 | 🔴 P0 | `Marcador` data + `MarkerRegistry` — no camera | ☑ | 3 markers |
-| AR-02 | 📗 | 🔴 P0 | `ArTracker` seam + session state machine — no plugin | ☐ | AR foundation |
+| AR-02 | 📗 | 🔴 P0 | `ArTracker` seam + session state machine — no plugin | ☑ | AR foundation |
 | AR-03 | 📗 | 🔴 P0 | AR scan UI on the state machine (fake tracker) | ☐ | UI / chrome |
 | AR-04 | 📗 | 🔴 P0 | Pin plugin + `ArCoreImageTracker` availability probe | ☐ | AR foundation |
 | AR-05 | 📗 | 🔴 P0 | Real detection → deterministic lock (kills BUG-01) | ☐ | 3 markers |
@@ -273,7 +273,7 @@ files need not exist yet).
 
 ---
 
-## AR-02 · 📗 · 🔴 P0 · `ArTracker` seam + session state machine (no plugin) · ☐ Pendiente
+## AR-02 · 📗 · 🔴 P0 · `ArTracker` seam + session state machine (no plugin) · ☑ Hecho
 
 **Prompt**
 ```

@@ -15,6 +15,8 @@ dependencies:
   cached_network_image: ^3.4.1
   shared_preferences: ^2.5.5
   audioplayers: ^6.8.1
+  # Matrix4 for ArDetection.pose (architecture §3). Not an AR plugin.
+  vector_math: ^2.1.4
   # Activar cuando exista el mÃ³dulo de Unity exportado para AR.
   # flutter_unity_widget: ^2022.2.1
 
