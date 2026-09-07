@@ -109,11 +109,23 @@ class _TeamMenuScreenState extends State<TeamMenuScreen> {
                   const SizedBox(height: 18),
                   FeatureCard(
                     title: 'Abrir experiencia AR',
-                    subtitle: 'Apunta la cámara al logo de este equipo.',
+                    subtitle: 'Apunta la cámara al marcador AR de este equipo.',
                     icon: Icons.view_in_ar_rounded,
                     onTap: () {
                       Navigator.of(context).pushNamed(
                         AppRoutes.ar,
+                        arguments: equipo,
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  FeatureCard(
+                    title: 'Mostrar marcador AR',
+                    subtitle: 'Ábrelo en otra pantalla o imprímelo para escanear.',
+                    icon: Icons.qr_code_2_rounded,
+                    onTap: () {
+                      Navigator.of(context).pushNamed(
+                        AppRoutes.markers,
                         arguments: equipo,
                       );
                     },

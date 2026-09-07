@@ -32,8 +32,7 @@ class _MainBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 28),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: ListView(
         children: [
           Text(
             'LIGA MEXICANA',
@@ -62,10 +61,10 @@ class _MainBody extends StatelessWidget {
               height: 1.45,
             ),
           ),
-          const Spacer(),
+          const SizedBox(height: 24),
           FeatureCard(
-            title: 'Escanear Logo',
-            subtitle: 'Apunta la cámara al logo y abre la experiencia AR.',
+            title: 'Escanear marcador AR',
+            subtitle: 'Apunta al marcador del club, no a un logo genérico.',
             icon: Icons.view_in_ar_rounded,
             onTap: () => Navigator.of(context).pushNamed(AppRoutes.ar),
           ),
@@ -75,6 +74,13 @@ class _MainBody extends StatelessWidget {
             subtitle: 'Elige manualmente un club de la Zona Sur.',
             icon: Icons.sports_baseball_rounded,
             onTap: () => Navigator.of(context).pushNamed(AppRoutes.teams),
+          ),
+          const SizedBox(height: 14),
+          FeatureCard(
+            title: 'Ver marcadores AR',
+            subtitle: 'Imprime o muestra el objetivo único de cada club.',
+            icon: Icons.qr_code_2_rounded,
+            onTap: () => Navigator.of(context).pushNamed(AppRoutes.markers),
           ),
           const SizedBox(height: 12),
         ],

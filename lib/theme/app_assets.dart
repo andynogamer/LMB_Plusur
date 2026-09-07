@@ -25,4 +25,33 @@ abstract final class AppAssets {
   };
 
   static String? logoForEquipo(String equipoId) => teamLogoById[equipoId];
+
+  /// Unique AR tracking cards (logo + per-team feature pattern).
+  /// Five clubs share `logo_base.png` in [teamLogoById], so those paths cannot
+  /// be registered as tracking images without colliding.
+  ///
+  /// Scan these cards (print or another screen). Raw merch wordmarks look
+  /// alike to ARCore and Guerreros (white on black) steals those matches.
+  static const Map<String, String> trackingMarkerById = {
+    'diablos_rojos': 'assets/markers/diablos_rojos.png',
+    'bravos_leon': 'assets/markers/bravos_leon.png',
+    'conspiradores_queretaro': 'assets/markers/conspiradores_queretaro.png',
+    'aguila_veracruz': 'assets/markers/aguila_veracruz.png',
+    'guerreros_oaxaca': 'assets/markers/guerreros_oaxaca.png',
+    'leones_yucatan': 'assets/markers/leones_yucatan.png',
+    'olmecas_tabasco': 'assets/markers/olmecas_tabasco.png',
+    'pericos_puebla': 'assets/markers/pericos_puebla.png',
+    'piratas_campeche': 'assets/markers/piratas_campeche.png',
+    'tigres_quintana_roo': 'assets/markers/tigres_quintana_roo.png',
+  };
+
+  static List<String> get trackingImagePaths =>
+      trackingMarkerById.values.toList(growable: false);
+
+  static List<String> trackingImagePathsFor(String? equipoId) {
+    if (equipoId == null) return trackingImagePaths;
+    final path = trackingMarkerById[equipoId];
+    if (path == null) return trackingImagePaths;
+    return [path];
+  }
 }

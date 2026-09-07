@@ -8,4 +8,5 @@ abstract final class AppRoutes {
   static const String trivia = '/trivia';
   static const String triviaResults = '/trivia-results';
   static const String highlights = '/highlights';
+  static const String markers = '/marcadores';
 }

@@ -1,18 +1,24 @@
-import 'dart:async';
-import 'dart:io';
+import 'dart:io' show Platform;
 import 'dart:ui';
 
-import 'package:camera/camera.dart';
+import 'package:ar_flutter_plugin_plus/ar_flutter_plugin.dart';
+import 'package:ar_flutter_plugin_plus/datatypes/config_planedetection.dart';
+import 'package:ar_flutter_plugin_plus/managers/ar_anchor_manager.dart';
+import 'package:ar_flutter_plugin_plus/managers/ar_location_manager.dart';
+import 'package:ar_flutter_plugin_plus/managers/ar_object_manager.dart';
+import 'package:ar_flutter_plugin_plus/managers/ar_session_manager.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 import '../models/equipo_model.dart';
 import '../models/marcador_model.dart';
 import '../routes/app_routes.dart';
+import '../services/arcore_install.dart';
 import '../services/data_service.dart';
 import '../services/feedback_service.dart';
-import '../services/logo_matcher_service.dart';
+import '../services/image_detection_gate.dart';
 import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_logo.dart';
@@ -21,6 +27,8 @@ import '../widgets/feature_card.dart';
 import '../widgets/primary_button.dart';
 
 /// AR scan + 3D stage (US-06 / US-07).
+///
+/// Live recognition is ARCore/ARKit image tracking via `ar_flutter_plugin_plus`.
 class ArViewScreen extends StatefulWidget {
   const ArViewScreen({
     super.key,
@@ -34,22 +42,25 @@ class ArViewScreen extends StatefulWidget {
 }
 
 class _ArViewScreenState extends State<ArViewScreen>
-    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   final DataService _dataService = DataService();
-  final LogoMatcherService _matcher = LogoMatcherService();
+  final ImageDetectionGate _detectionGate = ImageDetectionGate();
 
-  CameraController? _camera;
+  ARSessionManager? _arSessionManager;
+  ARObjectManager? _arObjectManager;
   List<Marcador> _marcadores = [];
   List<Equipo> _equipos = [];
   Marcador? _detectedMarcador;
   Equipo? _detectedEquipo;
   bool _demoMode = false;
-  bool _busy = false;
-  bool _permissionDenied = false;
-  bool _cameraReady = false;
+  bool _arReady = false;
   String? _statusMessage;
-  Timer? _scanTimer;
   late final AnimationController _scanController;
+
+  bool get _supportsArTracking {
+    if (kIsWeb) return false;
+    return Platform.isAndroid || Platform.isIOS;
+  }
 
   @override
   void initState() {
@@ -68,147 +79,134 @@ class _ArViewScreenState extends State<ArViewScreen>
         _dataService.cargarMarcadores(),
         _dataService.cargarEquipos(),
       ]);
-      _marcadores = results[0] as List<Marcador>;
-      _equipos = results[1] as List<Equipo>;
-      await _matcher.loadMarcadores(_marcadores);
       if (!mounted) return;
-      await _initCamera();
+      setState(() {
+        _marcadores = results[0] as List<Marcador>;
+        _equipos = results[1] as List<Equipo>;
+        if (!_supportsArTracking) {
+          _statusMessage =
+              'Este dispositivo no tiene seguimiento AR. Usa el modo demo.';
+        }
+      });
     } catch (error, stack) {
       debugPrint('AR bootstrap failed: $error\n$stack');
       if (!mounted) return;
       setState(() {
         _statusMessage =
-            'No se pudo iniciar el esc?ner. Prueba el modo demo.';
+            'No se pudo iniciar el escáner. Prueba el modo demo.';
       });
     }
   }
 
-  Future<void> _initCamera() async {
-    final status = await Permission.camera.request();
-    if (!status.isGranted) {
+  void _onARViewCreated(
+    ARSessionManager arSessionManager,
+    ARObjectManager arObjectManager,
+    ARAnchorManager _,
+    ARLocationManager __,
+  ) {
+    _arSessionManager = arSessionManager;
+    _arObjectManager = arObjectManager;
+    arSessionManager.onImageDetected = (imageName, transformation) {
+      _onImageDetected(imageName);
+    };
+    arSessionManager.onImageTrackingConfigured = (success) {
+      debugPrint('LMB_AR image database configured=$success');
       if (!mounted) return;
       setState(() {
-        _permissionDenied = true;
-        _statusMessage =
-            'Necesitamos la c?mara para escanear logos. Puedes elegir el equipo manualmente.';
+        _arReady = success;
+        if (!success) {
+          _statusMessage =
+              'No se pudieron cargar los marcadores. Prueba el modo demo.';
+        }
       });
-      return;
-    }
+    };
+    _prepareArSession();
+  }
 
-    final cameras = await availableCameras();
-    if (cameras.isEmpty) {
+  Future<void> _prepareArSession() async {
+    if (!mounted || _detectedMarcador != null || _arReady) return;
+
+    if (Platform.isAndroid) {
+      final status = await ArCoreInstall.ensure();
       if (!mounted) return;
-      setState(() {
-        _statusMessage =
-            'No hay c?mara disponible. Usa el modo demo o elige un equipo.';
-      });
-      return;
+      switch (status) {
+        case ArCoreInstallStatus.installRequested:
+          setState(() {
+            _statusMessage =
+                'Google está activando la cámara AR. Acepta la ventana que aparece.';
+          });
+          return;
+        case ArCoreInstallStatus.declined:
+        case ArCoreInstallStatus.unsupported:
+          setState(() {
+            _statusMessage =
+                'Este teléfono no puede abrir la cámara AR. Usa el modo demo o elige un equipo.';
+          });
+          return;
+        case ArCoreInstallStatus.installed:
+          break;
+      }
     }
 
-    final camera = cameras.firstWhere(
-      (c) => c.lensDirection == CameraLensDirection.back,
-      orElse: () => cameras.first,
-    );
-
-    final controller = CameraController(
-      camera,
-      ResolutionPreset.medium,
-      enableAudio: false,
-      imageFormatGroup: ImageFormatGroup.jpeg,
-    );
+    final session = _arSessionManager;
+    final objects = _arObjectManager;
+    if (session == null || objects == null) return;
 
     try {
-      await controller.initialize();
-    } catch (error) {
-      debugPrint('Camera init failed: $error');
+      await session.onInitialize(
+        showAnimatedGuide: false,
+        showFeaturePoints: false,
+        showPlanes: false,
+        showWorldOrigin: false,
+        handleTaps: false,
+        trackingImagePaths:
+            AppAssets.trackingImagePathsFor(widget.equipoHint?.id),
+        continuousImageTracking: true,
+        imageTrackingUpdateIntervalMs: 400,
+      );
+      objects.onInitialize();
+    } on PlatformException catch (error) {
+      debugPrint('LMB_AR init failed: ${error.code} ${error.message}');
       if (!mounted) return;
       setState(() {
-        _statusMessage = 'No se pudo abrir la c?mara. Usa el modo demo.';
+        _statusMessage =
+            'No se pudo abrir la cámara AR. Usa el modo demo o elige un equipo.';
+      });
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _prepareArSession();
+    }
+  }
+
+  void _onImageDetected(String imageName) {
+    if (!mounted || _detectedMarcador != null) return;
+
+    final equipoId = _detectionGate.observe(
+      imageName,
+      requiredEquipoId: widget.equipoHint?.id,
+    );
+    debugPrint('LMB_AR detected="$imageName" -> $equipoId');
+    if (equipoId == null) return;
+
+    final resolved = _resolverMarcador(equipoId);
+    if (resolved == null) {
+      setState(() {
+        _statusMessage = 'Logo visto, pero no hay contenido para ese equipo.';
       });
       return;
     }
 
-    if (!mounted) {
-      await controller.dispose();
-      return;
-    }
-
-    await _camera?.dispose();
-    _camera = controller;
+    FeedbackService.instance.success();
     setState(() {
-      _cameraReady = true;
-      _permissionDenied = false;
+      _detectedMarcador = resolved.marcador;
+      _detectedEquipo = resolved.equipo;
+      _demoMode = false;
       _statusMessage = null;
     });
-    _startScanLoop();
-  }
-
-  void _startScanLoop() {
-    _scanTimer?.cancel();
-    _scanTimer = Timer.periodic(const Duration(seconds: 2), (_) {
-      _captureAndMatch();
-    });
-  }
-
-  Future<void> _captureAndMatch() async {
-    final controller = _camera;
-    if (_busy ||
-        _detectedMarcador != null ||
-        controller == null ||
-        !controller.value.isInitialized ||
-        controller.value.isTakingPicture) {
-      return;
-    }
-
-    _busy = true;
-    try {
-      final shot = await controller.takePicture();
-      final bytes = await File(shot.path).readAsBytes();
-      try {
-        await File(shot.path).delete();
-      } catch (_) {}
-
-      final match = await _matcher.matchFromCamera(
-        bytes,
-        preferEquipoId: widget.equipoHint?.id,
-      );
-      debugPrint(
-        'LMB_SCAN equipo=${match?.equipoId} dist=${match?.distance} '
-        'accepted=${match?.accepted}',
-      );
-      if (!mounted) return;
-
-      if (match == null || !match.accepted) {
-        setState(() {
-          _statusMessage = match == null
-              ? 'No se ley? el logo. Ac?rcalo al centro de la c?mara.'
-              : 'A?n no coincide. Centra el logo (${match.distance}).';
-        });
-        return;
-      }
-
-      final resolved = _resolverMarcador(match.equipoId);
-      if (resolved == null) {
-        setState(() {
-          _statusMessage = 'Logo visto, pero no hay contenido para ese equipo.';
-        });
-        return;
-      }
-
-      _scanTimer?.cancel();
-      await FeedbackService.instance.success();
-      if (!mounted) return;
-      setState(() {
-        _detectedMarcador = resolved.marcador;
-        _detectedEquipo = resolved.equipo;
-        _demoMode = false;
-        _statusMessage = null;
-      });
-    } catch (error) {
-      debugPrint('Scan frame failed: $error');
-    } finally {
-      _busy = false;
-    }
   }
 
   ({Marcador marcador, Equipo? equipo})? _resolverMarcador(String equipoId) {
@@ -249,7 +247,7 @@ class _ArViewScreenState extends State<ArViewScreen>
   Future<void> _activarDemo() async {
     if (_marcadores.isEmpty) {
       setState(() {
-        _statusMessage = 'A?n no hay marcadores cargados.';
+        _statusMessage = 'Aún no hay marcadores cargados.';
       });
       return;
     }
@@ -276,7 +274,6 @@ class _ArViewScreenState extends State<ArViewScreen>
     }
     equipo ??= hint;
 
-    _scanTimer?.cancel();
     await FeedbackService.instance.tap();
     if (!mounted) return;
     setState(() {
@@ -288,15 +285,13 @@ class _ArViewScreenState extends State<ArViewScreen>
   }
 
   void _reintentar() {
+    _detectionGate.reset();
     setState(() {
       _detectedMarcador = null;
       _detectedEquipo = null;
       _demoMode = false;
       _statusMessage = null;
     });
-    if (_cameraReady) {
-      _startScanLoop();
-    }
   }
 
   void _cerrarExperiencia() {
@@ -306,33 +301,16 @@ class _ArViewScreenState extends State<ArViewScreen>
   String get _scanHintCopy {
     final hint = widget.equipoHint;
     if (hint != null) {
-      return 'Apunta al logo de ${hint.nombre}';
+      return 'Apunta al marcador AR de ${hint.nombre}';
     }
-    return 'Apunta al logo de un equipo (marcador AR)';
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    final controller = _camera;
-    if (controller == null || !controller.value.isInitialized) return;
-    if (state == AppLifecycleState.inactive) {
-      _scanTimer?.cancel();
-      controller.dispose();
-      _camera = null;
-      _cameraReady = false;
-    } else if (state == AppLifecycleState.resumed &&
-        _detectedMarcador == null &&
-        !_permissionDenied) {
-      _initCamera();
-    }
+    return 'Apunta al marcador AR del equipo';
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _scanTimer?.cancel();
     _scanController.dispose();
-    _camera?.dispose();
+    _arSessionManager?.dispose();
     super.dispose();
   }
 
@@ -345,8 +323,18 @@ class _ArViewScreenState extends State<ArViewScreen>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          if (_cameraReady && _camera != null)
-            CameraPreview(_camera!)
+          if (_supportsArTracking)
+            Positioned.fill(
+              child: ARView(
+                onARViewCreated: _onARViewCreated,
+                planeDetectionConfig: PlaneDetectionConfig.none,
+                permissionPromptDescription:
+                    'Necesitamos la cámara para escanear logos de la Zona Sur.',
+                permissionPromptButtonText: 'Permitir cámara',
+                permissionPromptParentalRestriction:
+                    'La cámara está restringida. Revisa los ajustes del dispositivo.',
+              ),
+            )
           else
             const _ArFallbackBackground(),
           if (detected != null)
@@ -354,7 +342,7 @@ class _ArViewScreenState extends State<ArViewScreen>
           else
             IgnorePointer(
               child: FadeTransition(
-                opacity: Tween<double>(begin: 0.12, end: 0.4).animate(
+                opacity: Tween<double>(begin: 0.08, end: 0.22).animate(
                   CurvedAnimation(
                     parent: _scanController,
                     curve: Curves.easeInOut,
@@ -448,12 +436,19 @@ class _ArViewScreenState extends State<ArViewScreen>
                       alignment: Alignment.bottomCenter,
                       child: _ScanControls(
                         hint: _scanHintCopy,
-                        statusMessage: _statusMessage,
-                        permissionDenied: _permissionDenied,
+                        statusMessage: _statusMessage ??
+                            (_arReady
+                                ? 'Buscando el marcador AR. Llénalo en el recuadro.'
+                                : null),
                         onDemo: _activarDemo,
-                        onRetryPermission: _initCamera,
                         onPickTeam: () {
                           Navigator.of(context).pushNamed(AppRoutes.teams);
+                        },
+                        onShowMarkers: () {
+                          Navigator.of(context).pushNamed(
+                            AppRoutes.markers,
+                            arguments: widget.equipoHint,
+                          );
                         },
                       ),
                     ),
@@ -499,17 +494,15 @@ class _ScanControls extends StatelessWidget {
     required this.hint,
     required this.onDemo,
     required this.onPickTeam,
-    required this.onRetryPermission,
+    required this.onShowMarkers,
     this.statusMessage,
-    this.permissionDenied = false,
   });
 
   final String hint;
   final String? statusMessage;
-  final bool permissionDenied;
   final VoidCallback onDemo;
   final VoidCallback onPickTeam;
-  final VoidCallback onRetryPermission;
+  final VoidCallback onShowMarkers;
 
   @override
   Widget build(BuildContext context) {
@@ -536,7 +529,7 @@ class _ScanControls extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             statusMessage ??
-                'Escaneando logos de la Zona Sur? Mant?n el marcador centrado.',
+                'Usa el marcador AR del club (marco con patrón), no un logo suelto. Ábrelo en otra pantalla o imprímelo.',
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
               color: AppColors.muted,
@@ -546,19 +539,23 @@ class _ScanControls extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          if (permissionDenied)
-            PrimaryButton(
-              label: 'Permitir c?mara',
-              icon: Icons.camera_alt_rounded,
-              onPressed: onRetryPermission,
-            ),
-          if (permissionDenied) const SizedBox(height: 10),
           PrimaryButton(
             label: 'Elegir equipo manualmente',
             icon: Icons.sports_baseball_rounded,
             onPressed: onPickTeam,
           ),
           const SizedBox(height: 10),
+          TextButton(
+            onPressed: onShowMarkers,
+            child: Text(
+              'Ver marcador para escanear',
+              style: GoogleFonts.poppins(
+                color: AppColors.button,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+            ),
+          ),
           TextButton(
             onPressed: onDemo,
             child: Text(
@@ -627,7 +624,7 @@ class _ArMarcadorOverlay extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${marcador.tipo.name.toUpperCase()} ? modelo 3D listo',
+                  '${marcador.tipo.name.toUpperCase()} · modelo 3D listo',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
                     color: AppColors.muted,
@@ -638,7 +635,7 @@ class _ArMarcadorOverlay extends StatelessWidget {
                 if (demoMode) ...[
                   const SizedBox(height: 6),
                   Text(
-                    'Detecci?n simulada (modo demo)',
+                    'Detección simulada (modo demo)',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.poppins(
                       color: AppColors.muted,

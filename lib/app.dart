@@ -6,6 +6,7 @@ import 'screens/ar_view_screen.dart';
 import 'screens/highlights_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/main_screen.dart';
+import 'screens/marker_gallery_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/team_list_screen.dart';
 import 'screens/team_menu_screen.dart';
@@ -56,6 +57,11 @@ class LmbPlusurApp extends StatelessWidget {
         );
       case AppRoutes.highlights:
         return _page(HighlightsScreen(equipo: equipo!), settings);
+      case AppRoutes.markers:
+        return _page(
+          MarkerGalleryScreen(equipo: equipo),
+          settings,
+        );
       default:
         return _page(const SplashScreen(), settings);
     }
