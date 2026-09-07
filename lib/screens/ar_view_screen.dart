@@ -13,6 +13,7 @@ import '../routes/app_routes.dart';
 import '../services/data_service.dart';
 import '../services/feedback_service.dart';
 import '../services/logo_matcher_service.dart';
+import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/ar_model_viewport.dart';
@@ -167,46 +168,39 @@ class _ArViewScreenState extends State<ArViewScreen>
         await File(shot.path).delete();
       } catch (_) {}
 
-      var marcadorId = await _matcher.matchMarcadorBytes(bytes);
-      if (marcadorId == null) {
-        final equipoId = await _matcher.matchBytes(bytes);
-        if (equipoId != null) {
-          for (final m in _marcadores) {
-            if (m.equipoId == equipoId) {
-              marcadorId = m.id;
-              break;
-            }
-          }
-        }
+      final match = await _matcher.matchFromCamera(
+        bytes,
+        preferEquipoId: widget.equipoHint?.id,
+      );
+      debugPrint(
+        'LMB_SCAN equipo=${match?.equipoId} dist=${match?.distance} '
+        'accepted=${match?.accepted}',
+      );
+      if (!mounted) return;
+
+      if (match == null || !match.accepted) {
+        setState(() {
+          _statusMessage = match == null
+              ? 'No se ley? el logo. Ac?rcalo al centro de la c?mara.'
+              : 'A?n no coincide. Centra el logo (${match.distance}).';
+        });
+        return;
       }
 
-      if (marcadorId == null || !mounted) return;
-
-      Marcador? marcador;
-      for (final m in _marcadores) {
-        if (m.id == marcadorId) {
-          marcador = m;
-          break;
-        }
-      }
-      if (marcador == null) return;
-
-      Equipo? equipo;
-      if (marcador.equipoId != null) {
-        for (final e in _equipos) {
-          if (e.id == marcador.equipoId) {
-            equipo = e;
-            break;
-          }
-        }
+      final resolved = _resolverMarcador(match.equipoId);
+      if (resolved == null) {
+        setState(() {
+          _statusMessage = 'Logo visto, pero no hay contenido para ese equipo.';
+        });
+        return;
       }
 
       _scanTimer?.cancel();
       await FeedbackService.instance.success();
       if (!mounted) return;
       setState(() {
-        _detectedMarcador = marcador;
-        _detectedEquipo = equipo;
+        _detectedMarcador = resolved.marcador;
+        _detectedEquipo = resolved.equipo;
         _demoMode = false;
         _statusMessage = null;
       });
@@ -215,6 +209,41 @@ class _ArViewScreenState extends State<ArViewScreen>
     } finally {
       _busy = false;
     }
+  }
+
+  ({Marcador marcador, Equipo? equipo})? _resolverMarcador(String equipoId) {
+    Marcador? marcador;
+    for (final item in _marcadores) {
+      if (item.equipoId == equipoId) {
+        marcador = item;
+        break;
+      }
+    }
+
+    Equipo? equipo;
+    for (final item in _equipos) {
+      if (item.id == equipoId) {
+        equipo = item;
+        break;
+      }
+    }
+
+    final logo = AppAssets.logoForEquipo(equipoId);
+    if (marcador == null) {
+      if (equipo == null || logo == null) return null;
+      marcador = Marcador(
+        id: 'marcador_$equipoId',
+        equipoId: equipoId,
+        tipo: TipoMarcador.pelota,
+        titulo: equipo.nombre,
+        infoTexto: equipo.historia,
+        markerImage: logo,
+        modelAsset: 'assets/models/placeholders/estadio.glb',
+        animaciones: const ['idle'],
+      );
+    }
+
+    return (marcador: marcador, equipo: equipo);
   }
 
   Future<void> _activarDemo() async {
