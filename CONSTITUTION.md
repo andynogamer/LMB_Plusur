@@ -17,7 +17,7 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 | [`docs/ar-architecture.md`](./docs/ar-architecture.md) | The AR technical contract: layers, `ArTracker` seam, state machine, error taxonomy, budgets. |
 | [`docs/ar-marker-guide.md`](./docs/ar-marker-guide.md) | How to author printable markers ARCore can actually track. |
 
-**Version**: 2.2.0 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-07
+**Version**: 2.2.1 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-07
 
 > **v2.0.0 — AR reset.** AR attempt #1 (branch `ar-have-too-many-errors`) was
 > abandoned and work restarted on `fresh-start`. Article VI was rewritten from
@@ -39,6 +39,11 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 > agents and models, so keeping documentation current is now a **governance
 > obligation** (Governance §8), not a courtesy. `docs/agent-handoff.md` is the
 > session entry point and MUST be updated before any task is reported done.
+>
+> **v2.2.1 — known debt caught up with AR-01…AR-03.** No rule changed. Debt #1
+> and #3 still described a tree that no longer exists (`lib/ar/` missing, the
+> `Timer` mock still the AR screen). Those statements are corrected so the next
+> agent does not revive `ar_view_screen.dart`.
 
 ---
 
@@ -523,8 +528,9 @@ MUST NOT:
 
 ## Known debt (do not "fix" casually)
 
-1. **AR is simulated** — real marker tracking + 3D unfinished. Attempt #1 was
-   abandoned; `lib/ar/` does not exist yet. Rebuild per Article VI.
+1. **AR tracking is still simulated** — `ArScanScreen` is driven by
+   `FakeArTracker` (AR-03). Real ARCore detection and in-session 3D are
+   AR-04…AR-06. Do not treat the demo badge as production recognition.
 2. **Markers shipped; prints pending.** Four references are in
    `assets/markers/` scoring 100/100/100/90 (D-20/D-21) and registered in
    `pubspec.yaml`. Marker art is **no longer a blocker**. Remaining: print at
@@ -532,12 +538,13 @@ MUST NOT:
    `conspiradores_queretaro`, `el_aguila_veracruz` and `pericos_puebla` yield
    **no keypoints at all** and can never be direct targets — they would need
    marker cards, which today they do not.
-3. **`ArViewScreen` is pre-reset code** — a `Timer` mock with loose state
-   booleans at `lib/screens/ar_view_screen.dart`. It is superseded by
-   Article VI.5 and will be replaced, not patched.
+3. **Timer mock deleted (AR-03).** `lib/screens/ar_view_screen.dart` is gone.
+   The AR route is `ArScanScreen`. Do not restore the `Timer` or the Guerreros
+   default. Scan UI must keep reading `ArSessionState` only.
 4. **Video filter UI missing.**
 5. **Highlights/videos still demo** — swap to real remote URLs (R-03).
-6. **Minimal automated tests**, and none for AR yet.
+6. **Tests exist for the AR core** (`marker_registry`, session controller, scan
+   screen). Device acceptance for real detection is still unfilled.
 7. **README still Flutter template.**
 8. **`flutter_unity_widget` comment in `pubspec.yaml`** — leave unused; do not
    activate. Delete it when Article VI work lands.

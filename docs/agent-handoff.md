@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-09-07 · by: AR-02 session
+**Last updated:** 2026-09-07 · by: AR-03 session
 
 ---
 
@@ -55,6 +55,11 @@ Measured later, four of them were. **Never copy code from that branch.**
 **Done**
 
 - US-01…US-04 — team search, AR entry point, trivia last score, feedback sfx.
+- AR-03 — `ArScanScreen` is the AR route. One panel per `ArSessionState`.
+  Marker content (`titulo` / `infoTexto`) renders only in `ArLocked`.
+  `MODO DEMO` shows while `isDemo` is true. `ArFailed` uses the §8 Spanish
+  copy and always includes **Elegir equipo manualmente**. The `Timer` mock
+  (`lib/screens/ar_view_screen.dart`) is **deleted**. Do not restore it.
 - AR-02 — `ArTracker` seam, sealed `ArSessionState`, `ArSessionController`
   (debounce: same name N times in 2 s, default N=2, injectable clock),
   `FakeArTracker`. No plugin. `ArLocked` is reachable only after a confirmed
@@ -89,17 +94,15 @@ Measured later, four of them were. **Never copy code from that branch.**
 **Next**
 
 ```
-AR-03      no plugin, no camera, fully unit-testable
 AR-04 → AR-05 → AR-06 → AR-07   native AR
 ```
 
-Do **not** start AR-04 until AR-03 is merged and green. That ordering is the
-whole point of the reset: prove the state machine before native risk enters.
+AR-01…AR-03 are the no-plugin foundation. AR-04 is the first slice allowed to
+add `ar_flutter_plugin_plus` — in its own commit, exact pin, probe only.
 
-`lib/ar/` has the seam, the state machine, the registry, and `trackers/fake_ar_tracker.dart`.
-`lib/screens/ar_view_screen.dart` is still the pre-reset `Timer` mock — it gets
-**deleted** in AR-03, not patched. Wire the scan UI to `ArSessionController`,
-not to new detection booleans.
+`AppRoutes.ar` opens `ArScanScreen` on `FakeArTracker`. Demo still has no
+camera. `Simular siguiente marcador` cycles every registered marker; it is an
+explicit action, not an automatic lock.
 
 ## 5. Environment gotchas
 
@@ -120,6 +123,8 @@ not to new detection booleans.
   ```
 - `FakeArTracker` uses a **sync** detection stream so `emit()` is applied before
   the call returns. Do not `await` a frame to observe a scripted detection.
+  The scan screen listens through a `ValueNotifier` — a raw `setState` from
+  that sync emit does **not** schedule a Flutter frame.
 - `ArLost` is `isFullyTracked: false` on the locked marker. There is no
   background lost-timer. The 2 s debounce window is checked on the next
   detection, not by a `Timer`.
@@ -157,6 +162,7 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-09-07 | **AR-03.** `ArScanScreen` replaces the Timer mock (file deleted). One panel per `ArSessionState`; marker content only in `ArLocked`; `MODO DEMO` + **Elegir equipo manualmente** on every failure. Tests: 3 passed (`ar_scan_screen_test.dart`). Constitution known debt → v2.2.1 (no rule change). |
 | 2026-09-07 | **AR-02.** `ArTracker` / `ArDetection` / failures, sealed session states, `ArSessionController` + debounce gate, `FakeArTracker` (cycles every registered reference, never a default club). Tests: 11 passed (`ar_session_controller_test.dart`). Promoted `vector_math` to a direct dependency for `Matrix4` — analyze forbids an undeclared import; still no AR plugin. |
 | 2026-09-07 | **AR-01.** `Marcador` / `TipoMarcador`, `assets/ar_markers.json` (3 active D-20 markers, spare omitted), `DataService.cargarMarcadores()`, `MarkerRegistry.resolve` exact lookup. Tests: 3 passed (`marker_registry_test.dart`). `anchoMetros` left at 0.15 — planned print, not measured. |
 | 2026-09-07 | **AR-00 code half** (commit `cd82136`). Measured all 10 logos with `arcoreimg`. 4 pass ≥ 75 after normalization; shipped to `assets/markers/`, wired into `pubspec.yaml`. Added `tools/normalize_markers.ps1` + `tools/score_markers.ps1`. **Amended D-20** (the 3 originally ratified markers scored 50/50/none — picked unmeasured) and added **D-21** (normalize + re-score). Constitution → v2.1.0. |
@@ -174,9 +180,9 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 ## 9. Current task
 
-> Implement **AR-03** (AR scan UI on the state machine, fake tracker). Read its
-> `Prompt` block in `WORK_ITEMS.md` and follow it exactly. Delete the Timer mock;
-> do not patch it.
+> Implement **AR-04** (pin `ar_flutter_plugin_plus: 1.1.3` + `ArCoreImageTracker`
+> availability probe only). Read its `Prompt` block. Dependency and native
+> config are **separate commits**. Do not implement detection or 3D.
 
 _(The human edits this line each session. Leave it pointing at the next item
 when you finish.)_

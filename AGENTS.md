@@ -64,9 +64,9 @@ State of the tree:
 
 - UI shell, historia, trivia, last-score persistence, feedback sfx: **present**
   (US-01 … US-04 done).
-- `lib/ar/` **does not exist yet.** Building it is the current focus.
-- `lib/screens/ar_view_screen.dart` is a pre-reset `Timer` mock. It gets
-  **replaced**, not patched.
+- `lib/ar/` has the seam, registry, session machine, and `FakeArTracker`.
+- `lib/screens/ar/ar_scan_screen.dart` is the AR route. The `Timer` mock is
+  deleted. Do not restore it.
 - No AR dependency in `pubspec.yaml`. Adding one is its own work item.
 - **Markers are solved (2026-09-07).** `arcoreimg` measurement found four club
   logos scoring ≥ 75 after normalization, so ARCore can track the real logos —

@@ -2,7 +2,7 @@
 
 import 'models/equipo_model.dart';
 import 'routes/app_routes.dart';
-import 'screens/ar_view_screen.dart';
+import 'screens/ar/ar_scan_screen.dart';
 import 'screens/highlights_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/main_screen.dart';
@@ -37,7 +37,7 @@ class LmbPlusurApp extends StatelessWidget {
       case AppRoutes.main:
         return _page(const MainScreen(), settings);
       case AppRoutes.ar:
-        return _page(ArViewScreen(equipoHint: equipo), settings);
+        return _page(ArScanScreen(equipoHint: equipo), settings);
       case AppRoutes.teams:
         return _page(const TeamListScreen(), settings);
       case AppRoutes.teamMenu:
