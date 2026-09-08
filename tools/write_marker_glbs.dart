@@ -1,6 +1,5 @@
-// Writes one small GLB per grading marker. Baseball-simple placeholders
-// so AR-06 can anchor a distinct model before authored art arrives.
-// Each file is a single colored box, well under 4 MB and 50k triangles.
+// Writes the remaining scan-path placeholder: the Piratas trophy box.
+// Leones stadium and Olmecas player come from tools/write_lowpoly_glbs.py.
 
 import 'dart:convert';
 import 'dart:io';
@@ -8,22 +7,8 @@ import 'dart:typed_data';
 
 void main() {
   final out = Directory('assets/models');
-  writeBox(
-    out,
-    id: 'marcador_estadio_leones',
-    halfX: 0.06,
-    halfZ: 0.05,
-    height: 0.03,
-    rgba: [0.11, 0.48, 0.23, 1],
-  );
-  writeBox(
-    out,
-    id: 'marcador_jugador_olmecas',
-    halfX: 0.02,
-    halfZ: 0.02,
-    height: 0.12,
-    rgba: [0.12, 0.16, 0.36, 1],
-  );
+  // Leones stadium and Olmecas player are authored by
+  // tools/write_lowpoly_glbs.py — do not clobber them with boxes.
   writeBox(
     out,
     id: 'marcador_trofeo_piratas',

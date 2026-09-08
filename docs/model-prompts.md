@@ -3,6 +3,15 @@
 Branch `full-project`. **20 GLBs.** Every Zona Sur club gets the same two
 models. Only the colors and the crest change.
 
+**On disk today:** a shared low-poly mesh family from
+`tools/write_lowpoly_glbs.py` (vertex colors, no textures). Stadiums have
+no clips. Players are an articulated biped (node TRS, not skinned) with
+clips `idle` (weight shift + breath) and `gesto` (point the bat, return
+to rest). Regenerate from the repo root with
+`python tools/write_lowpoly_glbs.py` or `--players-only`. The prompts
+below are the upgrade path if replacing those files with authored art.
+Do not add scan targets to “cover” clubs.
+
 This is not 10 scan targets. The camera still locks only the measured markers
 (Leones, Olmecas, Piratas). The other clubs open these models from the team
 menu. Do not generate extra marker images, and do not ask the tool to “make

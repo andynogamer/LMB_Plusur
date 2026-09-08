@@ -17,7 +17,7 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 | [`docs/ar-architecture.md`](./docs/ar-architecture.md) | The AR technical contract: layers, `ArTracker` seam, state machine, error taxonomy, budgets. |
 | [`docs/ar-marker-guide.md`](./docs/ar-marker-guide.md) | How to author printable markers ARCore can actually track. |
 
-**Version**: 2.3.0 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-07
+**Version**: 2.3.1 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-07
 
 > **v2.0.0 — AR reset.** AR attempt #1 (branch `ar-have-too-many-errors`) was
 > abandoned and work restarted on `fresh-start`. Article VI was rewritten from
@@ -68,6 +68,10 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 > Sur club: one static stadium GLB and one animated player GLB. Same mesh
 > family, team color and crest only. This does **not** make the other seven
 > logos scannable. A matcher is still forbidden.
+>
+> **v2.3.1 — D-22 low-poly files exist.** No rule changed. `tools/write_lowpoly_glbs.py`
+> writes the 20 GLBs (stadium static, player clips `idle` + `gesto`). Scan
+> targets stay D-20. Debt #1 no longer says the catalog is missing.
 
 ---
 
@@ -92,7 +96,7 @@ agents (`CONSTITUTION.md`, `AGENTS.md`, `WORK_ITEMS.md`) are written in
 |---|---|---|---|
 | App shell | Flutter 3 / Dart 3.3+ | `lib/` | Implemented (navigation, theme, screens). |
 | Team content | Local JSON | `assets/data.json` | Implemented for 10 Zona Sur clubs (historia + trivias). |
-| AR | **Flutter-native (D-01)** — ARCore/ARKit Augmented Images behind an `ArTracker` seam (D-12) | `lib/ar/`, `lib/screens/ar/` | AR-05 accepted on device. AR-06 places a GLB on the pose; device hold/dispose not checked. Demo only with `LMB_AR_DEMO`. |
+| AR | **Flutter-native (D-01)** — ARCore/ARKit Augmented Images behind an `ArTracker` seam (D-12) | `lib/ar/`, `lib/screens/ar/` | AR-05 accepted on device. AR-06 places a GLB on the pose; D-22 low-poly catalog ships; device hold/dispose not checked. Demo only with `LMB_AR_DEMO`. |
 | Video filters | Flutter on-device | — | Not started; graded requirement. |
 | Highlights / videos | Remote URLs (D-07) | demo data today | Placeholders until URLs are filled. |
 
@@ -554,17 +558,19 @@ MUST NOT:
 
 ## Known debt (do not "fix" casually)
 
-1. **Model catalog is specified, not generated (D-22).** Docs require 20 GLBs
-   (`estadio.glb` static, `jugador.glb` with `idle` and `gesto`) for all 10
-   clubs. Only placeholder boxes exist today, and only for the three scan
-   markers. Do not treat a missing file as a reason to add a scan target or
-   a matcher.
+1. **Model catalog is low-poly procedural (D-22).** 20 GLBs ship under
+   `assets/models/<club_id>/` (`estadio.glb` static, `jugador.glb` with
+   `idle` and `gesto`). Same mesh family; kit color only. The player is an
+   articulated biped (node TRS, not skinned). Generator:
+   `tools/write_lowpoly_glbs.py`. `docs/model-prompts.md` is the upgrade
+   path for nicer art. Do not add unmeasured logos to the scan database
+   to “cover” the other seven clubs, and do not write a matcher.
 2. **In-session 3D is coded, not device-checked (AR-06).** `attachModel`
-   places a per-marker GLB on the fully-tracked pose. Files under
-   `assets/models/` are placeholder boxes, not authored D-03 art — replace
-   the GLB, do not put a WebView on the camera. Still open: model holds on
-   the card, and enter/leave AR 5 times does not crash. Plugin 1.1.3
-   hardcodes width at 0.2 m; re-run `tools/patch_arcore_image_width.ps1`
+   places a per-marker GLB on the fully-tracked pose. Leones uses the
+   stadium mesh; Olmecas uses the player mesh; Piratas is still the
+   trophy box. Do not put a WebView on the camera. Still open: model
+   holds on the card, and enter/leave AR 5 times does not crash. Plugin
+   1.1.3 hardcodes width at 0.2 m; re-run `tools/patch_arcore_image_width.ps1`
    after `flutter pub get`. Do not bump the pin and do not write a matcher.
 3. **Markers shipped; prints pending.** Four references are in
    `assets/markers/` scoring 100/100/100/90 (D-20/D-21) and registered in

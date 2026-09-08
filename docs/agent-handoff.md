@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-09-07 · by: full-project docs session
+**Last updated:** 2026-09-07 · by: D-22 biped player clips
 
 ---
 
@@ -90,9 +90,19 @@ Measured later, four of them were. **Never copy code from that branch.**
 - AR-06 (code) — On `ArLocked`, `attachModel` places that marker's GLB on the
   last fully-tracked pose and moves the node with later poses. A missing or
   failed file shows Spanish overlay copy; the session stays up. No
-  `model_viewer_plus`. Placeholder boxes are in
-  `assets/models/<marcador_id>/modelo.glb` (not authored D-03 art). Device
-  hold-to-card and the 5× enter/leave run are not done.
+  `model_viewer_plus`. Scan-path models: Leones = low-poly stadium, Olmecas =
+  low-poly player, Piratas = trophy box. Device hold-to-card and the 5×
+  enter/leave run are not done.
+- **D-22 catalog (code)** — 10 static `estadio.glb` + 10 `jugador.glb` under
+  `assets/models/<club_id>/`. Shared mesh family from
+  `tools/write_lowpoly_glbs.py` (vertex colors, no textures). Stadiums: 764
+  tris, ~97 KB, 11.2 cm, no clips. Players are an articulated biped (hips,
+  spine, arms, legs, head, bat in the right hand) with clips named exactly
+  `idle` and `gesto`. `idle` (3 s loop) is a weight shift + breath. `gesto`
+  (2.4 s) winds up and points the bat, then returns to rest. ~324 tris,
+  ~62 KB, ~11.5 cm. Well under 4 MB / 50 k tris. Scan DB is still only the
+  three D-20 markers. Regenerating overwrites the Leones and Olmecas scan
+  copies; `write_marker_glbs.dart` only writes the Piratas box now.
 - AR-00 (code half) — 4 ARCore reference images in `assets/markers/`, registered
   in `pubspec.yaml`, all scoring ≥ 75:
 
@@ -110,14 +120,14 @@ Measured later, four of them were. **Never copy code from that branch.**
 
 - Measure printed width in metres → `anchoMetros` (JSON still holds the planned
   0.15, not a measurement). Does not block AR-06.
-- Generate the D-22 catalog: 10 static `estadio.glb` + 10 animated
-  `jugador.glb`. Prompts in `docs/model-prompts.md`. Do not add the other
+- AR-06 device: hold-to-card + 5× enter/leave. Optional: replace the procedural
+  GLBs with nicer art from `docs/model-prompts.md`. Do not add the other
   seven logos to the scan database.
 
 **Next**
 
 ```
-human: 20 GLBs from docs/model-prompts.md
+AR-07: play idle / gesto on the player GLB (≥2 AR actions)
 ```
 
 Debug APK from earlier today does **not** include this session. Rebuild after
@@ -162,6 +172,13 @@ chrome). Do not fall back to the fake tracker when that session fails.
 - Never commit `build/`, `.dart_tool/`, `android/.gradle/`, `tools/bin/`.
 - `flutter pub get` dirties `windows/flutter/generated_*` with line-ending-only
   noise. Restore with `git checkout -- windows/`.
+- **D-22 GLBs** come from `python tools/write_lowpoly_glbs.py` (Python 3.10
+  is enough; no extra packages). Re-run after mesh edits. `--players-only`
+  skips stadiums. Do not regenerate Leones/Olmecas with
+  `tools/write_marker_glbs.dart` — that script only writes the Piratas
+  trophy box. The player is a joint hierarchy (no skinning). Clips must
+  stay named `idle` and `gesto`. Designed height ~11.5 cm; do not scale
+  it in Dart.
 - ⚠️ **Plugin 1.1.3 hardcodes reference width at 0.2 m** and `precompile`
   errors with `Session not initialized` if called before any `onInitialize`.
   AR-05 sends `anchoMetros` via `setImageWidths`, which exists only after:
@@ -208,6 +225,8 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-09-07 | **D-22 player biped.** `jugador.glb` is a jointed figure (hips/spine/arms/legs/head, bat in the right hand). `idle` weight-shifts; `gesto` points the bat. Same clip names, no new scan targets. |
+| 2026-09-07 | **D-22 low-poly catalog.** Shared stadium (764 tris, static) + player GLBs in team colors for all 10 clubs. Generator: `tools/write_lowpoly_glbs.py`. Leones/Olmecas scan paths use those meshes. Piratas trophy box kept. Constitution → v2.3.1. |
 | 2026-09-07 | **D-22 / branch `full-project`.** Model catalog is all 10 clubs × stadium (static) + player (`idle`, `gesto`). Scan set stays D-20. Not a matcher. Constitution → v2.3.0. |
 | 2026-09-07 | **AR-06 code.** `attachModel` places a per-marker GLB on the fully-tracked pose. Missing/failed GLB → Spanish overlay, session stays up. No WebView. Device hold/dispose checks not run. |
 | 2026-09-07 | **AR-05 accepted.** Human: Leones, Olmecas and Piratas locked. Blank wall and a non-registered club logo triggered nothing. Lock time not stopwatched. Next is AR-06. |
@@ -216,8 +235,6 @@ Rules of thumb:
 | 2026-09-07 | **AR-04 APK green.** Human installed JDK 17. `flutter build apk --debug` built `app-debug.apk`. The earlier failure was a missing JDK 17 toolchain, not the native config. KGP warning from the plugin is still only a warning. Device install and the no-ARCore path were not run. |
 | 2026-09-07 | **AR-04 probe.** Pinned `ar_flutter_plugin_plus: 1.1.3`. Native allowed set only (`minSdk` 24, CAMERA, ARCore optional, package query). `ArCoreImageTracker` implements `isSupported` only. First debug APK failed on missing JDK 17. Did not enable foojay. |
 | 2026-09-07 | **AR-03.** `ArScanScreen` replaces the Timer mock (file deleted). One panel per `ArSessionState`; marker content only in `ArLocked`; `MODO DEMO` + **Elegir equipo manualmente** on every failure. Tests: 3 passed (`ar_scan_screen_test.dart`). Constitution known debt → v2.2.1 (no rule change). |
-| 2026-09-07 | **AR-02.** `ArTracker` / `ArDetection` / failures, sealed session states, `ArSessionController` + debounce gate, `FakeArTracker` (cycles every registered reference, never a default club). Tests: 11 passed (`ar_session_controller_test.dart`). Promoted `vector_math` to a direct dependency for `Matrix4` — analyze forbids an undeclared import; still no AR plugin. |
-| 2026-09-07 | **AR reset governance.** Attempt #1 abandoned. Wrote `ar-postmortem.md`, `ar-architecture.md`, `ar-marker-guide.md`; rewrote Article VI into 11 enforceable clauses; ratified D-12…D-20; split monolithic US-05…US-08 into slices AR-00…AR-07. Constitution → v2.0.0. Added `.cursor/rules/`. |
 
 ## 8. How to work
 
@@ -230,8 +247,8 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 ## 9. Current task
 
-> Generate the **D-22** models from `docs/model-prompts.md` (20 GLBs). Do not
-> add unmeasured logos to the scan database. Do not write a matcher.
+> Play **idle** / **gesto** on the player GLB (AR-07). Do not add
+> unmeasured logos to the scan database. Do not write a matcher.
 
 _(The human edits this line each session. Leave it pointing at the next item
 when you finish.)_

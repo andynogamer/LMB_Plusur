@@ -46,3 +46,15 @@ flutter:
     - assets/models/marcador_estadio_leones/
     - assets/models/marcador_jugador_olmecas/
     - assets/models/marcador_trofeo_piratas/
+    # D-22 catalog: shared low-poly stadium + player, kit colors only.
+    # Other clubs are models, not scan targets. Do not add their logos to the DB.
+    - assets/models/diablos_rojos/
+    - assets/models/bravos_leon/
+    - assets/models/conspiradores_queretaro/
+    - assets/models/aguila_veracruz/
+    - assets/models/guerreros_oaxaca/
+    - assets/models/leones_yucatan/
+    - assets/models/olmecas_tabasco/
+    - assets/models/pericos_puebla/
+    - assets/models/piratas_campeche/
+    - assets/models/tigres_quintana_roo/
