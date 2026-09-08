@@ -73,6 +73,20 @@ abstract interface class ArTracker {
     required String glbAsset,
   });
 
+  /// Plays a named glTF clip on the node attached for [trackerName].
+  ///
+  /// Missing clips and a missing Filament patch return false and must not
+  /// fail the session. [loop] is for `idle`; `gesto` is one-shot.
+  Future<bool> playClip({
+    required String trackerName,
+    required String clipName,
+    bool loop = false,
+  });
+
+  /// Extra yaw (radians) composed onto the tracked pose. Used by the
+  /// información action's single 360° turn. Zero means the pose alone.
+  void setPresentationYaw(double radians);
+
   Future<void> stop();
   Future<void> dispose();
 }

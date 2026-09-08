@@ -15,6 +15,8 @@ class ArSessionBody extends StatelessWidget {
     this.onSimulateNext,
     this.modelNote,
     this.onExit,
+    this.actions,
+    this.infoActive = false,
   });
 
   final ArSessionState state;
@@ -25,6 +27,12 @@ class ArSessionBody extends StatelessWidget {
   /// placed, or when this is not a real session.
   final String? modelNote;
   final VoidCallback? onExit;
+
+  /// Action bar. Rendered only from [ArLocked].
+  final Widget? actions;
+
+  /// Información action is speaking or spinning. Highlights the marker panel.
+  final bool infoActive;
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +67,8 @@ class ArSessionBody extends StatelessWidget {
           infoTexto: marcador.infoTexto,
           modelNote: modelNote,
           onExit: onExit,
+          actions: actions,
+          infoActive: infoActive,
         ),
       ArLost(:final marcador) => _StatusPanel(
           panelKey: const Key('ar-lost'),
@@ -135,12 +145,16 @@ class _LockedPanel extends StatelessWidget {
     required this.infoTexto,
     this.modelNote,
     this.onExit,
+    this.actions,
+    this.infoActive = false,
   });
 
   final String marcadorTitulo;
   final String infoTexto;
   final String? modelNote;
   final VoidCallback? onExit;
+  final Widget? actions;
+  final bool infoActive;
 
   @override
   Widget build(BuildContext context) {
@@ -168,16 +182,34 @@ class _LockedPanel extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        Text(
-          infoTexto,
-          textAlign: TextAlign.center,
-          style: GoogleFonts.poppins(
-            color: AppColors.muted,
-            fontWeight: FontWeight.w500,
-            fontSize: 14,
-            height: 1.35,
+        DecoratedBox(
+          key: const Key('ar-info-panel'),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: infoActive
+                  ? AppColors.button
+                  : Colors.transparent,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            child: Text(
+              infoTexto,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                color: AppColors.muted,
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
+                height: 1.35,
+              ),
+            ),
           ),
         ),
+        if (actions != null) ...[
+          const SizedBox(height: 12),
+          actions!,
+        ],
         if (modelNote != null) ...[
           const SizedBox(height: 10),
           Text(

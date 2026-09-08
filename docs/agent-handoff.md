@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-09-07 · by: D-22 biped player clips
+**Last updated:** 2026-09-07 · by: AR-07 idle / gesto actions
 
 ---
 
@@ -93,6 +93,13 @@ Measured later, four of them were. **Never copy code from that branch.**
   `model_viewer_plus`. Scan-path models: Leones = low-poly stadium, Olmecas =
   low-poly player, Piratas = trophy box. Device hold-to-card and the 5×
   enter/leave run are not done.
+- AR-07 (code) — Actions exist only in `ArLocked`. **Gesto** plays clip
+  `gesto` then the renderer returns to `idle` (`idle` starts on place when
+  listed). **Información** reads `titulo` / `infoTexto` from
+  `assets/ar_markers.json`, speaks them (platform TTS, es-MX, no new
+  plugin), and runs one 360° yaw. Stadium and trophy `animaciones` are
+  empty — those GLBs are static; `celebracion` was not a real clip. Scan
+  DB is still the three D-20 markers. Device confirmation not run.
 - **D-22 catalog (code)** — 10 static `estadio.glb` + 10 `jugador.glb` under
   `assets/models/<club_id>/`. Shared mesh family from
   `tools/write_lowpoly_glbs.py` (vertex colors, no textures). Stadiums: 764
@@ -123,15 +130,18 @@ Measured later, four of them were. **Never copy code from that branch.**
 - AR-06 device: hold-to-card + 5× enter/leave. Optional: replace the procedural
   GLBs with nicer art from `docs/model-prompts.md`. Do not add the other
   seven logos to the scan database.
+- AR-07 device: on Olmecas, Gesto moves the player then idle resumes;
+  Información speaks the marker text and turns the model once. Toggling
+  either must not drop the session.
 
 **Next**
 
 ```
-AR-07: play idle / gesto on the player GLB (≥2 AR actions)
+US-11: video archive UI (remote URLs)
 ```
 
 Debug APK from earlier today does **not** include this session. Rebuild after
-the width patch before installing.
+both plugin patches before installing.
 
 `AppRoutes.ar` probes ARCore first. Unsupported devices see the existing
 failure panel. Capable devices start `ArCoreImageTracker` (camera behind the
@@ -178,7 +188,16 @@ chrome). Do not fall back to the fake tracker when that session fails.
   `tools/write_marker_glbs.dart` — that script only writes the Piratas
   trophy box. The player is a joint hierarchy (no skinning). Clips must
   stay named `idle` and `gesto`. Designed height ~11.5 cm; do not scale
-  it in Dart.
+  it in Dart. `gesto` is 2.4 s; the pressed state uses that length. Native
+  returns to `idle` when the one-shot ends.
+- ⚠️ **Plugin 1.1.3 never ticks Filament clips.** After every
+  `flutter pub get`, re-run both patches (pub restores the unpatched
+  plugin). Do not bump the pin. A missing clip or a missing patch returns
+  false and must not drop the session:
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File tools/patch_arcore_image_width.ps1
+  powershell -ExecutionPolicy Bypass -File tools/patch_filament_clips.ps1
+  ```
 - ⚠️ **Plugin 1.1.3 hardcodes reference width at 0.2 m** and `precompile`
   errors with `Session not initialized` if called before any `onInitialize`.
   AR-05 sends `anchoMetros` via `setImageWidths`, which exists only after:
@@ -225,6 +244,7 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-09-07 | **AR-07 code.** `ArLocked` only: Gesto plays `idle`/`gesto`; Información speaks `infoTexto` and spins the pose once. Stadium/trophy `animaciones` emptied (`celebracion` was not a clip). Filament clip patch required. Tests: 5 passed (`ar_scan_screen_test.dart`). Device not run. Constitution → v2.3.2. |
 | 2026-09-07 | **D-22 player biped.** `jugador.glb` is a jointed figure (hips/spine/arms/legs/head, bat in the right hand). `idle` weight-shifts; `gesto` points the bat. Same clip names, no new scan targets. |
 | 2026-09-07 | **D-22 low-poly catalog.** Shared stadium (764 tris, static) + player GLBs in team colors for all 10 clubs. Generator: `tools/write_lowpoly_glbs.py`. Leones/Olmecas scan paths use those meshes. Piratas trophy box kept. Constitution → v2.3.1. |
 | 2026-09-07 | **D-22 / branch `full-project`.** Model catalog is all 10 clubs × stadium (static) + player (`idle`, `gesto`). Scan set stays D-20. Not a matcher. Constitution → v2.3.0. |
@@ -234,7 +254,6 @@ Rules of thumb:
 | 2026-09-07 | **AR-05 code.** Real tracker starts a session; identity is the ARCore name. Continuous tracking 200 ms so debounce can lock. Width patch required (`tools/patch_arcore_image_width.ps1`) because 1.1.3 hardcodes 0.2 m. Tests: 21 passed (detection event + session + scan + registry). Device table **not** filled. Constitution → v2.2.2. Architecture §11 order clarified (null-path init, then precompile). |
 | 2026-09-07 | **AR-04 APK green.** Human installed JDK 17. `flutter build apk --debug` built `app-debug.apk`. The earlier failure was a missing JDK 17 toolchain, not the native config. KGP warning from the plugin is still only a warning. Device install and the no-ARCore path were not run. |
 | 2026-09-07 | **AR-04 probe.** Pinned `ar_flutter_plugin_plus: 1.1.3`. Native allowed set only (`minSdk` 24, CAMERA, ARCore optional, package query). `ArCoreImageTracker` implements `isSupported` only. First debug APK failed on missing JDK 17. Did not enable foojay. |
-| 2026-09-07 | **AR-03.** `ArScanScreen` replaces the Timer mock (file deleted). One panel per `ArSessionState`; marker content only in `ArLocked`; `MODO DEMO` + **Elegir equipo manualmente** on every failure. Tests: 3 passed (`ar_scan_screen_test.dart`). Constitution known debt → v2.2.1 (no rule change). |
 
 ## 8. How to work
 
@@ -247,7 +266,7 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 ## 9. Current task
 
-> Play **idle** / **gesto** on the player GLB (AR-07). Do not add
+> US-11: video archive UI from local JSON (remote URLs). Do not add
 > unmeasured logos to the scan database. Do not write a matcher.
 
 _(The human edits this line each session. Leave it pointing at the next item

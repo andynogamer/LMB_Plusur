@@ -24,6 +24,9 @@ const bool kContinuousImageTracking = true;
 /// See [kContinuousImageTracking].
 const int kImageTrackingUpdateIntervalMs = 200;
 
+/// Scene-graph name for the GLB attached to [trackerName].
+String modelNodeName(String trackerName) => 'modelo_$trackerName';
+
 /// Filename stem ARCore stores as the reference-image name.
 ///
 /// Must equal [ArReferenceImage.name] / `Marcador.id`. No rewriting.
@@ -108,8 +111,10 @@ class ArCoreImageTracker implements ArTracker {
   ARSessionManager? _session;
   ARObjectManager? _objects;
   MethodChannel? _sessionChannel;
+  MethodChannel? _objectChannel;
   final Map<String, Matrix4> _poses = {};
   final Map<String, ARNode> _nodes = {};
+  double _presentationYaw = 0;
   ArModelAttach? modelAttach;
   List<ArReferenceImage> _references = const [];
   Widget? _surface;
@@ -207,11 +212,14 @@ class ArCoreImageTracker implements ArTracker {
     ARSessionManager session,
     ARObjectManager objects,
     MethodChannel channel,
+    MethodChannel objectChannel,
   ) {
     if (_stopped) return;
     _session = session;
     _objects = objects;
     _sessionChannel = channel;
+    // Same channel ARObjectManager already bound. Do not set a handler here.
+    _objectChannel = objectChannel;
     if (!_viewReady.isCompleted) _viewReady.complete();
   }
 
@@ -336,10 +344,52 @@ class ArCoreImageTracker implements ArTracker {
   }
 
   /// Image pose plus a small lift so the model sits on the card, not in it.
+  ///
+  /// [_presentationYaw] is the información action's single spin. It is
+  /// applied in local space after the lift so tracking updates keep it.
   Matrix4 _anchoredPose(Matrix4 imagePose) {
     final pose = Matrix4.fromFloat64List(imagePose.storage);
     pose.translateByDouble(0, 0.01, 0, 1);
+    if (_presentationYaw != 0) {
+      pose.rotateY(_presentationYaw);
+    }
     return pose;
+  }
+
+  @override
+  void setPresentationYaw(double radians) {
+    _presentationYaw = radians;
+    for (final entry in _nodes.entries) {
+      final pose = _poses[entry.key];
+      if (pose == null) continue;
+      entry.value.transform = _anchoredPose(pose);
+    }
+  }
+
+  @override
+  Future<bool> playClip({
+    required String trackerName,
+    required String clipName,
+    bool loop = false,
+  }) async {
+    final channel = _objectChannel;
+    if (channel == null ||
+        _stopped ||
+        clipName.isEmpty ||
+        !_nodes.containsKey(trackerName)) {
+      return false;
+    }
+    try {
+      final ok = await channel.invokeMethod<bool>('playClip', {
+        'name': modelNodeName(trackerName),
+        'clip': clipName,
+        'loop': loop,
+      });
+      return ok == true;
+    } on Object {
+      // Missing patch or a static GLB. Do not fail the session.
+      return false;
+    }
   }
 
   ArTrackerFailure _availabilityFailure() {
@@ -390,7 +440,7 @@ class ArCoreImageTracker implements ArTracker {
     final node = ARNode(
       type: NodeType.localGLB,
       uri: glbAsset,
-      name: 'modelo_$trackerName',
+      name: modelNodeName(trackerName),
       transformation: _anchoredPose(pose),
     );
     final bool added;
@@ -414,6 +464,7 @@ class ArCoreImageTracker implements ArTracker {
     _nodes.clear();
     _poses.clear();
     _objects = null;
+    _presentationYaw = 0;
     modelAttach = null;
     final session = _session;
     _session = null;
@@ -447,6 +498,7 @@ class _ArCoreSurface extends StatelessWidget {
     ARSessionManager session,
     ARObjectManager objects,
     MethodChannel channel,
+    MethodChannel objectChannel,
   ) onCreated;
 
   @override
@@ -464,6 +516,7 @@ class _ArCoreSurface extends StatelessWidget {
           ARSessionManager(id, context, PlaneDetectionConfig.none),
           objects,
           MethodChannel('arsession_$id'),
+          MethodChannel('arobjects_$id'),
         );
       },
     );

@@ -40,7 +40,7 @@
 | AR-04 | 📗 | 🔴 P0 | Pin plugin + `ArCoreImageTracker` availability probe | ☑ | AR foundation |
 | AR-05 | 📗 | 🔴 P0 | Real detection → deterministic lock (kills BUG-01) | ☑ | 3 markers |
 | AR-06 | 📗 | 🔴 P0 | In-session 3D anchored on the marker pose | ◐ código · dispositivo ☐ | Buttons / UI |
-| AR-07 | 📗 | 🔴 P0 | ≥2 AR action types (anim, info+TTS, …) | ☐ | 2 action types |
+| AR-07 | 📗 | 🔴 P0 | ≥2 AR action types (anim, info+TTS, …) | ◐ código · dispositivo ☐ | 2 action types |
 | US-09 | 📗 | 🟠 P1 | Simulated live stats in AR / team | ☐ | Actions |
 | US-10 | 📗 | 🟠 P1 | Multiple AR modes (galería / trivia / video) | ☐ | Bonus + modes |
 | US-11 | 📗 | 🔴 P0 | Video archive UI (remote URLs) | ☐ | Videos |
@@ -514,7 +514,7 @@ Device checks still open:
 
 ---
 
-## AR-07 · 📗 · 🔴 P0 · ≥2 AR action types · ☐ Pendiente
+## AR-07 · 📗 · 🔴 P0 · ≥2 AR action types · ◐ Código listo · falta el dispositivo
 
 **Prompt**
 ```
@@ -540,6 +540,31 @@ Criterios de aceptación:
 Archivos: lib/screens/ar/widgets/, services (tts/video), assets/ar_markers.json
 Fuera de alcance: full multi-mode switcher (US-10) unless cheap to stub.
 ```
+
+**Code landed 2026-09-07. Device confirmation not run.**
+
+On `ArLocked` only, two actions:
+
+1. **Gesto** — plays clip `gesto` on the attached GLB, then the renderer
+   returns to `idle`. `idle` starts when the model is placed if
+   `animaciones` lists it. Only the Olmecas scan GLB has those clips.
+   Stadium and trophy `animaciones` are empty (those files are static;
+   the old `celebracion` name was not a real clip). A missing clip shows
+   Spanish overlay copy and leaves the session up.
+2. **Información** — highlights the panel, speaks `titulo` + `infoTexto`
+   from `assets/ar_markers.json` (platform TTS, es-MX, no new plugin), and
+   runs one 360° yaw on the tracked pose. A second tap stops speech and
+   the spin. One spin at a time.
+
+Plugin 1.1.3 does not tick Filament clips. Re-run
+`tools/patch_filament_clips.ps1` after `flutter pub get`. Do not bump the
+pin. Scan database is still the three D-20 markers.
+
+Device checks still open:
+
+- Olmecas: Gesto moves the player, then idle resumes
+- Información speaks the marker text and turns the model once
+- toggling either action a few times does not drop the session
 
 ---
 

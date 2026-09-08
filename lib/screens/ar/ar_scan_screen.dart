@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
@@ -10,9 +11,12 @@ import '../../ar/trackers/arcore_image_tracker.dart';
 import '../../ar/trackers/fake_ar_tracker.dart';
 import '../../models/equipo_model.dart';
 import '../../models/marcador_model.dart';
+import '../../services/ar_speech_service.dart';
 import '../../services/data_service.dart';
+import '../../services/feedback_service.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_logo.dart';
+import 'widgets/ar_action_bar.dart';
 import 'widgets/ar_demo_badge.dart';
 import 'widgets/ar_failed_panel.dart';
 import 'widgets/ar_session_body.dart';
@@ -48,7 +52,8 @@ class ArScanScreen extends StatefulWidget {
   State<ArScanScreen> createState() => _ArScanScreenState();
 }
 
-class _ArScanScreenState extends State<ArScanScreen> {
+class _ArScanScreenState extends State<ArScanScreen>
+    with SingleTickerProviderStateMixin {
   ArSessionController? _controller;
   StreamSubscription<ArSessionState>? _states;
   List<Marcador> _marcadores = const [];
@@ -57,12 +62,32 @@ class _ArScanScreenState extends State<ArScanScreen> {
   ArCoreImageTracker? _cameraTracker;
   bool _liveIsDemo = false;
   String? _modelNote;
+  String? _actionNote;
+  bool _gestoPressed = false;
+  bool _infoPressed = false;
+  ArTracker? _liveTracker;
+  Timer? _gestoTimer;
+  late final AnimationController _spin;
   final ValueNotifier<ArSessionState> _uiState =
       ValueNotifier<ArSessionState>(const ArPreparing());
 
   @override
   void initState() {
     super.initState();
+    _spin = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1600),
+    )
+      ..addListener(() {
+        _liveTracker?.setPresentationYaw(_spin.value * math.pi * 2);
+      })
+      ..addStatusListener((status) {
+        if (status != AnimationStatus.completed || !mounted) return;
+        _liveTracker?.setPresentationYaw(0);
+        if (_infoPressed) {
+          setState(() => _infoPressed = false);
+        }
+      });
     unawaited(_openSession());
   }
 
@@ -122,6 +147,7 @@ class _ArScanScreenState extends State<ArScanScreen> {
     List<Marcador> marcadores,
   ) async {
     _liveIsDemo = choice.isDemo;
+    _liveTracker = choice.tracker;
     _cameraTracker =
         choice.camera && choice.tracker is ArCoreImageTracker
             ? choice.tracker as ArCoreImageTracker
@@ -152,6 +178,8 @@ class _ArScanScreenState extends State<ArScanScreen> {
       _uiState.value = next;
       if (next is ArLocked) {
         unawaited(_attachLockedModel(tracker, next));
+      } else {
+        unawaited(_releaseActions());
       }
     });
 
@@ -180,8 +208,101 @@ class _ArScanScreenState extends State<ArScanScreen> {
     final note = tracker is ArCoreImageTracker
         ? modelFallbackCopy(tracker.modelAttach)
         : null;
-    if (_modelNote == note) return;
-    setState(() => _modelNote = note);
+    if (mounted && (_modelNote != note || _actionNote != null)) {
+      setState(() {
+        _modelNote = note;
+        _actionNote = null;
+      });
+    }
+    if (locked.marcador.animaciones.contains(kClipIdle)) {
+      await tracker.playClip(
+        trackerName: locked.marcador.id,
+        clipName: kClipIdle,
+        loop: true,
+      );
+    }
+  }
+
+  Future<void> _releaseActions() async {
+    _gestoTimer?.cancel();
+    _gestoTimer = null;
+    if (_spin.isAnimating) {
+      _spin.stop();
+    }
+    _liveTracker?.setPresentationYaw(0);
+    await ArSpeechService.instance.stop();
+    if (!mounted) return;
+    if (!_gestoPressed && !_infoPressed && _actionNote == null) return;
+    setState(() {
+      _gestoPressed = false;
+      _infoPressed = false;
+      _actionNote = null;
+    });
+  }
+
+  Future<void> _onGesto(Marcador marcador) async {
+    final tracker = _liveTracker;
+    if (tracker == null) return;
+    if (!marcador.animaciones.contains(kClipGesto)) {
+      await FeedbackService.instance.error();
+      if (!mounted) return;
+      setState(() => _actionNote = kGestoMissingCopy);
+      return;
+    }
+    if (_gestoPressed) {
+      _gestoTimer?.cancel();
+      _gestoTimer = null;
+      await tracker.playClip(
+        trackerName: marcador.id,
+        clipName: kClipIdle,
+        loop: true,
+      );
+      if (!mounted) return;
+      setState(() => _gestoPressed = false);
+      return;
+    }
+    final played = await tracker.playClip(
+      trackerName: marcador.id,
+      clipName: kClipGesto,
+      loop: false,
+    );
+    if (!mounted) return;
+    if (!played) {
+      await FeedbackService.instance.error();
+      setState(() => _actionNote = kGestoFailedCopy);
+      return;
+    }
+    await FeedbackService.instance.success();
+    setState(() {
+      _gestoPressed = true;
+      _actionNote = null;
+    });
+    _gestoTimer?.cancel();
+    _gestoTimer = Timer(kGestoClipLength, () {
+      if (!mounted) return;
+      setState(() => _gestoPressed = false);
+    });
+  }
+
+  Future<void> _onInfo(Marcador marcador) async {
+    if (_infoPressed) {
+      await ArSpeechService.instance.stop();
+      _spin.stop();
+      _liveTracker?.setPresentationYaw(0);
+      if (!mounted) return;
+      setState(() => _infoPressed = false);
+      return;
+    }
+    await FeedbackService.instance.success();
+    if (!mounted) return;
+    setState(() {
+      _infoPressed = true;
+      _actionNote = null;
+    });
+    _spin.forward(from: 0);
+    await ArSpeechService.instance.speak(
+      '${marcador.titulo}. ${marcador.infoTexto}',
+    );
   }
 
   void _simulateNext() {
@@ -205,6 +326,9 @@ class _ArScanScreenState extends State<ArScanScreen> {
 
   @override
   void dispose() {
+    _gestoTimer?.cancel();
+    _spin.dispose();
+    unawaited(ArSpeechService.instance.stop());
     _states?.cancel();
     _uiState.dispose();
     unawaited(_controller?.dispose());
@@ -298,6 +422,20 @@ class _ArScanScreenState extends State<ArScanScreen> {
                                 onSimulateNext:
                                     _liveIsDemo ? _simulateNext : null,
                                 modelNote: state is ArLocked ? _modelNote : null,
+                                infoActive: state is ArLocked && _infoPressed,
+                                actions: state is ArLocked
+                                    ? ArActionBar(
+                                        gestoPressed: _gestoPressed,
+                                        infoPressed: _infoPressed,
+                                        note: _actionNote,
+                                        onGesto: () => unawaited(
+                                          _onGesto(state.marcador),
+                                        ),
+                                        onInfo: () => unawaited(
+                                          _onInfo(state.marcador),
+                                        ),
+                                      )
+                                    : null,
                                 onExit: state is ArLocked
                                     ? () => Navigator.of(context).maybePop()
                                     : null,

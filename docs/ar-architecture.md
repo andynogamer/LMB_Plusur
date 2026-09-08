@@ -125,6 +125,16 @@ abstract interface class ArTracker {
   /// Attaches a GLB to a detected marker's pose. No-op for fakes.
   Future<void> attachModel({required String trackerName, required String glbAsset});
 
+  /// Plays a named glTF clip on the attached node. Missing clip or a missing
+  /// Filament patch returns false and must not fail the session.
+  /// Clip names are `idle` (loop) and `gesto` (one-shot). Plugin 1.1.3 does
+  /// not tick Animator until `tools/patch_filament_clips.ps1`.
+  Future<bool> playClip({required String trackerName, required String clipName, bool loop = false});
+
+  /// Extra yaw composed onto the tracked pose. The información action uses
+  /// one 360° turn. Zero means the pose alone.
+  void setPresentationYaw(double radians);
+
   Future<void> stop();
   Future<void> dispose();
 }
@@ -407,6 +417,11 @@ Mandatory usage notes, learned the hard way:
   "fix" that by skipping precompile and passing the paths to step 1.
 - Pass a physical width for each reference image. ARCore explicitly improves
   detection when real-world size is supplied.
+- Plugin 1.1.3 loads a GLB and never ticks Filament `Animator`. Player clips
+  (`idle`, `gesto`) need `tools/patch_filament_clips.ps1` after every
+  `flutter pub get`, same rule as the width patch. A missing clip or a missing
+  patch returns false from `playClip` and must not drop the session. Do not
+  bump the pin. Do not write a matcher.
 - Gate model placement on `isFullyTracked` (`AugmentedImage` full tracking
   state). Placing on a `paused` image gives you a model floating at the wrong
   depth.

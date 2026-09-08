@@ -29,6 +29,13 @@ class FakeArTracker implements ArTracker {
   /// Names emitted by [emitRegisteredCycle], in order.
   final List<String> cycledNames = [];
 
+  /// Clips requested through [playClip], in order. Tests assert actions
+  /// without a Filament session.
+  final List<({String trackerName, String clipName, bool loop})> playedClips =
+      [];
+
+  double presentationYaw = 0;
+
   @override
   Future<bool> isSupported() async => supported;
 
@@ -49,6 +56,26 @@ class FakeArTracker implements ArTracker {
     required String trackerName,
     required String glbAsset,
   }) async {}
+
+  @override
+  Future<bool> playClip({
+    required String trackerName,
+    required String clipName,
+    bool loop = false,
+  }) async {
+    if (_stopped || clipName.isEmpty) return false;
+    playedClips.add((
+      trackerName: trackerName,
+      clipName: clipName,
+      loop: loop,
+    ));
+    return true;
+  }
+
+  @override
+  void setPresentationYaw(double radians) {
+    presentationYaw = radians;
+  }
 
   @override
   Future<void> stop() async {

@@ -7,23 +7,28 @@ import 'package:lmb_plusur/models/equipo_model.dart';
 import 'package:lmb_plusur/models/marcador_model.dart';
 import 'package:lmb_plusur/routes/app_routes.dart';
 import 'package:lmb_plusur/screens/ar/ar_scan_screen.dart';
+import 'package:lmb_plusur/screens/ar/widgets/ar_action_bar.dart';
 import 'package:lmb_plusur/screens/ar/widgets/ar_failed_panel.dart';
+import 'package:lmb_plusur/services/ar_speech_service.dart';
 import 'package:lmb_plusur/services/feedback_service.dart';
 
 Marcador _marcador({
   required String id,
   required String titulo,
   required String infoTexto,
+  TipoMarcador tipo = TipoMarcador.estadio,
+  List<String> animaciones = const [],
 }) {
   return Marcador(
     id: id,
     equipoId: 'leones_yucatan',
-    tipo: TipoMarcador.estadio,
+    tipo: tipo,
     titulo: titulo,
     infoTexto: infoTexto,
     markerImage: 'assets/markers/$id.png',
     modelAsset: 'assets/models/$id/modelo.glb',
     anchoMetros: 0.15,
+    animaciones: animaciones,
   );
 }
 
@@ -37,6 +42,7 @@ void main() {
 
   setUp(() {
     FeedbackService.instance.enabled = false;
+    ArSpeechService.instance.enabled = false;
     leones = _marcador(id: 'marcador_estadio_leones', titulo: titulo, infoTexto: info);
     registry = MarkerRegistry.fromMarcadores([leones]);
   });
@@ -169,5 +175,132 @@ void main() {
     await tester.tap(find.text(ArFailedPanel.manualPathLabel.toUpperCase()));
     await tester.pumpAndSettle();
     expect(find.text('lista-equipos'), findsOneWidget);
+  });
+
+  testWidgets('las acciones solo existen en ArLocked', (tester) async {
+    final tracker = FakeArTracker();
+    await pumpScan(tester, tracker: tracker);
+
+    expect(find.byKey(const Key('ar-actions')), findsNothing);
+    expect(find.byKey(const Key('ar-action-gesto')), findsNothing);
+    expect(find.byKey(const Key('ar-action-info')), findsNothing);
+
+    tracker.emit(
+      ArDetection(
+        trackerName: leones.id,
+        pose: Matrix4.identity(),
+        isFullyTracked: true,
+      ),
+    );
+    await tester.pump();
+    expect(find.byKey(const Key('ar-actions')), findsNothing);
+
+    tracker.emit(
+      ArDetection(
+        trackerName: leones.id,
+        pose: Matrix4.identity(),
+        isFullyTracked: true,
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byKey(const Key('ar-locked')), findsOneWidget);
+    expect(find.byKey(const Key('ar-actions')), findsOneWidget);
+    expect(find.text(info), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('ar-action-gesto')));
+    await tester.pump();
+    expect(find.byKey(const Key('ar-action-note')), findsOneWidget);
+    expect(find.text(kGestoMissingCopy), findsOneWidget);
+    expect(tracker.playedClips, isEmpty);
+
+    await tester.tap(find.byKey(const Key('ar-action-info')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(tracker.presentationYaw, greaterThan(0));
+    expect(find.byKey(const Key('ar-info-panel')), findsOneWidget);
+
+    tracker.emit(
+      ArDetection(
+        trackerName: leones.id,
+        pose: Matrix4.identity(),
+        isFullyTracked: false,
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byKey(const Key('ar-lost')), findsOneWidget);
+    expect(find.byKey(const Key('ar-actions')), findsNothing);
+    expect(find.byKey(const Key('ar-marker-content')), findsNothing);
+  });
+
+  testWidgets('gesto pide el clip del marcador y reposo vuelve a idle', (tester) async {
+    final player = _marcador(
+      id: 'marcador_jugador_olmecas',
+      titulo: 'El legado olmeca',
+      infoTexto: 'Los Olmecas de Tabasco honran a la civilización olmeca.',
+      tipo: TipoMarcador.jugador,
+      animaciones: const [kClipIdle, kClipGesto],
+    );
+    final tracker = FakeArTracker();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ArScanScreen(
+          tracker: tracker,
+          registry: MarkerRegistry.fromMarcadores([player]),
+          marcadores: [player],
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byKey(const Key('ar-actions')), findsNothing);
+
+    tracker.emit(
+      ArDetection(
+        trackerName: player.id,
+        pose: Matrix4.identity(),
+        isFullyTracked: true,
+      ),
+    );
+    tracker.emit(
+      ArDetection(
+        trackerName: player.id,
+        pose: Matrix4.identity(),
+        isFullyTracked: true,
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(
+      tracker.playedClips,
+      contains(
+        (trackerName: player.id, clipName: kClipIdle, loop: true),
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('ar-action-gesto')));
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('REPOSO'), findsOneWidget);
+    expect(
+      tracker.playedClips.last,
+      (trackerName: player.id, clipName: kClipGesto, loop: false),
+    );
+
+    await tester.tap(find.byKey(const Key('ar-action-gesto')));
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('GESTO'), findsOneWidget);
+    expect(
+      tracker.playedClips.last,
+      (trackerName: player.id, clipName: kClipIdle, loop: true),
+    );
   });
 }

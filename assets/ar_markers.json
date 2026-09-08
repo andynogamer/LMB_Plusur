@@ -9,7 +9,7 @@
     "modelAsset": "assets/models/marcador_estadio_leones/modelo.glb",
     "anchoMetros": 0.15,
     "videoUrl": null,
-    "animaciones": ["idle", "celebracion"]
+    "animaciones": []
   },
   {
     "id": "marcador_jugador_olmecas",
@@ -33,6 +33,6 @@
     "modelAsset": "assets/models/marcador_trofeo_piratas/modelo.glb",
     "anchoMetros": 0.15,
     "videoUrl": null,
-    "animaciones": ["idle", "celebracion"]
+    "animaciones": []
   }
 ]

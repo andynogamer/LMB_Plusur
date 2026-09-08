@@ -17,7 +17,7 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 | [`docs/ar-architecture.md`](./docs/ar-architecture.md) | The AR technical contract: layers, `ArTracker` seam, state machine, error taxonomy, budgets. |
 | [`docs/ar-marker-guide.md`](./docs/ar-marker-guide.md) | How to author printable markers ARCore can actually track. |
 
-**Version**: 2.3.1 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-07
+**Version**: 2.3.2 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-07
 
 > **v2.0.0 — AR reset.** AR attempt #1 (branch `ar-have-too-many-errors`) was
 > abandoned and work restarted on `fresh-start`. Article VI was rewritten from
@@ -72,6 +72,11 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 > **v2.3.1 — D-22 low-poly files exist.** No rule changed. `tools/write_lowpoly_glbs.py`
 > writes the 20 GLBs (stadium static, player clips `idle` + `gesto`). Scan
 > targets stay D-20. Debt #1 no longer says the catalog is missing.
+>
+> **v2.3.2 — AR-07 actions on the seam.** No rule loosened. `ArTracker` gains
+> `playClip` and `setPresentationYaw`. Plugin 1.1.3 does not tick Filament
+> clips until `tools/patch_filament_clips.ps1`. Actions exist only in
+> `ArLocked`. Scan targets stay D-20. Device confirmation not run.
 
 ---
 
@@ -96,7 +101,7 @@ agents (`CONSTITUTION.md`, `AGENTS.md`, `WORK_ITEMS.md`) are written in
 |---|---|---|---|
 | App shell | Flutter 3 / Dart 3.3+ | `lib/` | Implemented (navigation, theme, screens). |
 | Team content | Local JSON | `assets/data.json` | Implemented for 10 Zona Sur clubs (historia + trivias). |
-| AR | **Flutter-native (D-01)** — ARCore/ARKit Augmented Images behind an `ArTracker` seam (D-12) | `lib/ar/`, `lib/screens/ar/` | AR-05 accepted on device. AR-06 places a GLB on the pose; D-22 low-poly catalog ships; device hold/dispose not checked. Demo only with `LMB_AR_DEMO`. |
+| AR | **Flutter-native (D-01)** — ARCore/ARKit Augmented Images behind an `ArTracker` seam (D-12) | `lib/ar/`, `lib/screens/ar/` | AR-05 accepted on device. AR-06 places a GLB on the pose; AR-07 code plays `idle`/`gesto` and speaks `infoTexto` only in `ArLocked`. Device hold/dispose and action confirmation not checked. Demo only with `LMB_AR_DEMO`. |
 | Video filters | Flutter on-device | — | Not started; graded requirement. |
 | Highlights / videos | Remote URLs (D-07) | demo data today | Placeholders until URLs are filled. |
 
@@ -474,7 +479,7 @@ Splash → Main
 | Trivia / retos | Implemented (extend) | From `trivias`; last score only; AR trivia mode planned. |
 | Video archive + filters | Planned | Remote URL catalog; allowed filters only. |
 | AR markers (≥3) | Accepted on device (AR-05) | Distinct content per marker; references scoring ≥ 75 (D-13, D-20). Human: three markers lock; blank wall and a non-registered logo do not. |
-| AR controls | Planned | ≥2 action types; style-matched overlay. |
+| AR controls | Code (AR-07); device not checked | ≥2 action types on `ArLocked` only: gesto (`idle`/`gesto`) and información (`infoTexto` + TTS + one 360°). |
 | Simulated live stats | Planned | Local mock “tiempo real”. |
 | Multiple AR modes | Planned | e.g. galería, trivia AR, video inmersivo. |
 | Team search | Partial → required | Client-side name filter on team list. |
@@ -570,8 +575,10 @@ MUST NOT:
    stadium mesh; Olmecas uses the player mesh; Piratas is still the
    trophy box. Do not put a WebView on the camera. Still open: model
    holds on the card, and enter/leave AR 5 times does not crash. Plugin
-   1.1.3 hardcodes width at 0.2 m; re-run `tools/patch_arcore_image_width.ps1`
-   after `flutter pub get`. Do not bump the pin and do not write a matcher.
+   1.1.3 hardcodes width at 0.2 m and never ticks Filament clips. After
+   `flutter pub get` re-run `tools/patch_arcore_image_width.ps1` and
+   `tools/patch_filament_clips.ps1`. Do not bump the pin and do not write
+   a matcher. AR-07 buttons are coded, not confirmed on a device.
 3. **Markers shipped; prints pending.** Four references are in
    `assets/markers/` scoring 100/100/100/90 (D-20/D-21) and registered in
    `pubspec.yaml`. Marker art is **no longer a blocker**. Remaining: print at
