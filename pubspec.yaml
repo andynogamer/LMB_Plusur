@@ -38,9 +38,8 @@ flutter:
     - assets/ar_markers.json
     - assets/images/
     - assets/sfx/
-    # AR reference images (D-20/D-21). Filename stem == Marcador.id.
-    # Only the first three go in the active tracking database; bravos is the
-    # printable spare. See docs/ar-marker-guide.md.
+    # AR reference images. Filename stem == Marcador.id.
+    # Logos that score >= 75 only. Tigres is the raw JPEG — do not normalize.
     - assets/markers/
     # Per-marker GLBs for the live AR session (AR-06). Not a WebView viewer.
     - assets/models/marcador_estadio_leones/

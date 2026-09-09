@@ -34,5 +34,65 @@
     "anchoMetros": 0.15,
     "videoUrl": null,
     "animaciones": []
+  },
+  {
+    "id": "marcador_pelota_bravos",
+    "equipoId": "bravos_leon",
+    "tipo": "pelota",
+    "titulo": "Bravos de León",
+    "infoTexto": "Los Bravos de León, fundados en 1979, juegan en el Estadio Domingo Santana. En el reacomodo de la Liga quedaron en la Zona Sur, con una afición leonesa identificada con el béisbol de verano.",
+    "markerImage": "assets/markers/marcador_pelota_bravos.png",
+    "modelAsset": "assets/models/bravos_leon/jugador.glb",
+    "anchoMetros": 0.15,
+    "videoUrl": null,
+    "animaciones": ["idle", "gesto"]
+  },
+  {
+    "id": "marcador_jugador_tigres",
+    "equipoId": "tigres_quintana_roo",
+    "tipo": "jugador",
+    "titulo": "Tigres de Quintana Roo",
+    "infoTexto": "Los Tigres de Quintana Roo nacieron en 1955 como Capitalinos y se mudaron a Cancún en 2007. Juegan en el Estadio Beto Ávila y son uno de los clubes más ganadores de la Liga.",
+    "markerImage": "assets/markers/marcador_jugador_tigres.jpg",
+    "modelAsset": "assets/models/tigres_quintana_roo/jugador.glb",
+    "anchoMetros": 0.15,
+    "videoUrl": null,
+    "animaciones": ["idle", "gesto"]
+  },
+  {
+    "id": "marcador_estadio_diablos",
+    "equipoId": "diablos_rojos",
+    "tipo": "estadio",
+    "titulo": "Estadio Alfredo Harp Helú",
+    "infoTexto": "Los Diablos Rojos del México, fundados en 1940, son la franquicia más ganadora de la Liga. Desde 2019 juegan en el Estadio Alfredo Harp Helú, la casa del terror en la Ciudad de México.",
+    "markerImage": "assets/markers/marcador_estadio_diablos.png",
+    "modelAsset": "assets/models/diablos_rojos/estadio.glb",
+    "anchoMetros": 0.15,
+    "videoUrl": null,
+    "animaciones": []
+  },
+  {
+    "id": "marcador_jugador_guerreros",
+    "equipoId": "guerreros_oaxaca",
+    "tipo": "jugador",
+    "titulo": "Guerreros de Oaxaca",
+    "infoTexto": "Los Guerreros de Oaxaca, fundados en 1996, juegan en el Estadio Eduardo Vasconcelos. En 1998 conquistaron su primer título de la Liga y llenan la casa oaxaqueña.",
+    "markerImage": "assets/markers/marcador_jugador_guerreros.png",
+    "modelAsset": "assets/models/guerreros_oaxaca/jugador.glb",
+    "anchoMetros": 0.15,
+    "videoUrl": null,
+    "animaciones": ["idle", "gesto"]
+  },
+  {
+    "id": "marcador_estadio_conspiradores",
+    "equipoId": "conspiradores_queretaro",
+    "tipo": "estadio",
+    "titulo": "Conspiradores de Querétaro",
+    "infoTexto": "Los Conspiradores de Querétaro debutaron en 2024. Su nombre evoca la Conspiración de Querétaro de 1810. Representan al estado en la Zona Sur de la Liga Mexicana de Béisbol.",
+    "markerImage": "assets/markers/marcador_estadio_conspiradores.png",
+    "modelAsset": "assets/models/conspiradores_queretaro/estadio.glb",
+    "anchoMetros": 0.15,
+    "videoUrl": null,
+    "animaciones": []
   }
 ]

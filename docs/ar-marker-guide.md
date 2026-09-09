@@ -1,7 +1,7 @@
 # Marker guide — designing targets ARCore can actually track
 
 **Status:** binding. Referenced by Constitution **Article VI** / **D-13**, **D-21**.
-**Version:** 2.0 · 2026-09-07 (rewritten after measuring the real logo set)
+**Version:** 2.3 · 2026-09-08 (Conspiradores wordmark raw 100 joins the scan set)
 **Audience:** the human authoring marker art, and any agent adding a marker.
 
 ---
@@ -76,13 +76,15 @@ Chosen from the passing logos, covering three distinct `tipo` values:
 > keypoint, so that marker could never have worked. D-20 was amended on
 > 2026-09-07 to the set above.
 
-This is the **scan** set. It is not the model catalog. Branch `full-project`
-(D-22) gives every club a stadium and a player GLB even when that logo cannot
-be a target. Do not add the other seven logos to the tracking database to
-“complete” the league, and do not write a matcher.
+The scan target is the **club logo**. The gate is **≥ 75**, not 90. Bravos at
+90, Tigres raw at 75, Diablos flame 80, Guerreros shield raw 90, and the
+Conspiradores wordmark raw 100 are in. Do not substitute a generated marker
+card. The first Conspiradores file (small silhouette) still has no usable
+keypoints — a later wordmark is what cleared the gate.
 
-Keep `marcador_pelota_bravos` as a spare: if one of the three underperforms on
-the physical print, swap it in rather than accepting a weak target.
+Logos below 75 stay out of the database. A score of 50, or zero keypoints,
+means ARCore will not lock that print. Those clubs still have models on the
+manual path.
 
 ---
 
@@ -210,28 +212,31 @@ supplying real-world size measurably improves ARCore detection and pose.
 
 Update this table in the same commit as any marker change.
 
-**Shipped in `assets/markers/`** (verified 2026-09-07, `score_markers.ps1`
-exit 0):
+**Shipped in `assets/markers/`** (verified 2026-09-08). All eight are the
+club logo. Gate is 75, not 90.
 
-| Marker id | Source logo | Variant | Size | Score | Printed width (m) | In active DB |
-|---|---|---|---|---|---|---|
-| `marcador_estadio_leones` | `leones_yucatan` | normalized | 512×512 | **100** | ⏳ _pending print_ | ✅ yes |
-| `marcador_jugador_olmecas` | `olmecas_tabasco` | normalized | 512×512 | **100** | ⏳ _pending print_ | ✅ yes |
-| `marcador_trofeo_piratas` | `piratas_campeche` | normalized | 512×512 | **100** | ⏳ _pending print_ | ✅ yes |
-| `marcador_pelota_bravos` | `bravos_leon` | normalized | 533×512 | **90** | ⏳ _pending print_ | ➖ spare only |
+| Marker id | Logo | Variant | Score | Printed width (m) | In active DB |
+|---|---|---|---|---|---|
+| `marcador_estadio_leones` | `leones_yucatan` | normalized | **100** | ⏳ _pending print_ | ✅ yes |
+| `marcador_jugador_olmecas` | `olmecas_tabasco` | normalized | **100** | ⏳ _pending print_ | ✅ yes |
+| `marcador_trofeo_piratas` | `piratas_campeche` | normalized | **100** | ⏳ _pending print_ | ✅ yes |
+| `marcador_pelota_bravos` | `bravos_leon` | normalized | **90** | ⏳ _pending print_ | ✅ yes |
+| `marcador_jugador_tigres` | `tigres_quintana_roo` | **raw JPEG** | **75** | ⏳ _pending print_ | ✅ yes |
+| `marcador_estadio_diablos` | flame logo, not the old flat mark | normalized on white | **80** | ⏳ _pending print_ | ✅ yes |
+| `marcador_jugador_guerreros` | shield logo, not the old flat mark | **raw PNG** | **90** | ⏳ _pending print_ | ✅ yes |
+| `marcador_estadio_conspiradores` | wordmark on black | **raw PNG** | **100** | ⏳ _pending print_ | ✅ yes |
 
-All four are 24-bit PNG with no alpha. The spare is bundled and printable but
-**must not** go in the active tracking database — the budget is three
-([architecture §10](./ar-architecture.md#10-performance-budgets)); unused entries
-cost CPU. Swap it in only if a shipped marker underperforms on paper.
+Do not normalize Tigres. That copy scored 50. Do not flatten the Guerreros
+shield or the Conspiradores wordmark. The generated marker cards from earlier
+the same day are deleted. Do not put them back.
 
-**Not usable as direct targets** — recorded so nobody retries them:
+**Logos left out** — below the 75 gate, so the phone will not lock them:
 
 | Logo | Best score | Note |
 |---|---|---|
-| `tigres_quintana_roo` | 75 (raw only) | usable if ever needed; **do not** normalize it |
-| `guerreros_oaxaca` · `diablos_rojos` | 50 | too flat |
-| `conspiradores` · `el_aguila` · `pericos` | *no keypoints* | needs a marker card (§5) or nothing |
+| old `guerreros_oaxaca` file | 50 | too flat. The shield logo scored 90 raw and is in. |
+| first Conspiradores silhouette | *no keypoints* / white-flatten 20 | not this file. The wordmark scored 100 raw and is in. |
+| `el_aguila` · `pericos` | *no keypoints* | cannot be a direct target until a later file clears 75 |
 
 A high score proves the **digital reference** is good. It does **not** prove the
 **print** detects — that still requires the device acceptance run in

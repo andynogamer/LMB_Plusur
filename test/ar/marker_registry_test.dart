@@ -15,21 +15,35 @@ String _markerImageStem(String markerImage) {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('ar_markers.json carga 3 marcadores tipados', () async {
+  test('ar_markers.json carga los logos que puntúan al menos 75', () async {
     final marcadores = await DataService().cargarMarcadores();
 
-    expect(marcadores, hasLength(3));
+    expect(marcadores, hasLength(8));
     expect(
       marcadores.map((m) => m.id).toSet(),
       {
         'marcador_estadio_leones',
         'marcador_jugador_olmecas',
         'marcador_trofeo_piratas',
+        'marcador_pelota_bravos',
+        'marcador_jugador_tigres',
+        'marcador_estadio_diablos',
+        'marcador_jugador_guerreros',
+        'marcador_estadio_conspiradores',
       },
     );
     expect(
-      marcadores.map((m) => m.tipo).toSet(),
-      {TipoMarcador.estadio, TipoMarcador.jugador, TipoMarcador.trofeo},
+      marcadores.map((m) => m.equipoId).toSet(),
+      {
+        'leones_yucatan',
+        'olmecas_tabasco',
+        'piratas_campeche',
+        'bravos_leon',
+        'tigres_quintana_roo',
+        'diablos_rojos',
+        'guerreros_oaxaca',
+        'conspiradores_queretaro',
+      },
     );
   });
 

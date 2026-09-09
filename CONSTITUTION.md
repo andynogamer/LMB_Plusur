@@ -17,7 +17,7 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 | [`docs/ar-architecture.md`](./docs/ar-architecture.md) | The AR technical contract: layers, `ArTracker` seam, state machine, error taxonomy, budgets. |
 | [`docs/ar-marker-guide.md`](./docs/ar-marker-guide.md) | How to author printable markers ARCore can actually track. |
 
-**Version**: 2.3.2 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-07
+**Version**: 2.4.2 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-08
 
 > **v2.0.0 — AR reset.** AR attempt #1 (branch `ar-have-too-many-errors`) was
 > abandoned and work restarted on `fresh-start`. Article VI was rewritten from
@@ -77,6 +77,22 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 > `playClip` and `setPresentationYaw`. Plugin 1.1.3 does not tick Filament
 > clips until `tools/patch_filament_clips.ps1`. Actions exist only in
 > `ArLocked`. Scan targets stay D-20. Device confirmation not run.
+>
+> **v2.4.0 — D-23 amends the D-22 scan clause.** Full-project completeness
+> means every Zona Sur club is scannable. That does **not** put the other
+> seven logos in the database. Bravos (already 90) enters the active set.
+> The six logos that cannot be tracked get a marker card scored ≥ 75.
+> Identity stays an exact name lookup. A matcher is still forbidden.
+>
+> **v2.4.1 — D-23 cards reversed.** The generated cards are not the product.
+> The scan target is the club logo. The gate is `arcoreimg` **≥ 75**, not 90.
+> Active logos: Leones 100, Olmecas 100, Piratas 100, Bravos 90, Tigres **raw**
+> 75 (never normalize Tigres). Diablos and Guerreros at 50, and the three
+> zero-keypoint logos, stay out — ARCore will not lock them.
+>
+> **v2.4.2 — D-23 scan set grows by measured logos only.** The Conspiradores
+> wordmark scores 100 raw and is in. The earlier silhouette still does not
+> clear 75. Águila and Pericos stay out until a file of theirs scores ≥ 75.
 
 ---
 
@@ -360,8 +376,9 @@ Anything else requires an amendment.
 GLBs — a static stadium and an animated player. Same mesh family; team color
 and crest are the only differences. Only the player has clips (`idle`,
 `gesto`). Budget: ≤ 4 MB and ≤ 50 k triangles per GLB. The scan database stays
-the three measured markers (D-20); the other clubs get these models from the
-manual team path.
+the logos that score ≥ 75 (D-13). That is not a 90 cutoff. Tigres ships
+as the raw logo (75). Logos at 50 or with zero keypoints are not scan
+targets.
 
 ### VII. Video archive and filters (D-05) — not still-photo grading
 
@@ -478,7 +495,7 @@ Splash → Main
 | Historia | Implemented | `equipo.historia` + fundación. |
 | Trivia / retos | Implemented (extend) | From `trivias`; last score only; AR trivia mode planned. |
 | Video archive + filters | Planned | Remote URL catalog; allowed filters only. |
-| AR markers (≥3) | Accepted on device (AR-05) | Distinct content per marker; references scoring ≥ 75 (D-13, D-20). Human: three markers lock; blank wall and a non-registered logo do not. |
+| AR markers (≥3) | 5 logos in DB (scores ≥ 75); 3 accepted on device | Gate is 75, not 90. Human: Leones, Olmecas, Piratas lock. Bravos and Tigres raw are not device-checked. |
 | AR controls | Code (AR-07); device not checked | ≥2 action types on `ArLocked` only: gesto (`idle`/`gesto`) and información (`infoTexto` + TTS + one 360°). |
 | Simulated live stats | Planned | Local mock “tiempo real”. |
 | Multiple AR modes | Planned | e.g. galería, trivia AR, video inmersivo. |
@@ -579,13 +596,13 @@ MUST NOT:
    `flutter pub get` re-run `tools/patch_arcore_image_width.ps1` and
    `tools/patch_filament_clips.ps1`. Do not bump the pin and do not write
    a matcher. AR-07 buttons are coded, not confirmed on a device.
-3. **Markers shipped; prints pending.** Four references are in
-   `assets/markers/` scoring 100/100/100/90 (D-20/D-21) and registered in
-   `pubspec.yaml`. Marker art is **no longer a blocker**. Remaining: print at
-   ≥ 15 cm matte and record `anchoMetros`.
-   `conspiradores_queretaro`, `el_aguila_veracruz` and `pericos_puebla` yield
-   **no keypoints at all** and can never be direct targets — they would need
-   marker cards, which today they do not.
+3. **Markers shipped; prints pending.** Five logos are in
+   `assets/markers/`, each scoring ≥ 75. Tigres is the **raw** JPEG — do not
+   normalize it. Remaining: print at ≥ 15 cm matte and record `anchoMetros`.
+   The flame Diablos logo scores 80, the Guerreros shield scores 90 raw,
+   and the Conspiradores wordmark scores 100 raw. All three are in. Do not
+   flatten those raw copies. Águila and Pericos stay out until a file of
+   theirs scores ≥ 75. The first Conspiradores silhouette does not.
 4. **Timer mock deleted (AR-03).** `lib/screens/ar_view_screen.dart` is gone.
    The AR route is `ArScanScreen`. Do not restore the `Timer` or the Guerreros
    default. Scan UI must keep reading `ArSessionState` only.
@@ -634,7 +651,9 @@ Track fixes via `WORK_ITEMS.md`.
 | ~~D-20 (v2.0.0)~~ | ~~First grading markers = estadio/Diablos Rojos, jugador/Guerreros de Oaxaca, trofeo/Pericos de Puebla.~~ **Superseded** — chosen before measuring; they score 50, 50 and *no keypoints*. | ~~Ratified 2026-09-07~~ |
 | D-20 | First grading markers = **estadio/Leones de Yucatán (100)**, **jugador/Olmecas de Tabasco (100)**, **trofeo/Piratas de Campeche (100)**, spare **pelota/Bravos de León (90)** — three distinct `tipo`, all measured with `arcoreimg`. Resolves R-02. | **Amended 2026-09-07** |
 | D-21 | Reference images MUST be **normalized and measured** before use: alpha flattened onto **white**, short side ≥ 512 px, 24-bit no-alpha, then re-scored. Ship whichever variant scores higher and record it. Normalization is not assumed to help — it lowered one logo 75 → 50. | **Ratified 2026-09-07** |
-| D-22 | **Full-project catalog** (branch `full-project`): every club gets `estadio.glb` (static) and `jugador.glb` (clips `idle` + `gesto` only). Same meshes, color and crest differ. Scan targets stay the measured D-20 set. Clubs whose logos cannot be tracked still receive both models on the manual path. Do not add scan targets to “cover” all 10 logos, and do not write a matcher. | **Ratified 2026-09-07** |
+| D-22 | **Full-project catalog** (branch `full-project`): every club gets `estadio.glb` (static) and `jugador.glb` (clips `idle` + `gesto` only). Same meshes, color and crest differ. **Scan-set sentence amended by D-23.** Do not add unmeasured logos, and do not write a matcher. | **Amended 2026-09-08** |
+| ~~D-23 (cards)~~ | ~~Six untrackable logos get generated marker cards.~~ **Reversed the same day.** The scan target is the club logo, not a substitute card. | ~~Ratified 2026-09-08~~ |
+| D-23 | **Scan set = logos that score ≥ 75, not 90, and not substitute cards.** Active logos: Leones 100, Olmecas 100, Piratas 100, Bravos 90, Tigres raw 75, Diablos flame 80, Guerreros shield raw 90, Conspiradores wordmark raw 100. Do not normalize Tigres, the Guerreros shield, or the Conspiradores wordmark. The old 50-score files and the first Conspiradores silhouette stay out. Águila and Pericos stay out until a file scores ≥ 75. No matcher. | **Amended 2026-09-08** |
 
 Open residual (non-blocking for backlog writing):
 

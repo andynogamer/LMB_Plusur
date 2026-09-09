@@ -12,10 +12,10 @@ to rest). Regenerate from the repo root with
 below are the upgrade path if replacing those files with authored art.
 Do not add scan targets to “cover” clubs.
 
-This is not 10 scan targets. The camera still locks only the measured markers
-(Leones, Olmecas, Piratas). The other clubs open these models from the team
-menu. Do not generate extra marker images, and do not ask the tool to “make
-the logo trackable.”
+This is not automatically 10 scan targets. The camera locks only logos that
+score ≥ 75 (see `docs/ar-marker-guide.md` §7). Clubs without a passing logo
+open these models from the team menu. Do not generate extra marker images,
+and do not ask the tool to “make the logo trackable.”
 
 | Club id | Stadium (no animation) | Player (`idle` + `gesto`) |
 |---|---|---|

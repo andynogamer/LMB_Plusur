@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-09-07 · by: AR-07 idle / gesto actions
+**Last updated:** 2026-09-08 · by: Conspiradores wordmark raw 100
 
 ---
 
@@ -20,7 +20,7 @@ These are **binding**, not advisory:
 
 | # | File | What it gives you |
 |---|---|---|
-| 1 | `CONSTITUTION.md` | Governance, v2.3.0, decisions D-01…D-22 |
+| 1 | `CONSTITUTION.md` | Governance, v2.4.1, decisions D-01…D-23 |
 | 2 | `AGENTS.md` | How to work here (auto-loaded as a workspace rule) |
 | 3 | `WORK_ITEMS.md` | The backlog. Each item's `Prompt` block **is** the spec |
 | 4 | `docs/ar-postmortem.md` | Why AR attempt #1 was thrown away (RC-1…RC-7) |
@@ -98,8 +98,8 @@ Measured later, four of them were. **Never copy code from that branch.**
   listed). **Información** reads `titulo` / `infoTexto` from
   `assets/ar_markers.json`, speaks them (platform TTS, es-MX, no new
   plugin), and runs one 360° yaw. Stadium and trophy `animaciones` are
-  empty — those GLBs are static; `celebracion` was not a real clip. Scan
-  DB is still the three D-20 markers. Device confirmation not run.
+  empty — those GLBs are static; `celebracion` was not a real clip. Device
+  confirmation not run.
 - **D-22 catalog (code)** — 10 static `estadio.glb` + 10 `jugador.glb` under
   `assets/models/<club_id>/`. Shared mesh family from
   `tools/write_lowpoly_glbs.py` (vertex colors, no textures). Stadiums: 764
@@ -107,32 +107,27 @@ Measured later, four of them were. **Never copy code from that branch.**
   spine, arms, legs, head, bat in the right hand) with clips named exactly
   `idle` and `gesto`. `idle` (3 s loop) is a weight shift + breath. `gesto`
   (2.4 s) winds up and points the bat, then returns to rest. ~324 tris,
-  ~62 KB, ~11.5 cm. Well under 4 MB / 50 k tris. Scan DB is still only the
-  three D-20 markers. Regenerating overwrites the Leones and Olmecas scan
+  ~62 KB, ~11.5 cm. Well under 4 MB / 50 k tris. Regenerating overwrites the Leones and Olmecas scan
   copies; `write_marker_glbs.dart` only writes the Piratas box now.
-- AR-00 (code half) — 4 ARCore reference images in `assets/markers/`, registered
-  in `pubspec.yaml`, all scoring ≥ 75:
-
-  | Marker | Score | In active DB |
-  |---|---|---|
-  | `marcador_estadio_leones` | 100 | ✅ |
-  | `marcador_jugador_olmecas` | 100 | ✅ |
-  | `marcador_trofeo_piratas` | 100 | ✅ |
-  | `marcador_pelota_bravos` | 90 | ➖ printable spare only |
-
-  Unusable: `tigres` 75 raw only (never normalize it) · `guerreros`/`diablos` 50
-  · `conspiradores`/`el_aguila`/`pericos` produce **zero keypoints**.
+- AR-00 / D-23 — scan targets are **logos**, not substitute cards. Gate is
+  **≥ 75**, not 90. Active: Leones 100, Olmecas 100, Piratas 100, Bravos 90,
+  Tigres **raw JPEG** 75, Diablos flame logo **80**, Guerreros shield logo
+  **raw 90**, Conspiradores wordmark **raw 100**. Old flat Diablos/Guerreros
+  files stay unused. Do not normalize Tigres, the Guerreros shield, or the
+  Conspiradores wordmark. Águila and Pericos stay out until a file scores ≥ 75.
+  Device lock for Bravos and Tigres is not run.
 
 **Blocked on the human**
 
 - Measure printed width in metres → `anchoMetros` (JSON still holds the planned
   0.15, not a measurement). Does not block AR-06.
 - AR-06 device: hold-to-card + 5× enter/leave. Optional: replace the procedural
-  GLBs with nicer art from `docs/model-prompts.md`. Do not add the other
-  seven logos to the scan database.
+  GLBs with nicer art from `docs/model-prompts.md`.
 - AR-07 device: on Olmecas, Gesto moves the player then idle resumes;
   Información speaks the marker text and turns the model once. Toggling
   either must not drop the session.
+- Print Bravos and the raw Tigres logo at ≥ 15 cm matte and try a lock.
+  Those two are in the database but not yet confirmed on a phone.
 
 **Next**
 
@@ -244,16 +239,16 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-09-08 | **Conspiradores wordmark.** First of four candidates. Raw 100. Shipped as-is as `marcador_estadio_conspiradores`. The other three were not scored. Constitution → v2.4.2. |
+| 2026-09-08 | **Guerreros shield logo.** First of four candidates. Raw 90. Shipped as-is. The other three were not scored. |
+| 2026-09-08 | **Diablos flame logo.** First of four candidates. Raw 60, white-flatten 80. Shipped. The other three were not scored. |
+| 2026-09-08 | **D-23 cards reversed.** Scan targets are logos. Gate is 75, not 90. Tigres raw JPEG (75) joins Leones, Olmecas, Piratas, Bravos. 50 and zero-keypoint logos stay out. Constitution → v2.4.1. |
+| 2026-09-08 | **D-23.** Scan DB is all 10 clubs. Six logos that cannot track get measured marker cards (each 100). Bravos (90) joins. Not a matcher. Constitution → v2.4.0. Device lock for the new cards not run. |
 | 2026-09-07 | **AR-07 code.** `ArLocked` only: Gesto plays `idle`/`gesto`; Información speaks `infoTexto` and spins the pose once. Stadium/trophy `animaciones` emptied (`celebracion` was not a clip). Filament clip patch required. Tests: 5 passed (`ar_scan_screen_test.dart`). Device not run. Constitution → v2.3.2. |
 | 2026-09-07 | **D-22 player biped.** `jugador.glb` is a jointed figure (hips/spine/arms/legs/head, bat in the right hand). `idle` weight-shifts; `gesto` points the bat. Same clip names, no new scan targets. |
 | 2026-09-07 | **D-22 low-poly catalog.** Shared stadium (764 tris, static) + player GLBs in team colors for all 10 clubs. Generator: `tools/write_lowpoly_glbs.py`. Leones/Olmecas scan paths use those meshes. Piratas trophy box kept. Constitution → v2.3.1. |
 | 2026-09-07 | **D-22 / branch `full-project`.** Model catalog is all 10 clubs × stadium (static) + player (`idle`, `gesto`). Scan set stays D-20. Not a matcher. Constitution → v2.3.0. |
 | 2026-09-07 | **AR-06 code.** `attachModel` places a per-marker GLB on the fully-tracked pose. Missing/failed GLB → Spanish overlay, session stays up. No WebView. Device hold/dispose checks not run. |
-| 2026-09-07 | **AR-05 accepted.** Human: Leones, Olmecas and Piratas locked. Blank wall and a non-registered club logo triggered nothing. Lock time not stopwatched. Next is AR-06. |
-| 2026-09-07 | **AR-05 human scan.** Leones, Olmecas and Piratas each locked on a physical device. Control rows not run. Time to lock not timed. |
-| 2026-09-07 | **AR-05 code.** Real tracker starts a session; identity is the ARCore name. Continuous tracking 200 ms so debounce can lock. Width patch required (`tools/patch_arcore_image_width.ps1`) because 1.1.3 hardcodes 0.2 m. Tests: 21 passed (detection event + session + scan + registry). Device table **not** filled. Constitution → v2.2.2. Architecture §11 order clarified (null-path init, then precompile). |
-| 2026-09-07 | **AR-04 APK green.** Human installed JDK 17. `flutter build apk --debug` built `app-debug.apk`. The earlier failure was a missing JDK 17 toolchain, not the native config. KGP warning from the plugin is still only a warning. Device install and the no-ARCore path were not run. |
-| 2026-09-07 | **AR-04 probe.** Pinned `ar_flutter_plugin_plus: 1.1.3`. Native allowed set only (`minSdk` 24, CAMERA, ARCore optional, package query). `ArCoreImageTracker` implements `isSupported` only. First debug APK failed on missing JDK 17. Did not enable foojay. |
 
 ## 8. How to work
 
@@ -266,8 +261,8 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 ## 9. Current task
 
-> US-11: video archive UI from local JSON (remote URLs). Do not add
-> unmeasured logos to the scan database. Do not write a matcher.
+> Next logo gate: Águila, then Pericos. First file that scores ≥ 75 stays;
+> do not score the rest. Do not add a logo below 75. Do not write a matcher.
 
 _(The human edits this line each session. Leave it pointing at the next item
 when you finish.)_
