@@ -45,7 +45,7 @@
 | US-10 | 📗 | 🟠 P1 | Multiple AR modes (galería / trivia / video) | ☐ | Bonus + modes |
 | US-11 | 📗 | 🔴 P0 | Video archive UI (remote URLs) | ☑ | Videos |
 | US-12 | 📗 | 🔴 P0 | Video filters — allowed set only | ☑ | Filters |
-| US-13 | 📗 | 🟠 P1 | Baseball-coherent 3D animations / VFX | ☐ | 15pt effects |
+| US-13 | 📗 | 🟠 P1 | Baseball-coherent 3D animations / VFX | ☑ | 15pt effects |
 | US-14 | 📗 | 🟡 P2 | Performance pass (load / stability) | ☐ | 15pt perf |
 | US-15 | 📗 | 🟡 P2 | Android APK release build | ☐ | Packaging |
 | US-16 | 📗 | 🟢 P3 | README product brief for humans | ☐ | Docs |
@@ -663,7 +663,28 @@ Fuera de alcance: still-photo camera product, uploading filtered video.
 
 ---
 
-## US-13 · 📗 · 🟠 P1 · Baseball-coherent 3D animations / VFX · ☐ Pendiente
+## US-13 · 📗 · 🟠 P1 · Baseball-coherent 3D animations / VFX · ☑ Hecho
+
+**Code landed 2026-09-09 (reopen closed + particle polish).** Device
+toggle-spam not run.
+
+On `ArLocked`:
+
+1. **Celebración** — plays clip `celebracion` (arms up / bat overhead), then
+   idle. Spawns ~10 baseball `ARNode`s that drift for ~2.8 s and shrink away.
+   Screen-space sparks/confetti + optional ¡JONRÓN! banner reinforce.
+2. **Efecto jonrón** — same multi-ball + particles; loops until toggled off.
+   One VFX at a time. `updateEffect` each frame; `clearEffect` on leave /
+   toggle off / end of oneshot. Not soccer branding.
+
+D-22 amended: player clips are `idle`, `gesto`, `celebracion`.
+
+**Corrected acceptance (binding):**
+- Polish ≥1 celebration animation on the in-session model.
+- ≥1 simple **in-scene** VFX on the tracked pose. One VFX at a time.
+- Optional 2D banner may reinforce; it is not the VFX.
+- Triggered from AR controls in `ArLocked` only. Dispose nodes/controllers.
+- No Unity. No WebView as AR. Stay under 4 MB / 50 k tris per GLB.
 
 **Prompt**
 ```

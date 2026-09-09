@@ -184,6 +184,7 @@ void main() {
     expect(find.byKey(const Key('ar-actions')), findsNothing);
     expect(find.byKey(const Key('ar-action-gesto')), findsNothing);
     expect(find.byKey(const Key('ar-action-info')), findsNothing);
+    expect(find.byKey(const Key('ar-action-efecto')), findsNothing);
 
     tracker.emit(
       ArDetection(
@@ -212,7 +213,7 @@ void main() {
     await tester.tap(find.byKey(const Key('ar-action-gesto')));
     await tester.pump();
     expect(find.byKey(const Key('ar-action-note')), findsOneWidget);
-    expect(find.text(kGestoMissingCopy), findsOneWidget);
+    expect(find.text(kCelebracionMissingCopy), findsOneWidget);
     expect(tracker.playedClips, isEmpty);
 
     await tester.tap(find.byKey(const Key('ar-action-info')));
@@ -236,13 +237,13 @@ void main() {
     expect(find.byKey(const Key('ar-marker-content')), findsNothing);
   });
 
-  testWidgets('gesto pide el clip del marcador y reposo vuelve a idle', (tester) async {
+  testWidgets('celebracion pide el clip y reposo vuelve a idle', (tester) async {
     final player = _marcador(
       id: 'marcador_jugador_olmecas',
       titulo: 'El legado olmeca',
       infoTexto: 'Los Olmecas de Tabasco honran a la civilización olmeca.',
       tipo: TipoMarcador.jugador,
-      animaciones: const [kClipIdle, kClipGesto],
+      animaciones: const [kClipIdle, kClipGesto, kClipCelebracion],
     );
     final tracker = FakeArTracker();
     await tester.pumpWidget(
@@ -290,17 +291,65 @@ void main() {
     expect(find.text('REPOSO'), findsOneWidget);
     expect(
       tracker.playedClips.last,
-      (trackerName: player.id, clipName: kClipGesto, loop: false),
+      (trackerName: player.id, clipName: kClipCelebracion, loop: false),
     );
+    expect(tracker.attachedEffects, isNotEmpty);
+    expect(tracker.attachedEffects.last.glbAsset, kEfectoJonronAsset);
+    expect(find.byKey(const Key('ar-vfx-banner')), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('ar-action-gesto')));
     await tester.pump();
     await tester.pump();
 
-    expect(find.text('GESTO'), findsOneWidget);
+    expect(find.text('CELEBRACIÓN'), findsOneWidget);
     expect(
       tracker.playedClips.last,
       (trackerName: player.id, clipName: kClipIdle, loop: true),
     );
+    expect(tracker.clearEffectCount, greaterThan(0));
+  });
+
+  testWidgets('efecto jonrón coloca el GLB 3D sin soltar la sesión', (tester) async {
+    final tracker = FakeArTracker();
+    await pumpScan(tester, tracker: tracker);
+
+    tracker.emit(
+      ArDetection(
+        trackerName: leones.id,
+        pose: Matrix4.identity(),
+        isFullyTracked: true,
+      ),
+    );
+    tracker.emit(
+      ArDetection(
+        trackerName: leones.id,
+        pose: Matrix4.identity(),
+        isFullyTracked: true,
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byKey(const Key('ar-action-efecto')), findsOneWidget);
+    expect(tracker.attachedEffects, isEmpty);
+
+    await tester.tap(find.byKey(const Key('ar-action-efecto')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+
+    expect(find.text('QUITAR EFECTO'), findsOneWidget);
+    expect(tracker.attachedEffects, isNotEmpty);
+    expect(tracker.attachedEffects.last.glbAsset, kEfectoJonronAsset);
+    expect(tracker.effectProgress, greaterThan(0));
+    expect(find.byKey(const Key('ar-vfx-banner')), findsOneWidget);
+    expect(find.byKey(const Key('ar-locked')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('ar-action-efecto')));
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('EFECTO JONRÓN'), findsOneWidget);
+    expect(tracker.clearEffectCount, greaterThan(0));
+    expect(find.byKey(const Key('ar-locked')), findsOneWidget);
   });
 }

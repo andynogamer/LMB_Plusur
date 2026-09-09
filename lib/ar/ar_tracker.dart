@@ -76,12 +76,28 @@ abstract interface class ArTracker {
   /// Plays a named glTF clip on the node attached for [trackerName].
   ///
   /// Missing clips and a missing Filament patch return false and must not
-  /// fail the session. [loop] is for `idle`; `gesto` is one-shot.
+  /// fail the session. [loop] is for `idle`; `gesto` and `celebracion`
+  /// are one-shot.
   Future<bool> playClip({
     required String trackerName,
     required String clipName,
     bool loop = false,
   });
+
+  /// Places a short-lived baseball VFX on the locked marker pose.
+  /// Spawns several ball nodes. Call [updateEffect] each frame, then
+  /// [clearEffect]. One effect at a time. Must not drop the session.
+  Future<bool> attachEffect({
+    required String trackerName,
+    required String glbAsset,
+  });
+
+  /// Drives the active effect. [progress] is 0..1 — balls drift randomly
+  /// then shrink away near the end. No-op if nothing is attached.
+  void updateEffect(double progress);
+
+  /// Removes every active effect node.
+  Future<void> clearEffect();
 
   /// Extra yaw (radians) composed onto the tracked pose. Used by the
   /// información action's single 360° turn. Zero means the pose alone.

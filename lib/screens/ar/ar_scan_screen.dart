@@ -17,6 +17,7 @@ import '../../services/feedback_service.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_logo.dart';
 import 'widgets/ar_action_bar.dart';
+import 'widgets/ar_baseball_vfx.dart';
 import 'widgets/ar_demo_badge.dart';
 import 'widgets/ar_failed_panel.dart';
 import 'widgets/ar_session_body.dart';
@@ -53,7 +54,7 @@ class ArScanScreen extends StatefulWidget {
 }
 
 class _ArScanScreenState extends State<ArScanScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   ArSessionController? _controller;
   StreamSubscription<ArSessionState>? _states;
   List<Marcador> _marcadores = const [];
@@ -65,9 +66,12 @@ class _ArScanScreenState extends State<ArScanScreen>
   String? _actionNote;
   bool _gestoPressed = false;
   bool _infoPressed = false;
+  bool _efectoPressed = false;
+  bool _celebracionVfx = false;
   ArTracker? _liveTracker;
   Timer? _gestoTimer;
   late final AnimationController _spin;
+  late final AnimationController _efectoDrive;
   final ValueNotifier<ArSessionState> _uiState =
       ValueNotifier<ArSessionState>(const ArPreparing());
 
@@ -87,6 +91,16 @@ class _ArScanScreenState extends State<ArScanScreen>
         if (_infoPressed) {
           setState(() => _infoPressed = false);
         }
+      });
+    _efectoDrive = AnimationController(
+      vsync: this,
+      duration: ArBaseballVfx.duration,
+    )
+      ..addListener(() {
+        _liveTracker?.updateEffect(_efectoDrive.value);
+      })
+      ..addStatusListener((status) {
+        unawaited(_onEfectoDriveStatus(status));
       });
     unawaited(_openSession());
   }
@@ -226,62 +240,169 @@ class _ArScanScreenState extends State<ArScanScreen>
   Future<void> _releaseActions() async {
     _gestoTimer?.cancel();
     _gestoTimer = null;
+    _efectoDrive.stop();
+    _efectoDrive.value = 0;
+    _efectoLooping = false;
     if (_spin.isAnimating) {
       _spin.stop();
     }
     _liveTracker?.setPresentationYaw(0);
+    await _liveTracker?.clearEffect();
     await ArSpeechService.instance.stop();
     if (!mounted) return;
-    if (!_gestoPressed && !_infoPressed && _actionNote == null) return;
+    if (!_gestoPressed &&
+        !_infoPressed &&
+        !_efectoPressed &&
+        !_celebracionVfx &&
+        _actionNote == null) {
+      return;
+    }
     setState(() {
       _gestoPressed = false;
       _infoPressed = false;
+      _efectoPressed = false;
+      _celebracionVfx = false;
       _actionNote = null;
+    });
+  }
+
+  void _startEfectoDrive({required bool loop}) {
+    _efectoLooping = loop;
+    _efectoDrive
+      ..stop()
+      ..forward(from: 0);
+  }
+
+  bool _efectoLooping = false;
+
+  Future<void> _onEfectoDriveStatus(AnimationStatus status) async {
+    if (status != AnimationStatus.completed || !mounted) return;
+    if (_efectoLooping && _efectoPressed) {
+      await _restartEfectoLoop();
+      return;
+    }
+    if (!_efectoLooping) {
+      await _finishOneshotEfecto();
+    }
+  }
+
+  Future<void> _restartEfectoLoop() async {
+    final tracker = _liveTracker;
+    final state = _uiState.value;
+    if (tracker == null || state is! ArLocked || !_efectoPressed) return;
+    await tracker.clearEffect();
+    final placed = await tracker.attachEffect(
+      trackerName: state.marcador.id,
+      glbAsset: kEfectoJonronAsset,
+    );
+    if (!mounted || !placed || !_efectoPressed) return;
+    _efectoDrive.forward(from: 0);
+  }
+
+  Future<void> _finishOneshotEfecto() async {
+    await _liveTracker?.clearEffect();
+    if (!mounted) return;
+    setState(() {
+      _gestoPressed = false;
+      _celebracionVfx = false;
     });
   }
 
   Future<void> _onGesto(Marcador marcador) async {
     final tracker = _liveTracker;
     if (tracker == null) return;
-    if (!marcador.animaciones.contains(kClipGesto)) {
+    if (!marcador.animaciones.contains(kClipCelebracion)) {
       await FeedbackService.instance.error();
       if (!mounted) return;
-      setState(() => _actionNote = kGestoMissingCopy);
+      setState(() => _actionNote = kCelebracionMissingCopy);
       return;
     }
     if (_gestoPressed) {
       _gestoTimer?.cancel();
       _gestoTimer = null;
+      _efectoDrive.stop();
+      await tracker.clearEffect();
       await tracker.playClip(
         trackerName: marcador.id,
         clipName: kClipIdle,
         loop: true,
       );
       if (!mounted) return;
-      setState(() => _gestoPressed = false);
+      setState(() {
+        _gestoPressed = false;
+        _celebracionVfx = false;
+      });
       return;
     }
     final played = await tracker.playClip(
       trackerName: marcador.id,
-      clipName: kClipGesto,
+      clipName: kClipCelebracion,
       loop: false,
     );
     if (!mounted) return;
     if (!played) {
       await FeedbackService.instance.error();
-      setState(() => _actionNote = kGestoFailedCopy);
+      setState(() => _actionNote = kCelebracionFailedCopy);
       return;
     }
     await FeedbackService.instance.success();
+    final placed = await tracker.attachEffect(
+      trackerName: marcador.id,
+      glbAsset: kEfectoJonronAsset,
+    );
+    if (!mounted) return;
     setState(() {
       _gestoPressed = true;
+      _celebracionVfx = placed;
+      _efectoPressed = false;
       _actionNote = null;
     });
-    _gestoTimer?.cancel();
-    _gestoTimer = Timer(kGestoClipLength, () {
+    if (placed) {
+      _startEfectoDrive(loop: false);
+    } else {
+      _gestoTimer?.cancel();
+      _gestoTimer = Timer(kCelebracionClipLength, () {
+        if (!mounted) return;
+        setState(() => _gestoPressed = false);
+      });
+    }
+  }
+
+  Future<void> _onEfecto() async {
+    final tracker = _liveTracker;
+    final state = _uiState.value;
+    if (tracker == null || state is! ArLocked) return;
+    await FeedbackService.instance.tap();
+    if (!mounted) return;
+    if (_efectoPressed) {
+      _efectoDrive.stop();
+      _efectoLooping = false;
+      await tracker.clearEffect();
       if (!mounted) return;
-      setState(() => _gestoPressed = false);
+      setState(() {
+        _efectoPressed = false;
+        _celebracionVfx = false;
+        _actionNote = null;
+      });
+      return;
+    }
+    final placed = await tracker.attachEffect(
+      trackerName: state.marcador.id,
+      glbAsset: kEfectoJonronAsset,
+    );
+    if (!mounted) return;
+    if (!placed) {
+      await FeedbackService.instance.error();
+      setState(() => _actionNote = 'No pudimos mostrar el efecto 3D.');
+      return;
+    }
+    setState(() {
+      _efectoPressed = true;
+      _celebracionVfx = true;
+      _gestoPressed = false;
+      _actionNote = null;
     });
+    _startEfectoDrive(loop: true);
   }
 
   Future<void> _onInfo(Marcador marcador) async {
@@ -327,6 +448,7 @@ class _ArScanScreenState extends State<ArScanScreen>
   @override
   void dispose() {
     _gestoTimer?.cancel();
+    _efectoDrive.dispose();
     _spin.dispose();
     unawaited(ArSpeechService.instance.stop());
     _states?.cancel();
@@ -354,6 +476,17 @@ class _ArScanScreenState extends State<ArScanScreen>
         fit: StackFit.expand,
         children: [
           if (camera != null) Positioned.fill(child: camera.buildSurface()),
+          if (state is ArLocked && (_efectoPressed || _celebracionVfx))
+            Positioned.fill(
+              child: ArBaseballVfx(
+                active: true,
+                oneshot: _celebracionVfx && !_efectoPressed,
+                onFinished: () {
+                  if (!mounted) return;
+                  setState(() => _celebracionVfx = false);
+                },
+              ),
+            ),
           DecoratedBox(
             decoration: camera == null
                 ? const BoxDecoration(
@@ -427,6 +560,7 @@ class _ArScanScreenState extends State<ArScanScreen>
                                     ? ArActionBar(
                                         gestoPressed: _gestoPressed,
                                         infoPressed: _infoPressed,
+                                        efectoPressed: _efectoPressed,
                                         note: _actionNote,
                                         onGesto: () => unawaited(
                                           _onGesto(state.marcador),
@@ -434,6 +568,7 @@ class _ArScanScreenState extends State<ArScanScreen>
                                         onInfo: () => unawaited(
                                           _onInfo(state.marcador),
                                         ),
+                                        onEfecto: () => unawaited(_onEfecto()),
                                       )
                                     : null,
                                 onExit: state is ArLocked

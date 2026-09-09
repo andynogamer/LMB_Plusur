@@ -17,7 +17,7 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 | [`docs/ar-architecture.md`](./docs/ar-architecture.md) | The AR technical contract: layers, `ArTracker` seam, state machine, error taxonomy, budgets. |
 | [`docs/ar-marker-guide.md`](./docs/ar-marker-guide.md) | How to author printable markers ARCore can actually track. |
 
-**Version**: 2.4.6 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-08
+**Version**: 2.4.8 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-09
 
 > **v2.0.0 — AR reset.** AR attempt #1 (branch `ar-have-too-many-errors`) was
 > abandoned and work restarted on `fresh-start`. Article VI was rewritten from
@@ -110,6 +110,16 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 >
 > **v2.4.6 — US-12 filters.** Preview filters on the archive player. Allowed
 > set only. No new decision. Do not add forbidden filters.
+>
+> **v2.4.7 — US-13 celebration VFX (first pass).** AR locked actions:
+> Celebración plays `gesto` plus a Flutter overlay. **Incomplete for the
+> 15pt gate** — live-session effects must use the tracker scene graph
+> (architecture §6). Reopened the same day; no decision change.
+>
+> **v2.4.8 — D-22 + US-13.** Player clips are `idle`, `gesto`, and
+> `celebracion`. Celebración plays `celebracion` and places
+> `efecto_jonron` as a second `ARNode` on the tracked pose. Optional 2D
+> banner is chrome only. One VFX at a time.
 
 ---
 
@@ -393,7 +403,7 @@ Anything else requires an amendment.
 **3D content (D-03, D-22):** On `full-project`, every Zona Sur club has two
 GLBs — a static stadium and an animated player. Same mesh family; team color
 and crest are the only differences. Only the player has clips (`idle`,
-`gesto`). Budget: ≤ 4 MB and ≤ 50 k triangles per GLB. The scan database stays
+`gesto`, `celebracion`). Budget: ≤ 4 MB and ≤ 50 k triangles per GLB. The scan database stays
 the logos that score ≥ 75 (D-13). That is not a 90 cutoff. Tigres ships
 as the raw logo (75). Logos at 50 or with zero keypoints are not scan
 targets.
@@ -600,7 +610,7 @@ MUST NOT:
 
 1. **Model catalog is low-poly procedural (D-22).** 20 GLBs ship under
    `assets/models/<club_id>/` (`estadio.glb` static, `jugador.glb` with
-   `idle` and `gesto`). Same mesh family; kit color only. The player is an
+   `idle`, `gesto`, and `celebracion`). Same mesh family; kit color only. The player is an
    articulated biped (node TRS, not skinned). Generator:
    `tools/write_lowpoly_glbs.py`. `docs/model-prompts.md` is the upgrade
    path for nicer art. Do not add unmeasured logos to the scan database
@@ -676,7 +686,7 @@ Track fixes via `WORK_ITEMS.md`.
 | ~~D-20 (v2.0.0)~~ | ~~First grading markers = estadio/Diablos Rojos, jugador/Guerreros de Oaxaca, trofeo/Pericos de Puebla.~~ **Superseded** — chosen before measuring; they score 50, 50 and *no keypoints*. | ~~Ratified 2026-09-07~~ |
 | D-20 | First grading markers = **estadio/Leones de Yucatán (100)**, **jugador/Olmecas de Tabasco (100)**, **trofeo/Piratas de Campeche (100)**, spare **pelota/Bravos de León (90)** — three distinct `tipo`, all measured with `arcoreimg`. Resolves R-02. | **Amended 2026-09-07** |
 | D-21 | Reference images MUST be **normalized and measured** before use: alpha flattened onto **white**, short side ≥ 512 px, 24-bit no-alpha, then re-scored. Ship whichever variant scores higher and record it. Normalization is not assumed to help — it lowered one logo 75 → 50. | **Ratified 2026-09-07** |
-| D-22 | **Full-project catalog** (branch `full-project`): every club gets `estadio.glb` (static) and `jugador.glb` (clips `idle` + `gesto` only). Same meshes, color and crest differ. **Scan-set sentence amended by D-23.** Do not add unmeasured logos, and do not write a matcher. | **Amended 2026-09-08** |
+| D-22 | **Full-project catalog** (branch `full-project`): every club gets `estadio.glb` (static) and `jugador.glb` (clips `idle` + `gesto` + `celebracion`). Same meshes, color and crest differ. **Scan-set sentence amended by D-23.** Shared `efecto_jonron` GLB is the in-scene VFX (US-13), not a club model. Do not add unmeasured logos, and do not write a matcher. | **Amended 2026-09-09** |
 | ~~D-23 (cards)~~ | ~~Six untrackable logos get generated marker cards.~~ **Reversed the same day.** The scan target is the club logo, not a substitute card. | ~~Ratified 2026-09-08~~ |
 | D-23 | **Scan set = logos that score ≥ 75, not 90, and not substitute cards.** Active logos: Leones 100, Olmecas 100, Piratas 100, Bravos 90, Tigres raw 75, Diablos flame 80, Guerreros shield raw 90, Conspiradores wordmark raw 100, Águila crest raw 100, Pericos wordmark raw 100. Do not normalize Tigres, the Guerreros shield, the Conspiradores wordmark, the Águila crest, or the Pericos wordmark. The old 50-score files and the first Conspiradores, Águila, and Pericos files stay out. The Águila wordmark also scored 100 raw but was not shipped (it carries a +N watermark). The other Pericos candidates were not scored. No matcher. | **Amended 2026-09-08** |
 

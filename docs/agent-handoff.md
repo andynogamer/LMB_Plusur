@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-09-08 · by: US-12 video filters
+**Last updated:** 2026-09-09 · by: US-13 particle burst + drifting balls
 
 ---
 
@@ -20,7 +20,7 @@ These are **binding**, not advisory:
 
 | # | File | What it gives you |
 |---|---|---|
-| 1 | `CONSTITUTION.md` | Governance, v2.4.6, decisions D-01…D-23 |
+| 1 | `CONSTITUTION.md` | Governance, v2.4.8, decisions D-01…D-23 |
 | 2 | `AGENTS.md` | How to work here (auto-loaded as a workspace rule) |
 | 3 | `WORK_ITEMS.md` | The backlog. Each item's `Prompt` block **is** the spec |
 | 4 | `docs/ar-postmortem.md` | Why AR attempt #1 was thrown away (RC-1…RC-7) |
@@ -93,28 +93,28 @@ Measured later, four of them were. **Never copy code from that branch.**
   `model_viewer_plus`. Scan-path models: Leones = low-poly stadium, Olmecas =
   low-poly player, Piratas = trophy box. Device hold-to-card and the 5×
   enter/leave run are not done.
-- AR-07 (code) — Actions exist only in `ArLocked`. **Gesto** plays clip
-  `gesto` then the renderer returns to `idle` (`idle` starts on place when
-  listed). **Información** reads `titulo` / `infoTexto` from
-  `assets/ar_markers.json`, speaks them (platform TTS, es-MX, no new
-  plugin), and runs one 360° yaw. Stadium and trophy `animaciones` are
-  empty — those GLBs are static; `celebracion` was not a real clip. Device
+- AR-07 (code) — Actions exist only in `ArLocked`. **Celebración** plays
+  `celebracion` then idle, and places ~10 drifting baseball VFX nodes.
+  **Información** reads `titulo` / `infoTexto`, speaks them (TTS es-MX), and
+  runs one 360° yaw. Stadium and trophy `animaciones` are empty. Device
   confirmation not run.
 - **D-22 catalog (code)** — 10 static `estadio.glb` + 10 `jugador.glb` under
   `assets/models/<club_id>/`. Shared mesh family from
-  `tools/write_lowpoly_glbs.py` (vertex colors, no textures). Stadiums: 764
-  tris, ~97 KB, 11.2 cm, no clips. Players are an articulated biped (hips,
-  spine, arms, legs, head, bat in the right hand) with clips named exactly
-  `idle` and `gesto`. `idle` (3 s loop) is a weight shift + breath. `gesto`
-  (2.4 s) winds up and points the bat, then returns to rest. ~324 tris,
-  ~62 KB, ~11.5 cm. Well under 4 MB / 50 k tris. Regenerating overwrites the Leones and Olmecas scan
-  copies; `write_marker_glbs.dart` only writes the Piratas box now.
-- US-11 — Video archive loads `assets/videos.json` (`titulo`, `descripcion`,
-  `url`, optional `equipoId`) through `DataService.cargarVideos()`. Main
-  opens the full catalog; the team menu opens that club only. Playback uses
-  `HighlightVideoPlayer`. A failed URL shows Spanish copy and stays up. No
-  filters via `FilterEngine` (`Filtros del partido`). URLs are public samples until R-03. Do not restore
-  `DemoHighlights`.
+  `tools/write_lowpoly_glbs.py`. Players: clips `idle` (3 s), `gesto`
+  (2.4 s), `celebracion` (2.8 s, arms up). Shared VFX:
+  `assets/models/efecto_jonron/modelo.glb` (one stitched baseball ~276 tris;
+  Dart spawns many nodes). Stadiums ~764 tris.
+  Regenerating overwrites Leones/Olmecas scan copies; Piratas box stays
+  from `write_marker_glbs.dart`.
+- US-13 — **Done (reopen closed).** `celebracion` + multi-ball in-scene
+  VFX (`attachEffect` / `updateEffect` / `clearEffect`, ~2.8 s drift then
+  shrink-away) plus screen-space particle chrome (`ArBaseballVfx`). One
+  VFX at a time. Device toggle-spam not run.
+- US-11 — Video archive loads `assets/videos.json` through
+  `DataService.cargarVideos()`. Main = full catalog; team menu = that club.
+  Broken URL → Spanish copy. US-12 filters via `FilterEngine`. Sample URLs
+  until R-03. Do not restore `DemoHighlights`.
+- US-12 — Allowed filter families only. Forbidden set absent.
 - AR-00 / D-23 — scan targets are **logos**, not substitute cards. Gate is
   **≥ 75**, not 90. Active: Leones 100, Olmecas 100, Piratas 100, Bravos 90,
   Tigres **raw JPEG** 75, Diablos flame logo **80**, Guerreros shield logo
@@ -130,16 +130,16 @@ Measured later, four of them were. **Never copy code from that branch.**
   0.15, not a measurement). Does not block AR-06.
 - AR-06 device: hold-to-card + 5× enter/leave. Optional: replace the procedural
   GLBs with nicer art from `docs/model-prompts.md`.
-- AR-07 device: on Olmecas, Gesto moves the player then idle resumes;
-  Información speaks the marker text and turns the model once. Toggling
-  either must not drop the session.
+- AR-07 device: on Olmecas, Celebración plays `celebracion` + drifting
+  baseballs + particles, then idle; Información speaks and turns once.
+  Toggling must not drop the session.
 - Print Bravos and the raw Tigres logo at ≥ 15 cm matte and try a lock.
   Those two are in the database but not yet confirmed on a phone.
 
 **Next**
 
 ```
-US-13: baseball-coherent 3D animations / VFX
+US-14: performance pass
 ```
 
 Debug APK from earlier today does **not** include this session. Rebuild after
@@ -194,9 +194,12 @@ chrome). Do not fall back to the fake tracker when that session fails.
   skips stadiums. Do not regenerate Leones/Olmecas with
   `tools/write_marker_glbs.dart` — that script only writes the Piratas
   trophy box. The player is a joint hierarchy (no skinning). Clips must
-  stay named `idle` and `gesto`. Designed height ~11.5 cm; do not scale
-  it in Dart. `gesto` is 2.4 s; the pressed state uses that length. Native
-  returns to `idle` when the one-shot ends.
+  stay named `idle`, `gesto`, and `celebracion`. Designed height ~11.5 cm;
+  do not scale it in Dart. `celebracion` is 2.8 s; the pressed state uses
+  that length. Native returns to `idle` when the one-shot ends.
+  In-scene VFX uses `attachEffect` / `updateEffect` / `clearEffect` with
+  `assets/models/efecto_jonron/modelo.glb` (`--efecto-only` to regenerate).
+  Screen-space particles live in `ArBaseballVfx` (chrome only).
 - ⚠️ **Plugin 1.1.3 never ticks Filament clips.** After every
   `flutter pub get`, re-run both patches (pub restores the unpatched
   plugin). Do not bump the pin. A missing clip or a missing patch returns
@@ -251,6 +254,9 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-09-09 | **US-13 polish.** ~10 drifting baseball nodes + shrink-away; screen particles in `ArBaseballVfx`. Seam: `updateEffect(progress)`. |
+| 2026-09-09 | **US-13 closed.** `celebracion` clip + in-scene `efecto_jonron` ARNode. D-22 amended. Optional 2D banner is chrome only. Constitution → v2.4.8. |
+| 2026-09-09 | **US-13 reopened.** Screen-space burst alone fails the 15pt 3D gate and architecture §6. |
 | 2026-09-08 | **US-12 filters.** Preview on the archive player. Allowed: desenfoque, pixelado, térmica, ajuste de color, suavizado, pasteles, alta saturación. Forbidden set absent. Constitution → v2.4.6. |
 | 2026-09-08 | **US-11 video archive.** Catalog in `assets/videos.json`. Main and team menu open it. Broken URL shows Spanish copy. Sample remote URLs until R-03. Constitution → v2.4.5. |
 | 2026-09-08 | **Pericos wordmark.** First of five candidates. Raw 100. Shipped as-is as `marcador_estadio_pericos`. The other four were not scored. Constitution → v2.4.4. |
@@ -258,9 +264,6 @@ Rules of thumb:
 | 2026-09-08 | **Conspiradores wordmark.** First of four candidates. Raw 100. Shipped as-is as `marcador_estadio_conspiradores`. The other three were not scored. Constitution → v2.4.2. |
 | 2026-09-08 | **Guerreros shield logo.** First of four candidates. Raw 90. Shipped as-is. The other three were not scored. |
 | 2026-09-08 | **Diablos flame logo.** First of four candidates. Raw 60, white-flatten 80. Shipped. The other three were not scored. |
-| 2026-09-08 | **D-23 cards reversed.** Scan targets are logos. Gate is 75, not 90. Tigres raw JPEG (75) joins Leones, Olmecas, Piratas, Bravos. 50 and zero-keypoint logos stay out. Constitution → v2.4.1. |
-| 2026-09-08 | **D-23.** Scan DB is all 10 clubs. Six logos that cannot track get measured marker cards (each 100). Bravos (90) joins. Not a matcher. Constitution → v2.4.0. Device lock for the new cards not run. |
-| 2026-09-07 | **AR-07 code.** `ArLocked` only: Gesto plays `idle`/`gesto`; Información speaks `infoTexto` and spins the pose once. Stadium/trophy `animaciones` emptied (`celebracion` was not a clip). Filament clip patch required. Tests: 5 passed (`ar_scan_screen_test.dart`). Device not run. Constitution → v2.3.2. |
 
 ## 8. How to work
 
@@ -273,9 +276,7 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 ## 9. Current task
 
-> Next: US-13 baseball-coherent 3D animations / VFX. Do not add forbidden
-> video filters. Logo gate is closed. Wrong-club control is the old unused
-> Pericos `logo_base`, not the shipped wordmark.
+> Next: US-14 performance pass. Do not add forbidden video filters.
 
 _(The human edits this line each session. Leave it pointing at the next item
 when you finish.)_

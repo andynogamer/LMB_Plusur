@@ -34,6 +34,10 @@ class FakeArTracker implements ArTracker {
   final List<({String trackerName, String clipName, bool loop})> playedClips =
       [];
 
+  /// Effect attach/clear calls for tests.
+  final List<({String trackerName, String glbAsset})> attachedEffects = [];
+  int clearEffectCount = 0;
+
   double presentationYaw = 0;
 
   @override
@@ -70,6 +74,30 @@ class FakeArTracker implements ArTracker {
       loop: loop,
     ));
     return true;
+  }
+
+  @override
+  Future<bool> attachEffect({
+    required String trackerName,
+    required String glbAsset,
+  }) async {
+    if (_stopped || glbAsset.isEmpty) return false;
+    attachedEffects.add((trackerName: trackerName, glbAsset: glbAsset));
+    effectProgress = 0;
+    return true;
+  }
+
+  double effectProgress = 0;
+
+  @override
+  void updateEffect(double progress) {
+    effectProgress = progress;
+  }
+
+  @override
+  Future<void> clearEffect() async {
+    clearEffectCount += 1;
+    effectProgress = 0;
   }
 
   @override

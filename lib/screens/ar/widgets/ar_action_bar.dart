@@ -6,33 +6,41 @@ import '../../../theme/app_colors.dart';
 /// Clip names written by `tools/write_lowpoly_glbs.py`. Do not invent others.
 const String kClipIdle = 'idle';
 const String kClipGesto = 'gesto';
+const String kClipCelebracion = 'celebracion';
 
-/// Matches the `gesto` clip length in that generator. Native returns to idle
-/// on its own; this only releases the pressed state.
-const Duration kGestoClipLength = Duration(milliseconds: 2400);
+/// Shared VFX GLB for the in-scene baseball burst (US-13).
+const String kEfectoJonronAsset = 'assets/models/efecto_jonron/modelo.glb';
 
-/// Spanish copy when the locked model has no `gesto` clip. Session stays up.
-const String kGestoMissingCopy = 'Este modelo no tiene animación de gesto.';
+/// Matches the `celebracion` clip length in that generator.
+const Duration kCelebracionClipLength = Duration(milliseconds: 2800);
+
+/// Spanish copy when the locked model has no `celebracion` clip.
+const String kCelebracionMissingCopy =
+    'Este modelo no tiene animación de celebración.';
 
 /// Spanish copy when Filament refused the clip. Session stays up.
-const String kGestoFailedCopy =
-    'No pudimos reproducir el gesto. El escaneo sigue activo.';
+const String kCelebracionFailedCopy =
+    'No pudimos reproducir la celebración. El escaneo sigue activo.';
 
-/// Two action types, reachable only from [ArLocked].
+/// Two action types plus a baseball VFX toggle, reachable only from [ArLocked].
 class ArActionBar extends StatelessWidget {
   const ArActionBar({
     super.key,
     required this.gestoPressed,
     required this.infoPressed,
+    required this.efectoPressed,
     required this.onGesto,
     required this.onInfo,
+    required this.onEfecto,
     this.note,
   });
 
   final bool gestoPressed;
   final bool infoPressed;
+  final bool efectoPressed;
   final VoidCallback onGesto;
   final VoidCallback onInfo;
+  final VoidCallback onEfecto;
   final String? note;
 
   @override
@@ -46,7 +54,7 @@ class ArActionBar extends StatelessWidget {
             Expanded(
               child: _ActionButton(
                 buttonKey: const Key('ar-action-gesto'),
-                label: gestoPressed ? 'Reposo' : 'Gesto',
+                label: gestoPressed ? 'Reposo' : 'Celebración',
                 icon: Icons.sports_baseball_rounded,
                 selected: gestoPressed,
                 onPressed: onGesto,
@@ -63,6 +71,14 @@ class ArActionBar extends StatelessWidget {
               ),
             ),
           ],
+        ),
+        const SizedBox(height: 10),
+        _ActionButton(
+          buttonKey: const Key('ar-action-efecto'),
+          label: efectoPressed ? 'Quitar efecto' : 'Efecto jonrón',
+          icon: Icons.auto_awesome_rounded,
+          selected: efectoPressed,
+          onPressed: onEfecto,
         ),
         if (note != null) ...[
           const SizedBox(height: 8),

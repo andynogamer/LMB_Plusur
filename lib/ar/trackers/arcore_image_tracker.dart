@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:ar_flutter_plugin_plus/datatypes/config_planedetection.dart';
 import 'package:ar_flutter_plugin_plus/datatypes/node_types.dart';
@@ -10,6 +11,7 @@ import 'package:ar_flutter_plugin_plus/ar_flutter_plugin_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:vector_math/vector_math_64.dart' show Vector3;
 
 import '../ar_tracker.dart';
 
@@ -26,6 +28,9 @@ const int kImageTrackingUpdateIntervalMs = 200;
 
 /// Scene-graph name for the GLB attached to [trackerName].
 String modelNodeName(String trackerName) => 'modelo_$trackerName';
+
+/// Scene-graph name prefix for baseball VFX nodes (`…_0` … `…_n`).
+String effectNodeName(String trackerName) => 'efecto_$trackerName';
 
 /// Filename stem ARCore stores as the reference-image name.
 ///
@@ -114,6 +119,9 @@ class ArCoreImageTracker implements ArTracker {
   MethodChannel? _objectChannel;
   final Map<String, Matrix4> _poses = {};
   final Map<String, ARNode> _nodes = {};
+  final List<_EffectBall> _effectBalls = [];
+  String? _effectTrackerName;
+  double _effectProgress = 0;
   double _presentationYaw = 0;
   ArModelAttach? modelAttach;
   List<ArReferenceImage> _references = const [];
@@ -334,6 +342,9 @@ class ArCoreImageTracker implements ArTracker {
     if (node != null) {
       node.transform = _anchoredPose(transformation);
     }
+    if (_effectBalls.isNotEmpty && _effectTrackerName == imageName) {
+      _applyEffectTransforms(transformation, progress: _effectProgress);
+    }
     _detections.add(
       ArDetection(
         trackerName: imageName,
@@ -390,6 +401,136 @@ class ArCoreImageTracker implements ArTracker {
       // Missing patch or a static GLB. Do not fail the session.
       return false;
     }
+  }
+
+  @override
+  Future<bool> attachEffect({
+    required String trackerName,
+    required String glbAsset,
+  }) async {
+    final pose = _poses[trackerName];
+    final objects = _objects;
+    if (pose == null || objects == null || _stopped) {
+      return false;
+    }
+    await clearEffect();
+    try {
+      await rootBundle.load(glbAsset);
+    } on Object {
+      return false;
+    }
+
+    final rng = math.Random();
+    const count = 10;
+    var placed = 0;
+    for (var i = 0; i < count; i++) {
+      final angle = (i / count) * math.pi * 2 + rng.nextDouble() * 0.35;
+      final radius = 0.012 + rng.nextDouble() * 0.018;
+      final start = Vector3(
+        math.cos(angle) * radius * 0.35,
+        0.03 + rng.nextDouble() * 0.02,
+        math.sin(angle) * radius * 0.35,
+      );
+      final velocity = Vector3(
+        math.cos(angle) * (0.05 + rng.nextDouble() * 0.07),
+        0.04 + rng.nextDouble() * 0.08,
+        math.sin(angle) * (0.05 + rng.nextDouble() * 0.07),
+      );
+      final node = ARNode(
+        type: NodeType.localGLB,
+        uri: glbAsset,
+        name: '${effectNodeName(trackerName)}_$i',
+        transformation: _ballWorldPose(pose, start, scale: 0.55),
+      );
+      bool added;
+      try {
+        added = await objects.addNode(node) ?? false;
+      } on Object {
+        added = false;
+      }
+      if (!added) continue;
+      _effectBalls.add(
+        _EffectBall(
+          node: node,
+          start: start,
+          velocity: velocity,
+          spin: (rng.nextDouble() - 0.5) * 8,
+        ),
+      );
+      placed += 1;
+    }
+    if (placed == 0) return false;
+    _effectTrackerName = trackerName;
+    _effectProgress = 0;
+    return true;
+  }
+
+  @override
+  void updateEffect(double progress) {
+    _effectProgress = progress.clamp(0.0, 1.0);
+    final name = _effectTrackerName;
+    if (name == null || _effectBalls.isEmpty) return;
+    final pose = _poses[name];
+    if (pose == null) return;
+    _applyEffectTransforms(pose, progress: _effectProgress);
+  }
+
+  @override
+  Future<void> clearEffect() async {
+    final objects = _objects;
+    final balls = List<_EffectBall>.from(_effectBalls);
+    _effectBalls.clear();
+    _effectTrackerName = null;
+    _effectProgress = 0;
+    if (objects == null) return;
+    for (final ball in balls) {
+      try {
+        objects.removeNode(ball.node);
+      } on Object {
+        // Node already gone with the session.
+      }
+    }
+  }
+
+  void _applyEffectTransforms(Matrix4 imagePose, {required double progress}) {
+    // Hold nearly full size, then shrink away in the last quarter.
+    final fade = progress < 0.72
+        ? 1.0
+        : (1.0 - ((progress - 0.72) / 0.28)).clamp(0.0, 1.0);
+    final scale = (0.4 + 0.7 * Curves.easeOut.transform(progress.clamp(0.0, 0.35) / 0.35)) *
+        fade;
+    // Soften scale near zero so Filament does not keep a speck.
+    final visibleScale = fade <= 0.02 ? 0.001 : scale;
+
+    for (final ball in _effectBalls) {
+      final wobble = math.sin(progress * math.pi * 4 + ball.spin) * 0.006;
+      final drift = Vector3(
+        ball.start.x + ball.velocity.x * progress + wobble,
+        ball.start.y + ball.velocity.y * progress,
+        ball.start.z + ball.velocity.z * progress - wobble * 0.5,
+      );
+      ball.node.transform = _ballWorldPose(
+        imagePose,
+        drift,
+        scale: visibleScale,
+        yaw: ball.spin * progress,
+      );
+    }
+  }
+
+  Matrix4 _ballWorldPose(
+    Matrix4 imagePose,
+    Vector3 local, {
+    required double scale,
+    double yaw = 0,
+  }) {
+    final pose = Matrix4.fromFloat64List(imagePose.storage);
+    pose.translateByDouble(local.x, local.y, local.z, 1);
+    if (yaw != 0) {
+      pose.rotateY(yaw);
+    }
+    pose.scaleByDouble(scale, scale, scale, 1);
+    return pose;
   }
 
   ArTrackerFailure _availabilityFailure() {
@@ -461,6 +602,7 @@ class ArCoreImageTracker implements ArTracker {
   @override
   Future<void> stop() async {
     _stopped = true;
+    await clearEffect();
     _nodes.clear();
     _poses.clear();
     _objects = null;
@@ -489,6 +631,20 @@ class ArCoreImageTracker implements ArTracker {
       await _detections.close();
     }
   }
+}
+
+class _EffectBall {
+  _EffectBall({
+    required this.node,
+    required this.start,
+    required this.velocity,
+    required this.spin,
+  });
+
+  final ARNode node;
+  final Vector3 start;
+  final Vector3 velocity;
+  final double spin;
 }
 
 class _ArCoreSurface extends StatelessWidget {

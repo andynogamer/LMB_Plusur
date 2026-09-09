@@ -46,6 +46,8 @@ flutter:
     - assets/models/marcador_estadio_leones/
     - assets/models/marcador_jugador_olmecas/
     - assets/models/marcador_trofeo_piratas/
+    # Shared baseball burst for US-13 in-scene VFX (one at a time).
+    - assets/models/efecto_jonron/
     # D-22 catalog: shared low-poly stadium + player, kit colors only.
     # Other clubs are models, not scan targets. Do not add their logos to the DB.
     - assets/models/diablos_rojos/

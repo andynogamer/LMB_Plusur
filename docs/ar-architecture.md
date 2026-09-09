@@ -127,7 +127,8 @@ abstract interface class ArTracker {
 
   /// Plays a named glTF clip on the attached node. Missing clip or a missing
   /// Filament patch returns false and must not fail the session.
-  /// Clip names are `idle` (loop) and `gesto` (one-shot). Plugin 1.1.3 does
+  /// Clip names are `idle` (loop), `gesto`, and `celebracion` (one-shot).
+  /// Plugin 1.1.3 does
   /// not tick Animator until `tools/patch_filament_clips.ps1`.
   Future<bool> playClip({required String trackerName, required String clipName, bool loop = false});
 
@@ -418,7 +419,7 @@ Mandatory usage notes, learned the hard way:
 - Pass a physical width for each reference image. ARCore explicitly improves
   detection when real-world size is supplied.
 - Plugin 1.1.3 loads a GLB and never ticks Filament `Animator`. Player clips
-  (`idle`, `gesto`) need `tools/patch_filament_clips.ps1` after every
+  (`idle`, `gesto`, `celebracion`) need `tools/patch_filament_clips.ps1` after every
   `flutter pub get`, same rule as the width patch. A missing clip or a missing
   patch returns false from `playClip` and must not drop the session. Do not
   bump the pin. Do not write a matcher.

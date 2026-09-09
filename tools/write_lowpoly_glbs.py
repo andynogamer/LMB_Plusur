@@ -3,7 +3,7 @@
 
 One shared stadium mesh and one shared articulated player. Only kit colors
 change. Stadiums are static. Players are a biped joint hierarchy with clips
-named exactly `idle` and `gesto` (node TRS, not skinned).
+named exactly `idle`, `gesto`, and `celebracion` (node TRS, not skinned).
 
 Run from the repo root:
 
@@ -159,6 +159,31 @@ class Mesh:
             for i in range(sides)
         ]
         self.extrude_xz(ring, y0, y0 + height, color)
+
+    def sphere(self, cx: float, cy: float, cz: float, radius: float, color: Color, segments: int = 8) -> None:
+        """Low-poly UV sphere for baseball VFX particles."""
+        rings = max(4, segments // 2)
+        segs = max(6, segments)
+        for i in range(rings):
+            v0 = i / rings
+            v1 = (i + 1) / rings
+            y0 = cy + math.cos(v0 * math.pi) * radius
+            y1 = cy + math.cos(v1 * math.pi) * radius
+            r0 = math.sin(v0 * math.pi) * radius
+            r1 = math.sin(v1 * math.pi) * radius
+            for j in range(segs):
+                a0 = (j / segs) * math.tau
+                a1 = ((j + 1) / segs) * math.tau
+                p00 = Vec(cx + math.cos(a0) * r0, y0, cz + math.sin(a0) * r0)
+                p01 = Vec(cx + math.cos(a1) * r0, y0, cz + math.sin(a1) * r0)
+                p10 = Vec(cx + math.cos(a0) * r1, y1, cz + math.sin(a0) * r1)
+                p11 = Vec(cx + math.cos(a1) * r1, y1, cz + math.sin(a1) * r1)
+                if i == 0:
+                    self.tri(p00, p11, p10, color)
+                elif i == rings - 1:
+                    self.tri(p00, p01, p10, color)
+                else:
+                    self.quad(p00, p01, p11, p10, color)
 
     def bounds(self) -> tuple[list[float], list[float]]:
         xs = self.positions[0::3]
@@ -742,6 +767,35 @@ def write_player(path: Path, primary: Color, secondary: Color) -> tuple[int, tup
         (n_r_shin, quat_track([Q_I, _q_deg(rx=4), _q_deg(rx=8), _q_deg(rx=8), Q_I])),
     ]
 
+    # Home-run celebration: both arms up, bat overhead, small hop, hold, return.
+    r_arm_up = _q_deg(rx=-150, rz=-18)
+    l_arm_up = _q_deg(rx=-145, rz=22)
+    r_fore_up = _q_deg(rx=-25)
+    l_fore_up = _q_deg(rx=-20)
+    bat_up = _q_deg(rx=200, ry=-10)
+    hips_hop = _q_deg(rx=-8, ry=10)
+    spine_cheer = _q_deg(rx=-18, ry=8)
+    chest_cheer = _q_deg(rx=-10)
+    head_cheer = _q_deg(rx=-22, ry=6)
+
+    celeb_times = array("f", [0.0, 0.35, 0.9, 1.8, 2.8])
+    celeb_t = acc_f(celeb_times, "SCALAR", 5, 0.0, 2.8)
+    celeb_tracks = [
+        (n_hips, quat_track([Q_I, _q_deg(rx=-4, ry=6), hips_hop, hips_hop, Q_I])),
+        (n_spine, quat_track([Q_I, _q_deg(rx=-8), spine_cheer, spine_cheer, Q_I])),
+        (n_chest, quat_track([Q_I, _q_deg(rx=-6), chest_cheer, chest_cheer, Q_I])),
+        (n_head, quat_track([Q_I, _q_deg(rx=-10), head_cheer, head_cheer, Q_I])),
+        (n_l_arm, quat_track([l_arm_rest, _q_add(l_arm_rest, rx=-40), l_arm_up, l_arm_up, l_arm_rest])),
+        (n_l_fore, quat_track([l_fore_rest, _q_deg(rx=-30), l_fore_up, l_fore_up, l_fore_rest])),
+        (n_r_arm, quat_track([r_arm_rest, _q_add(r_arm_rest, rx=-50), r_arm_up, r_arm_up, r_arm_rest])),
+        (n_r_fore, quat_track([r_fore_rest, _q_deg(rx=-40), r_fore_up, r_fore_up, r_fore_rest])),
+        (n_bat, quat_track([bat_rest, _q_deg(rx=160), bat_up, bat_up, bat_rest])),
+        (n_l_thigh, quat_track([Q_I, _q_deg(rx=8), _q_deg(rx=14, rz=4), _q_deg(rx=14, rz=4), Q_I])),
+        (n_r_thigh, quat_track([Q_I, _q_deg(rx=8, rz=-3), _q_deg(rx=12, rz=-5), _q_deg(rx=12, rz=-5), Q_I])),
+        (n_l_shin, quat_track([Q_I, _q_deg(rx=10), _q_deg(rx=16), _q_deg(rx=16), Q_I])),
+        (n_r_shin, quat_track([Q_I, _q_deg(rx=8), _q_deg(rx=14), _q_deg(rx=14), Q_I])),
+    ]
+
     def animation(name: str, time_acc: int, tracks: list[tuple[int, array]]) -> dict:
         samplers = []
         channels = []
@@ -771,6 +825,7 @@ def write_player(path: Path, primary: Color, secondary: Color) -> tuple[int, tup
         "animations": [
             animation("idle", idle_t, idle_tracks),
             animation("gesto", gesto_t, gesto_tracks),
+            animation("celebracion", celeb_t, celeb_tracks),
         ],
         "accessors": accessors,
         "bufferViews": buffer_views,
@@ -779,6 +834,55 @@ def write_player(path: Path, primary: Color, secondary: Color) -> tuple[int, tup
     _write_glb(path, gltf, bytes(blob))
     tris = sum(mesh.triangle_count for mesh in meshes)
     return tris, ([0.0, 0.0, -0.016], [0.016, 0.115, 0.016])
+
+
+def write_efecto_jonron(path: Path) -> tuple[int, tuple[list[float], list[float]]]:
+    """One baseball for US-13. Dart spawns several nodes and animates them."""
+    mesh = Mesh()
+    ball = (0.96, 0.96, 0.92, 1.0)
+    stitch = (0.86, 0.10, 0.12, 1.0)
+    seam = (0.78, 0.78, 0.74, 1.0)
+    r = 0.009
+    mesh.sphere(0.0, 0.0, 0.0, r, ball, segments=12)
+    # Classic horseshoe stitches (thin curved strips approximated by boxes).
+    for side in (-1.0, 1.0):
+        for i in range(6):
+            t = (i + 0.5) / 6
+            ang = (t - 0.5) * 1.6
+            y = math.sin(ang) * r * 0.72
+            z = side * math.cos(ang) * r * 0.55
+            x = side * (0.35 + 0.45 * math.cos(ang)) * r
+            mesh.box(x - 0.0012, y - 0.0009, z - 0.0022, x + 0.0012, y + 0.0009, z + 0.0022, stitch)
+    # Soft equator seam so the ball reads as a sphere, not a blob.
+    mesh.box(-r * 0.85, -0.0006, -0.0006, r * 0.85, 0.0006, 0.0006, seam)
+
+    blob = bytearray()
+    buffer_views: list[dict] = []
+    accessors: list[dict] = []
+    prim = _mesh_views(blob, mesh, buffer_views, accessors)
+    gltf = {
+        "asset": {"version": "2.0", "generator": "LMB Plusur pelota efecto"},
+        "scene": 0,
+        "scenes": [{"nodes": [0]}],
+        "nodes": [{"mesh": 0, "name": "pelota"}],
+        "meshes": [{"name": "pelota", "primitives": [prim]}],
+        "materials": [
+            {
+                "name": "vertexColor",
+                "pbrMetallicRoughness": {
+                    "baseColorFactor": [1, 1, 1, 1],
+                    "metallicFactor": 0.04,
+                    "roughnessFactor": 0.62,
+                },
+            }
+        ],
+        "accessors": accessors,
+        "bufferViews": buffer_views,
+        "buffers": [{"byteLength": len(blob)}],
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    _write_glb(path, gltf, bytes(blob))
+    return mesh.triangle_count, mesh.bounds()
 
 
 def _report(kind: str, path: Path, tris: int, size: int, bounds: tuple[list[float], list[float]]) -> None:
@@ -795,7 +899,13 @@ def main() -> int:
     parser.add_argument("--only", help="Single club id, e.g. leones_yucatan")
     parser.add_argument("--stadiums-only", action="store_true")
     parser.add_argument("--players-only", action="store_true")
+    parser.add_argument("--efecto-only", action="store_true")
     args = parser.parse_args()
+    if args.efecto_only:
+        path = MODELS / "efecto_jonron" / "modelo.glb"
+        tris, bounds = write_efecto_jonron(path)
+        _report("efecto", path, tris, path.stat().st_size, bounds)
+        return 0
     clubs = CLUBS
     if args.only:
         if args.only not in CLUBS:
@@ -820,6 +930,11 @@ def main() -> int:
                 scan = MODELS / "marcador_jugador_olmecas" / "modelo.glb"
                 scan.write_bytes(path.read_bytes())
                 _report("scan", scan, tris, scan.stat().st_size, bounds)
+
+    if not args.stadiums_only and not args.only:
+        path = MODELS / "efecto_jonron" / "modelo.glb"
+        tris, bounds = write_efecto_jonron(path)
+        _report("efecto", path, tris, path.stat().st_size, bounds)
     return 0
 
 

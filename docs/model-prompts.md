@@ -6,18 +6,21 @@ models. Only the colors and the crest change.
 **On disk today:** a shared low-poly mesh family from
 `tools/write_lowpoly_glbs.py` (vertex colors, no textures). Stadiums have
 no clips. Players are an articulated biped (node TRS, not skinned) with
-clips `idle` (weight shift + breath) and `gesto` (point the bat, return
-to rest). Regenerate from the repo root with
+clips `idle` (weight shift + breath), `gesto` (point the bat, return
+to rest), and `celebracion` (arms up / bat overhead, return). Regenerate from the repo root with
 `python tools/write_lowpoly_glbs.py` or `--players-only`. The prompts
 below are the upgrade path if replacing those files with authored art.
 Do not add scan targets to “cover” clubs.
+
+`assets/models/efecto_jonron/modelo.glb` is the shared in-scene VFX burst
+(US-13). Regenerate with `--efecto-only`. It is not a club model.
 
 This is not automatically 10 scan targets. The camera locks only logos that
 score ≥ 75 (see `docs/ar-marker-guide.md` §7). Clubs without a passing logo
 open these models from the team menu. Do not generate extra marker images,
 and do not ask the tool to “make the logo trackable.”
 
-| Club id | Stadium (no animation) | Player (`idle` + `gesto`) |
+| Club id | Stadium (no animation) | Player (`idle` + `gesto` + `celebracion`) |
 |---|---|---|
 | `diablos_rojos` | `assets/models/diablos_rojos/estadio.glb` | `assets/models/diablos_rojos/jugador.glb` |
 | `bravos_leon` | `assets/models/bravos_leon/estadio.glb` | `assets/models/bravos_leon/jugador.glb` |
@@ -83,6 +86,7 @@ The only animated model. Two clips in the same file, names exact:
 
 - `idle` — seamless loop, 2 to 4 seconds
 - `gesto` — one shot, 1.5 to 3 seconds, returns to the idle pose
+- `celebracion` — one shot, 2 to 3.5 seconds, arms-up home-run cheer, returns to idle
 
 No other clips. Do not name them `Idle` or `Celebrate`.
 
@@ -96,6 +100,8 @@ Team treatment for <CLUB>: jersey, cap, and a simple crest in <COLORS>.
 Animation clip "idle": breathing and a slight weight shift. Loop.
 Animation clip "gesto": tip the cap or point the bat toward the field, then
 return to the idle pose.
+Animation clip "celebracion": raise both arms and the bat overhead in a
+brief home-run cheer, then return to the idle pose.
 
 <paste the shared technical brief>
 ```
@@ -106,7 +112,7 @@ Use the same color table as the stadium.
 
 1. Save under the path in the table. Filename is `estadio.glb` or `jugador.glb`.
 2. Confirm each file is under 4 MB.
-3. On the player, the clip list is exactly `idle` and `gesto`.
+3. On the player, the clip list is exactly `idle`, `gesto`, and `celebracion`.
 4. The stadium has no clips.
 5. If a model is huge or buried in the card, fix the export scale. Do not
    scale it in Dart.

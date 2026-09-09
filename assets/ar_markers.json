@@ -21,7 +21,7 @@
     "modelAsset": "assets/models/marcador_jugador_olmecas/modelo.glb",
     "anchoMetros": 0.15,
     "videoUrl": null,
-    "animaciones": ["idle", "gesto"]
+    "animaciones": ["idle", "gesto", "celebracion"]
   },
   {
     "id": "marcador_trofeo_piratas",
@@ -45,7 +45,7 @@
     "modelAsset": "assets/models/bravos_leon/jugador.glb",
     "anchoMetros": 0.15,
     "videoUrl": null,
-    "animaciones": ["idle", "gesto"]
+    "animaciones": ["idle", "gesto", "celebracion"]
   },
   {
     "id": "marcador_jugador_tigres",
@@ -57,7 +57,7 @@
     "modelAsset": "assets/models/tigres_quintana_roo/jugador.glb",
     "anchoMetros": 0.15,
     "videoUrl": null,
-    "animaciones": ["idle", "gesto"]
+    "animaciones": ["idle", "gesto", "celebracion"]
   },
   {
     "id": "marcador_estadio_diablos",
@@ -81,7 +81,7 @@
     "modelAsset": "assets/models/guerreros_oaxaca/jugador.glb",
     "anchoMetros": 0.15,
     "videoUrl": null,
-    "animaciones": ["idle", "gesto"]
+    "animaciones": ["idle", "gesto", "celebracion"]
   },
   {
     "id": "marcador_estadio_conspiradores",
