@@ -18,7 +18,7 @@ void main() {
   test('ar_markers.json carga los logos que puntúan al menos 75', () async {
     final marcadores = await DataService().cargarMarcadores();
 
-    expect(marcadores, hasLength(8));
+    expect(marcadores, hasLength(10));
     expect(
       marcadores.map((m) => m.id).toSet(),
       {
@@ -30,6 +30,8 @@ void main() {
         'marcador_estadio_diablos',
         'marcador_jugador_guerreros',
         'marcador_estadio_conspiradores',
+        'marcador_estadio_aguila',
+        'marcador_estadio_pericos',
       },
     );
     expect(
@@ -43,6 +45,8 @@ void main() {
         'diablos_rojos',
         'guerreros_oaxaca',
         'conspiradores_queretaro',
+        'aguila_veracruz',
+        'pericos_puebla',
       },
     );
   });

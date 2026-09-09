@@ -64,8 +64,10 @@ video (10pt).
 >
 > **Branch `full-project` (D-22, D-23).** The model catalog is all 10 Zona
 > Sur clubs × 2 GLBs. The scan database is the logos that score ≥ 75, not 90:
-> Leones, Olmecas, Piratas, Bravos, Tigres raw. Do not add a logo below 75.
-> Do not write a matcher. Do not substitute a marker card.
+> Leones, Olmecas, Piratas, Bravos, Tigres raw, Diablos flame, Guerreros
+> shield, Conspiradores wordmark, Águila crest, Pericos wordmark. Do not
+> add a logo below 75. Do not write a matcher. Do not substitute a marker
+> card. Every Zona Sur club now has a scan target.
 
 ---
 

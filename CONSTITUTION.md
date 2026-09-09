@@ -17,7 +17,7 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 | [`docs/ar-architecture.md`](./docs/ar-architecture.md) | The AR technical contract: layers, `ArTracker` seam, state machine, error taxonomy, budgets. |
 | [`docs/ar-marker-guide.md`](./docs/ar-marker-guide.md) | How to author printable markers ARCore can actually track. |
 
-**Version**: 2.4.2 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-08
+**Version**: 2.4.4 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-08
 
 > **v2.0.0 — AR reset.** AR attempt #1 (branch `ar-have-too-many-errors`) was
 > abandoned and work restarted on `fresh-start`. Article VI was rewritten from
@@ -93,6 +93,16 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 > **v2.4.2 — D-23 scan set grows by measured logos only.** The Conspiradores
 > wordmark scores 100 raw and is in. The earlier silhouette still does not
 > clear 75. Águila and Pericos stay out until a file of theirs scores ≥ 75.
+>
+> **v2.4.3 — D-23 Águila crest.** Of four later Águila files, the crest scores
+> 100 raw and is in. The wordmark also scores 100 raw but carries a +N
+> watermark and was not shipped. The red swoosh has no keypoints; the "A"
+> plus eagle head scores 20. Do not re-encode the crest (100 → 90). Pericos
+> stays out until a file of theirs scores ≥ 75.
+>
+> **v2.4.4 — D-23 Pericos wordmark.** First of five candidates. Raw 100.
+> Shipped as-is. The other four were not scored. Every Zona Sur club now
+> has a scan target. Do not re-encode the wordmark.
 
 ---
 
@@ -293,7 +303,8 @@ The rule is therefore **measure, then decide** — not "logos are banned":
   ship whichever variant scores higher — normalization can also *reduce* a
   score.
 - A club logo that scores ≥ 75 **is** a legitimate tracking target. Four of the
-  ten LMB logos do (D-20).
+  original ten files do (D-20). Later files join the scan set under D-23 when
+  they score ≥ 75.
 - A logo that cannot reach 75 gets a **marker card**: the logo (for the human)
   over an irregular, high-contrast, non-repeating texture with asymmetric text.
 - A low score is fixed in the **art or the asset pipeline** — **never** by
@@ -596,13 +607,15 @@ MUST NOT:
    `flutter pub get` re-run `tools/patch_arcore_image_width.ps1` and
    `tools/patch_filament_clips.ps1`. Do not bump the pin and do not write
    a matcher. AR-07 buttons are coded, not confirmed on a device.
-3. **Markers shipped; prints pending.** Five logos are in
+3. **Markers shipped; prints pending.** Ten logos are in
    `assets/markers/`, each scoring ≥ 75. Tigres is the **raw** JPEG — do not
    normalize it. Remaining: print at ≥ 15 cm matte and record `anchoMetros`.
    The flame Diablos logo scores 80, the Guerreros shield scores 90 raw,
-   and the Conspiradores wordmark scores 100 raw. All three are in. Do not
-   flatten those raw copies. Águila and Pericos stay out until a file of
-   theirs scores ≥ 75. The first Conspiradores silhouette does not.
+   the Conspiradores wordmark scores 100 raw, the Águila crest scores
+   100 raw, and the Pericos wordmark scores 100 raw. All five are in. Do
+   not flatten those raw copies. Do not re-encode the Águila crest or the
+   Pericos wordmark. The first Conspiradores, Águila, and Pericos files
+   do not. Every Zona Sur club now has a scan target.
 4. **Timer mock deleted (AR-03).** `lib/screens/ar_view_screen.dart` is gone.
    The AR route is `ArScanScreen`. Do not restore the `Timer` or the Guerreros
    default. Scan UI must keep reading `ArSessionState` only.
@@ -653,7 +666,7 @@ Track fixes via `WORK_ITEMS.md`.
 | D-21 | Reference images MUST be **normalized and measured** before use: alpha flattened onto **white**, short side ≥ 512 px, 24-bit no-alpha, then re-scored. Ship whichever variant scores higher and record it. Normalization is not assumed to help — it lowered one logo 75 → 50. | **Ratified 2026-09-07** |
 | D-22 | **Full-project catalog** (branch `full-project`): every club gets `estadio.glb` (static) and `jugador.glb` (clips `idle` + `gesto` only). Same meshes, color and crest differ. **Scan-set sentence amended by D-23.** Do not add unmeasured logos, and do not write a matcher. | **Amended 2026-09-08** |
 | ~~D-23 (cards)~~ | ~~Six untrackable logos get generated marker cards.~~ **Reversed the same day.** The scan target is the club logo, not a substitute card. | ~~Ratified 2026-09-08~~ |
-| D-23 | **Scan set = logos that score ≥ 75, not 90, and not substitute cards.** Active logos: Leones 100, Olmecas 100, Piratas 100, Bravos 90, Tigres raw 75, Diablos flame 80, Guerreros shield raw 90, Conspiradores wordmark raw 100. Do not normalize Tigres, the Guerreros shield, or the Conspiradores wordmark. The old 50-score files and the first Conspiradores silhouette stay out. Águila and Pericos stay out until a file scores ≥ 75. No matcher. | **Amended 2026-09-08** |
+| D-23 | **Scan set = logos that score ≥ 75, not 90, and not substitute cards.** Active logos: Leones 100, Olmecas 100, Piratas 100, Bravos 90, Tigres raw 75, Diablos flame 80, Guerreros shield raw 90, Conspiradores wordmark raw 100, Águila crest raw 100, Pericos wordmark raw 100. Do not normalize Tigres, the Guerreros shield, the Conspiradores wordmark, the Águila crest, or the Pericos wordmark. The old 50-score files and the first Conspiradores, Águila, and Pericos files stay out. The Águila wordmark also scored 100 raw but was not shipped (it carries a +N watermark). The other Pericos candidates were not scored. No matcher. | **Amended 2026-09-08** |
 
 Open residual (non-blocking for backlog writing):
 

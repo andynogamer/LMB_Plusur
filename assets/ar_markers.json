@@ -94,5 +94,29 @@
     "anchoMetros": 0.15,
     "videoUrl": null,
     "animaciones": []
+  },
+  {
+    "id": "marcador_estadio_aguila",
+    "equipoId": "aguila_veracruz",
+    "tipo": "estadio",
+    "titulo": "Estadio Universitario Beto Ávila",
+    "infoTexto": "El Águila de Veracruz, fundada en 1903, es uno de los clubes más antiguos del béisbol mexicano. Juega de local en el Estadio Universitario Beto Ávila, en el puerto de Veracruz.",
+    "markerImage": "assets/markers/marcador_estadio_aguila.png",
+    "modelAsset": "assets/models/aguila_veracruz/estadio.glb",
+    "anchoMetros": 0.15,
+    "videoUrl": null,
+    "animaciones": []
+  },
+  {
+    "id": "marcador_estadio_pericos",
+    "equipoId": "pericos_puebla",
+    "tipo": "estadio",
+    "titulo": "Estadio de Béisbol Hermanos Serdán",
+    "infoTexto": "Los Pericos de Puebla, fundados en 1938, juegan de local en el Estadio de Béisbol Hermanos Serdán. Visten de verde y son uno de los clubes clásicos de la Liga Mexicana de Béisbol.",
+    "markerImage": "assets/markers/marcador_estadio_pericos.png",
+    "modelAsset": "assets/models/pericos_puebla/estadio.glb",
+    "anchoMetros": 0.15,
+    "videoUrl": null,
+    "animaciones": []
   }
 ]

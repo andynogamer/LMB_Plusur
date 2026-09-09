@@ -329,7 +329,7 @@ touches detection must paste this table, filled in, into its PR:
 | `marcador_jugador_olmecas` | | | | score 100 |
 | `marcador_trofeo_piratas` | | | | score 100 |
 | blank wall (control) | must be **none** | — | | |
-| wrong-club logo (control) | must be **none** | — | | use `el_aguila` (0 keypoints) |
+| wrong-club logo (control) | must be **none** | — | | use the old unused Pericos `logo_base` (0 keypoints), not the shipped wordmark. Every Zona Sur club now has a scan target. |
 
 Run on a physical Android device with Google Play Services for AR, printed
 markers at the size specified in the marker guide, ordinary indoor lighting.

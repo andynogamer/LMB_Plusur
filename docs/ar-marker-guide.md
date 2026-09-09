@@ -1,7 +1,7 @@
 # Marker guide — designing targets ARCore can actually track
 
 **Status:** binding. Referenced by Constitution **Article VI** / **D-13**, **D-21**.
-**Version:** 2.3 · 2026-09-08 (Conspiradores wordmark raw 100 joins the scan set)
+**Version:** 2.5 · 2026-09-08 (Pericos wordmark raw 100 joins the scan set)
 **Audience:** the human authoring marker art, and any agent adding a marker.
 
 ---
@@ -24,8 +24,8 @@ We have now measured them. Both columns are real `arcoreimg eval-img` output.
 | `guerreros_oaxaca` | 50 | 50 | ❌ too flat |
 | `diablos_rojos` | 40 | 50 | ❌ too flat |
 | `conspiradores_queretaro` | *no keypoints* | *no keypoints* | ❌ hopeless |
-| `el_aguila_veracruz` | *no keypoints* | *no keypoints* | ❌ hopeless |
-| `pericos_puebla` | *no keypoints* | *no keypoints* | ❌ hopeless |
+| `el_aguila_veracruz` | *no keypoints* | *no keypoints* | ❌ the first file. A later crest scored **100 raw** and is in |
+| `pericos_puebla` | *no keypoints* | *no keypoints* | ❌ the first file. A later wordmark scored **100 raw** and is in |
 
 Three conclusions that drive everything below:
 
@@ -37,10 +37,11 @@ Three conclusions that drive everything below:
    indexed PNGs whose transparency flattened to **black**, erasing keypoints.
    Fixing just those two things turned one hard failure into a 90 and lifted a
    35 to a 100.
-3. **Some logos genuinely cannot be tracked.** `el_aguila_veracruz` is close to
-   a uniform red field; `conspiradores` and `pericos` are flat line art.
-   `arcoreimg` cannot extract *any* keypoints from them. No amount of
-   resampling changes that — they need a marker card (§5) or nothing.
+3. **Some files genuinely cannot be tracked.** The first `el_aguila_veracruz`
+   asset is close to a uniform red field; the first `conspiradores` silhouette
+   and `pericos` are flat line art. `arcoreimg` cannot extract *any* keypoints
+   from those files. Later files for Conspiradores, Águila, and Pericos
+   cleared 75. The first file of each of those clubs still does not.
 
 ### Why ARCore behaves this way
 
@@ -77,10 +78,12 @@ Chosen from the passing logos, covering three distinct `tipo` values:
 > 2026-09-07 to the set above.
 
 The scan target is the **club logo**. The gate is **≥ 75**, not 90. Bravos at
-90, Tigres raw at 75, Diablos flame 80, Guerreros shield raw 90, and the
-Conspiradores wordmark raw 100 are in. Do not substitute a generated marker
-card. The first Conspiradores file (small silhouette) still has no usable
-keypoints — a later wordmark is what cleared the gate.
+90, Tigres raw at 75, Diablos flame 80, Guerreros shield raw 90, the
+Conspiradores wordmark raw 100, the Águila crest raw 100, and the Pericos
+wordmark raw 100 are in. Do not substitute a generated marker card. The first
+Conspiradores, Águila, and Pericos files still have no usable keypoints —
+later files are what cleared the gate. Do not re-encode the Águila crest or
+the Pericos wordmark. The other Pericos candidates were not scored.
 
 Logos below 75 stay out of the database. A score of 50, or zero keypoints,
 means ARCore will not lock that print. Those clubs still have models on the
@@ -133,10 +136,10 @@ Exit codes: `0` all pass · `1` something scored under 75 · `2` tooling missing
 
 ## 5. Step 2 (only if needed) — a marker card
 
-Needed only for logos that cannot be rescued by §3 — today
-`conspiradores_queretaro`, `el_aguila_veracruz`, `pericos_puebla`. **We do not
-currently need any of these**, since four logos already pass. Do this only if a
-specific club becomes a requirement.
+Needed only for a club whose files cannot be rescued by §3. **We do not
+currently need a card**: every Zona Sur club now has a measured logo that
+scores ≥ 75. Do this only if a later file fails and that club must still
+scan.
 
 A **marker card** keeps the club logo for the human while surrounding it with
 composition the tracker can actually key on.
@@ -212,7 +215,7 @@ supplying real-world size measurably improves ARCore detection and pose.
 
 Update this table in the same commit as any marker change.
 
-**Shipped in `assets/markers/`** (verified 2026-09-08). All eight are the
+**Shipped in `assets/markers/`** (verified 2026-09-08). All ten are the
 club logo. Gate is 75, not 90.
 
 | Marker id | Logo | Variant | Score | Printed width (m) | In active DB |
@@ -225,9 +228,13 @@ club logo. Gate is 75, not 90.
 | `marcador_estadio_diablos` | flame logo, not the old flat mark | normalized on white | **80** | ⏳ _pending print_ | ✅ yes |
 | `marcador_jugador_guerreros` | shield logo, not the old flat mark | **raw PNG** | **90** | ⏳ _pending print_ | ✅ yes |
 | `marcador_estadio_conspiradores` | wordmark on black | **raw PNG** | **100** | ⏳ _pending print_ | ✅ yes |
+| `marcador_estadio_aguila` | crest (eagle, bat, VERACRUZ) | **raw PNG** | **100** | ⏳ _pending print_ | ✅ yes |
+| `marcador_estadio_pericos` | wordmark + parrot head on black | **raw PNG** | **100** | ⏳ _pending print_ | ✅ yes |
 
 Do not normalize Tigres. That copy scored 50. Do not flatten the Guerreros
-shield or the Conspiradores wordmark. The generated marker cards from earlier
+shield, the Conspiradores wordmark, the Águila crest, or the Pericos
+wordmark. Re-encoding the Águila crest dropped it 100 → 90. The other
+Pericos candidates were not scored. The generated marker cards from earlier
 the same day are deleted. Do not put them back.
 
 **Logos left out** — below the 75 gate, so the phone will not lock them:
@@ -236,7 +243,11 @@ the same day are deleted. Do not put them back.
 |---|---|---|
 | old `guerreros_oaxaca` file | 50 | too flat. The shield logo scored 90 raw and is in. |
 | first Conspiradores silhouette | *no keypoints* / white-flatten 20 | not this file. The wordmark scored 100 raw and is in. |
-| `el_aguila` · `pericos` | *no keypoints* | cannot be a direct target until a later file clears 75 |
+| first `el_aguila` file | *no keypoints* | not this file. The crest scored 100 raw and is in. |
+| Águila red swoosh on black | *no keypoints* | scored 2026-09-08. Not shipped. |
+| Águila "A" + eagle head | 20 | below 75. Not shipped. |
+| Águila wordmark "El Águila" | **100 raw** | also clears 75, but carries a +N watermark. Not shipped. Print the crest. |
+| first `pericos` file | *no keypoints* | not this file. The wordmark scored 100 raw and is in. The other candidates were not scored. |
 
 A high score proves the **digital reference** is good. It does **not** prove the
 **print** detects — that still requires the device acceptance run in

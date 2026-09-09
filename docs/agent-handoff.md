@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-09-08 · by: Conspiradores wordmark raw 100
+**Last updated:** 2026-09-08 · by: Pericos wordmark raw 100
 
 ---
 
@@ -20,7 +20,7 @@ These are **binding**, not advisory:
 
 | # | File | What it gives you |
 |---|---|---|
-| 1 | `CONSTITUTION.md` | Governance, v2.4.1, decisions D-01…D-23 |
+| 1 | `CONSTITUTION.md` | Governance, v2.4.4, decisions D-01…D-23 |
 | 2 | `AGENTS.md` | How to work here (auto-loaded as a workspace rule) |
 | 3 | `WORK_ITEMS.md` | The backlog. Each item's `Prompt` block **is** the spec |
 | 4 | `docs/ar-postmortem.md` | Why AR attempt #1 was thrown away (RC-1…RC-7) |
@@ -81,8 +81,8 @@ Measured later, four of them were. **Never copy code from that branch.**
   detection. Spanish failure copy lives on `ArFailed.copy` (architecture §8).
   `vector_math` is now a **direct** dependency so `ArDetection.pose` is
   `Matrix4` without importing `material.dart`. Not an AR plugin.
-- AR-01 — `Marcador` + `MarkerRegistry`. `assets/ar_markers.json` loads the
-  three active D-20 markers through `DataService.cargarMarcadores()`.
+- AR-01 — `Marcador` + `MarkerRegistry`.   `assets/ar_markers.json` loads the
+  active D-20/D-23 markers through `DataService.cargarMarcadores()`.
   `resolve` is an exact map lookup keyed by `Marcador.id`. The spare
   (`marcador_pelota_bravos`) is **not** in that JSON — printable only.
   `anchoMetros` is **0.15** (the planned 15 cm print), not a measured width;
@@ -112,10 +112,11 @@ Measured later, four of them were. **Never copy code from that branch.**
 - AR-00 / D-23 — scan targets are **logos**, not substitute cards. Gate is
   **≥ 75**, not 90. Active: Leones 100, Olmecas 100, Piratas 100, Bravos 90,
   Tigres **raw JPEG** 75, Diablos flame logo **80**, Guerreros shield logo
-  **raw 90**, Conspiradores wordmark **raw 100**. Old flat Diablos/Guerreros
-  files stay unused. Do not normalize Tigres, the Guerreros shield, or the
-  Conspiradores wordmark. Águila and Pericos stay out until a file scores ≥ 75.
-  Device lock for Bravos and Tigres is not run.
+  **raw 90**, Conspiradores wordmark **raw 100**, Águila crest **raw 100**,
+  Pericos wordmark **raw 100**. Old flat Diablos/Guerreros files stay unused.
+  Do not normalize Tigres, the Guerreros shield, the Conspiradores wordmark,
+  the Águila crest, or the Pericos wordmark. The other Pericos candidates
+  were not scored. Device lock for Bravos and Tigres is not run.
 
 **Blocked on the human**
 
@@ -177,6 +178,11 @@ chrome). Do not fall back to the fake tracker when that session fails.
 - Never commit `build/`, `.dart_tool/`, `android/.gradle/`, `tools/bin/`.
 - `flutter pub get` dirties `windows/flutter/generated_*` with line-ending-only
   noise. Restore with `git checkout -- windows/`.
+- Do not re-encode `marcador_estadio_pericos.png`. First candidate scored
+  100 raw; the other four were not scored. Ship the raw file.
+- Do not re-encode `marcador_estadio_aguila.png`. The raw crest scores 100;
+  writing it again as 24-bit PNG dropped it to 90. Same class of surprise as
+  Tigres (normalize lowered 75 → 50).
 - **D-22 GLBs** come from `python tools/write_lowpoly_glbs.py` (Python 3.10
   is enough; no extra packages). Re-run after mesh edits. `--players-only`
   skips stadiums. Do not regenerate Leones/Olmecas with
@@ -239,6 +245,8 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-09-08 | **Pericos wordmark.** First of five candidates. Raw 100. Shipped as-is as `marcador_estadio_pericos`. The other four were not scored. Constitution → v2.4.4. |
+| 2026-09-08 | **Águila crest.** Four candidates scored. Swoosh: no keypoints. "A" + eagle head: 20. Wordmark: raw 100, not shipped (+N watermark). Crest: raw 100, shipped as-is as `marcador_estadio_aguila`. Do not re-encode. Constitution → v2.4.3. |
 | 2026-09-08 | **Conspiradores wordmark.** First of four candidates. Raw 100. Shipped as-is as `marcador_estadio_conspiradores`. The other three were not scored. Constitution → v2.4.2. |
 | 2026-09-08 | **Guerreros shield logo.** First of four candidates. Raw 90. Shipped as-is. The other three were not scored. |
 | 2026-09-08 | **Diablos flame logo.** First of four candidates. Raw 60, white-flatten 80. Shipped. The other three were not scored. |
@@ -247,8 +255,6 @@ Rules of thumb:
 | 2026-09-07 | **AR-07 code.** `ArLocked` only: Gesto plays `idle`/`gesto`; Información speaks `infoTexto` and spins the pose once. Stadium/trophy `animaciones` emptied (`celebracion` was not a clip). Filament clip patch required. Tests: 5 passed (`ar_scan_screen_test.dart`). Device not run. Constitution → v2.3.2. |
 | 2026-09-07 | **D-22 player biped.** `jugador.glb` is a jointed figure (hips/spine/arms/legs/head, bat in the right hand). `idle` weight-shifts; `gesto` points the bat. Same clip names, no new scan targets. |
 | 2026-09-07 | **D-22 low-poly catalog.** Shared stadium (764 tris, static) + player GLBs in team colors for all 10 clubs. Generator: `tools/write_lowpoly_glbs.py`. Leones/Olmecas scan paths use those meshes. Piratas trophy box kept. Constitution → v2.3.1. |
-| 2026-09-07 | **D-22 / branch `full-project`.** Model catalog is all 10 clubs × stadium (static) + player (`idle`, `gesto`). Scan set stays D-20. Not a matcher. Constitution → v2.3.0. |
-| 2026-09-07 | **AR-06 code.** `attachModel` places a per-marker GLB on the fully-tracked pose. Missing/failed GLB → Spanish overlay, session stays up. No WebView. Device hold/dispose checks not run. |
 
 ## 8. How to work
 
@@ -261,8 +267,10 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 ## 9. Current task
 
-> Next logo gate: Águila, then Pericos. First file that scores ≥ 75 stays;
-> do not score the rest. Do not add a logo below 75. Do not write a matcher.
+> Logo gate is closed. All 10 Zona Sur clubs have a scan target.
+> Next: US-11 video archive UI (remote URLs). Do not add a logo below 75.
+> Do not write a matcher. Wrong-club control is the old unused Pericos
+> `logo_base`, not the shipped wordmark.
 
 _(The human edits this line each session. Leave it pointing at the next item
 when you finish.)_
