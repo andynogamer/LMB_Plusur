@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-09-08 · by: US-11 video archive
+**Last updated:** 2026-09-08 · by: US-12 video filters
 
 ---
 
@@ -20,7 +20,7 @@ These are **binding**, not advisory:
 
 | # | File | What it gives you |
 |---|---|---|
-| 1 | `CONSTITUTION.md` | Governance, v2.4.5, decisions D-01…D-23 |
+| 1 | `CONSTITUTION.md` | Governance, v2.4.6, decisions D-01…D-23 |
 | 2 | `AGENTS.md` | How to work here (auto-loaded as a workspace rule) |
 | 3 | `WORK_ITEMS.md` | The backlog. Each item's `Prompt` block **is** the spec |
 | 4 | `docs/ar-postmortem.md` | Why AR attempt #1 was thrown away (RC-1…RC-7) |
@@ -113,7 +113,7 @@ Measured later, four of them were. **Never copy code from that branch.**
   `url`, optional `equipoId`) through `DataService.cargarVideos()`. Main
   opens the full catalog; the team menu opens that club only. Playback uses
   `HighlightVideoPlayer`. A failed URL shows Spanish copy and stays up. No
-  filters. URLs are public samples until R-03. Do not restore
+  filters via `FilterEngine` (`Filtros del partido`). URLs are public samples until R-03. Do not restore
   `DemoHighlights`.
 - AR-00 / D-23 — scan targets are **logos**, not substitute cards. Gate is
   **≥ 75**, not 90. Active: Leones 100, Olmecas 100, Piratas 100, Bravos 90,
@@ -139,7 +139,7 @@ Measured later, four of them were. **Never copy code from that branch.**
 **Next**
 
 ```
-US-12: video filters — allowed set only
+US-13: baseball-coherent 3D animations / VFX
 ```
 
 Debug APK from earlier today does **not** include this session. Rebuild after
@@ -251,7 +251,8 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
-| 2026-09-08 | **US-11 video archive.** Catalog in `assets/videos.json`. Main and team menu open it. Broken URL shows Spanish copy. Sample remote URLs until R-03. No filters. Constitution → v2.4.5. |
+| 2026-09-08 | **US-12 filters.** Preview on the archive player. Allowed: desenfoque, pixelado, térmica, ajuste de color, suavizado, pasteles, alta saturación. Forbidden set absent. Constitution → v2.4.6. |
+| 2026-09-08 | **US-11 video archive.** Catalog in `assets/videos.json`. Main and team menu open it. Broken URL shows Spanish copy. Sample remote URLs until R-03. Constitution → v2.4.5. |
 | 2026-09-08 | **Pericos wordmark.** First of five candidates. Raw 100. Shipped as-is as `marcador_estadio_pericos`. The other four were not scored. Constitution → v2.4.4. |
 | 2026-09-08 | **Águila crest.** Four candidates scored. Swoosh: no keypoints. "A" + eagle head: 20. Wordmark: raw 100, not shipped (+N watermark). Crest: raw 100, shipped as-is as `marcador_estadio_aguila`. Do not re-encode. Constitution → v2.4.3. |
 | 2026-09-08 | **Conspiradores wordmark.** First of four candidates. Raw 100. Shipped as-is as `marcador_estadio_conspiradores`. The other three were not scored. Constitution → v2.4.2. |
@@ -260,7 +261,6 @@ Rules of thumb:
 | 2026-09-08 | **D-23 cards reversed.** Scan targets are logos. Gate is 75, not 90. Tigres raw JPEG (75) joins Leones, Olmecas, Piratas, Bravos. 50 and zero-keypoint logos stay out. Constitution → v2.4.1. |
 | 2026-09-08 | **D-23.** Scan DB is all 10 clubs. Six logos that cannot track get measured marker cards (each 100). Bravos (90) joins. Not a matcher. Constitution → v2.4.0. Device lock for the new cards not run. |
 | 2026-09-07 | **AR-07 code.** `ArLocked` only: Gesto plays `idle`/`gesto`; Información speaks `infoTexto` and spins the pose once. Stadium/trophy `animaciones` emptied (`celebracion` was not a clip). Filament clip patch required. Tests: 5 passed (`ar_scan_screen_test.dart`). Device not run. Constitution → v2.3.2. |
-| 2026-09-07 | **D-22 player biped.** `jugador.glb` is a jointed figure (hips/spine/arms/legs/head, bat in the right hand). `idle` weight-shifts; `gesto` points the bat. Same clip names, no new scan targets. |
 
 ## 8. How to work
 
@@ -273,9 +273,9 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 ## 9. Current task
 
-> Next: US-12 video filters — allowed set only. No B&W, grayscale, sepia,
-> exposure, or invert. Logo gate is closed. Wrong-club control is the old
-> unused Pericos `logo_base`, not the shipped wordmark.
+> Next: US-13 baseball-coherent 3D animations / VFX. Do not add forbidden
+> video filters. Logo gate is closed. Wrong-club control is the old unused
+> Pericos `logo_base`, not the shipped wordmark.
 
 _(The human edits this line each session. Leave it pointing at the next item
 when you finish.)_

@@ -44,7 +44,7 @@
 | US-09 | 📗 | 🟠 P1 | Simulated live stats in AR / team | ☐ | Actions |
 | US-10 | 📗 | 🟠 P1 | Multiple AR modes (galería / trivia / video) | ☐ | Bonus + modes |
 | US-11 | 📗 | 🔴 P0 | Video archive UI (remote URLs) | ☑ | Videos |
-| US-12 | 📗 | 🔴 P0 | Video filters — allowed set only | ☐ | Filters |
+| US-12 | 📗 | 🔴 P0 | Video filters — allowed set only | ☑ | Filters |
 | US-13 | 📗 | 🟠 P1 | Baseball-coherent 3D animations / VFX | ☐ | 15pt effects |
 | US-14 | 📗 | 🟡 P2 | Performance pass (load / stability) | ☐ | 15pt perf |
 | US-15 | 📗 | 🟡 P2 | Android APK release build | ☐ | Packaging |
@@ -637,7 +637,7 @@ Fuera de alcance: filter pipeline (US-12), downloading entire files for offline.
 
 ---
 
-## US-12 · 📗 · 🔴 P0 · Video filters — allowed set only · ☐ Pendiente
+## US-12 · 📗 · 🔴 P0 · Video filters — allowed set only · ☑ Hecho
 
 **Prompt**
 ```

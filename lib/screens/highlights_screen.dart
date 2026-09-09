@@ -4,8 +4,10 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/equipo_model.dart';
 import '../models/video_archivo.dart';
 import '../services/data_service.dart';
+import '../services/filter_engine.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_header.dart';
+import '../widgets/filtros_partido.dart';
 import '../widgets/highlight_video_player.dart';
 import '../widgets/screen_background.dart';
 
@@ -27,6 +29,7 @@ class _HighlightsScreenState extends State<HighlightsScreen> {
   List<VideoArchivo> _videos = const [];
   Map<String, String> _nombres = const {};
   String? _playingId;
+  FiltroPartido _filtro = FiltroPartido.ninguno;
   bool _cargando = true;
   bool _falloCarga = false;
 
@@ -146,13 +149,19 @@ class _HighlightsScreenState extends State<HighlightsScreen> {
               ),
             ),
             const SizedBox(height: 10),
-            if (playing)
+            if (playing) ...[
               HighlightVideoPlayer(
                 url: video.url,
                 isActive: true,
+                filtro: _filtro,
                 onPlay: () => setState(() => _playingId = video.id),
-              )
-            else
+              ),
+              const SizedBox(height: 12),
+              FiltrosPartido(
+                seleccionado: _filtro,
+                onChanged: (filtro) => setState(() => _filtro = filtro),
+              ),
+            ] else
               _poster(video),
           ],
         );

@@ -89,7 +89,8 @@ State of the tree:
   Conspiradores wordmark, the Águila crest, and the Pericos wordmark, each
   raw 100. Do not re-encode those. The other Pericos candidates were not
   scored. Remaining work is print + device lock.
-- Video filters: not started (graded).
+- Video filters: allowed set only, on the archive player via `FilterEngine`.
+  Do not add B&W, grayscale, sepia, exposure, or invert.
 - Primary device under test: **Android**, physical, with Play Services for AR.
 
 Suggested order: `WORK_ITEMS.md` index — AR foundation slices (AR-01 →) before

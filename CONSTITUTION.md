@@ -17,7 +17,7 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 | [`docs/ar-architecture.md`](./docs/ar-architecture.md) | The AR technical contract: layers, `ArTracker` seam, state machine, error taxonomy, budgets. |
 | [`docs/ar-marker-guide.md`](./docs/ar-marker-guide.md) | How to author printable markers ARCore can actually track. |
 
-**Version**: 2.4.5 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-08
+**Version**: 2.4.6 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-08
 
 > **v2.0.0 — AR reset.** AR attempt #1 (branch `ar-have-too-many-errors`) was
 > abandoned and work restarted on `fresh-start`. Article VI was rewritten from
@@ -107,6 +107,9 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 > **v2.4.5 — US-11 catalog.** The video archive loads `assets/videos.json`.
 > Playback URLs are public samples until R-03. No new decision. Filters
 > stay US-12.
+>
+> **v2.4.6 — US-12 filters.** Preview filters on the archive player. Allowed
+> set only. No new decision. Do not add forbidden filters.
 
 ---
 
@@ -132,7 +135,7 @@ agents (`CONSTITUTION.md`, `AGENTS.md`, `WORK_ITEMS.md`) are written in
 | App shell | Flutter 3 / Dart 3.3+ | `lib/` | Implemented (navigation, theme, screens). |
 | Team content | Local JSON | `assets/data.json` | Implemented for 10 Zona Sur clubs (historia + trivias). |
 | AR | **Flutter-native (D-01)** — ARCore/ARKit Augmented Images behind an `ArTracker` seam (D-12) | `lib/ar/`, `lib/screens/ar/` | AR-05 accepted on device. AR-06 places a GLB on the pose; AR-07 code plays `idle`/`gesto` and speaks `infoTexto` only in `ArLocked`. Device hold/dispose and action confirmation not checked. Demo only with `LMB_AR_DEMO`. |
-| Video filters | Flutter on-device | — | Not started; graded requirement. |
+| Video filters | Flutter on-device | `FilterEngine` | Allowed set only. Forbidden filters absent. |
 | Highlights / videos | Remote URLs (D-07) | demo data today | Placeholders until URLs are filled. |
 
 This constitution is **Flutter-first**. The Dart app owns navigation, content,
@@ -623,7 +626,9 @@ MUST NOT:
 4. **Timer mock deleted (AR-03).** `lib/screens/ar_view_screen.dart` is gone.
    The AR route is `ArScanScreen`. Do not restore the `Timer` or the Guerreros
    default. Scan UI must keep reading `ArSessionState` only.
-5. **Video filter UI missing.**
+5. **Video filters are preview-only on the archive player.** Allowed
+   families live in `FilterEngine`. Do not add blanco y negro, escala de
+   grises, sepia, exposición, or invert.
 6. **Video archive UI loads local JSON** (`assets/videos.json`). Playback
    URLs are public samples until R-03. Do not add a backend. Filters are
    US-12, not this catalog.

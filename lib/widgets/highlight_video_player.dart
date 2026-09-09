@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
+import '../services/filter_engine.dart';
 import '../theme/app_colors.dart';
 
 class HighlightVideoPlayer extends StatefulWidget {
@@ -9,11 +10,13 @@ class HighlightVideoPlayer extends StatefulWidget {
     required this.url,
     this.isActive = false,
     this.onPlay,
+    this.filtro = FiltroPartido.ninguno,
   });
 
   final String url;
   final bool isActive;
   final VoidCallback? onPlay;
+  final FiltroPartido filtro;
 
   @override
   State<HighlightVideoPlayer> createState() => _HighlightVideoPlayerState();
@@ -141,12 +144,15 @@ class _HighlightVideoPlayerState extends State<HighlightVideoPlayer> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        FittedBox(
-          fit: BoxFit.cover,
-          child: SizedBox(
-            width: controller.value.size.width,
-            height: controller.value.size.height,
-            child: VideoPlayer(controller),
+        FilterEngine.aplicar(
+          widget.filtro,
+          FittedBox(
+            fit: BoxFit.cover,
+            child: SizedBox(
+              width: controller.value.size.width,
+              height: controller.value.size.height,
+              child: VideoPlayer(controller),
+            ),
           ),
         ),
         DecoratedBox(
