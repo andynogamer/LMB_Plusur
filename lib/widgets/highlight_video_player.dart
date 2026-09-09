@@ -36,7 +36,12 @@ class _HighlightVideoPlayerState extends State<HighlightVideoPlayer> {
       await controller.initialize();
       controller.setLooping(true);
       controller.addListener(() {
-        if (mounted) setState(() {});
+        if (!mounted) return;
+        if (controller.value.hasError) {
+          setState(() => _failed = true);
+          return;
+        }
+        setState(() {});
       });
       if (!mounted) {
         await controller.dispose();
@@ -98,8 +103,24 @@ class _HighlightVideoPlayerState extends State<HighlightVideoPlayer> {
 
   Widget _buildBody() {
     if (_failed) {
-      return const Center(
-        child: Icon(Icons.videocam_off_outlined, color: AppColors.muted, size: 40),
+      return const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.videocam_off_outlined, color: AppColors.muted, size: 36),
+            SizedBox(height: 10),
+            Text(
+              'No se pudo reproducir este video. Revisa tu conexión e inténtalo de nuevo.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: AppColors.white,
+                fontSize: 13,
+                height: 1.35,
+              ),
+            ),
+          ],
+        ),
       );
     }
 

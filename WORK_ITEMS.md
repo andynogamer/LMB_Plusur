@@ -43,7 +43,7 @@
 | AR-07 | 📗 | 🔴 P0 | ≥2 AR action types (anim, info+TTS, …) | ◐ código · dispositivo ☐ | 2 action types |
 | US-09 | 📗 | 🟠 P1 | Simulated live stats in AR / team | ☐ | Actions |
 | US-10 | 📗 | 🟠 P1 | Multiple AR modes (galería / trivia / video) | ☐ | Bonus + modes |
-| US-11 | 📗 | 🔴 P0 | Video archive UI (remote URLs) | ☐ | Videos |
+| US-11 | 📗 | 🔴 P0 | Video archive UI (remote URLs) | ☑ | Videos |
 | US-12 | 📗 | 🔴 P0 | Video filters — allowed set only | ☐ | Filters |
 | US-13 | 📗 | 🟠 P1 | Baseball-coherent 3D animations / VFX | ☐ | 15pt effects |
 | US-14 | 📗 | 🟡 P2 | Performance pass (load / stability) | ☐ | 15pt perf |
@@ -613,7 +613,7 @@ Fuera de alcance: building a separate Unity scene graph.
 
 ---
 
-## US-11 · 📗 · 🔴 P0 · Video archive UI (remote URLs) · ☐ Pendiente
+## US-11 · 📗 · 🔴 P0 · Video archive UI (remote URLs) · ☑ Hecho
 
 **Prompt**
 ```
@@ -765,8 +765,8 @@ ArLocked` is an illegal transition, and demo mode must cycle all markers
 Contexto: Article IV — Spanish domain, English engineering. Known debt #9.
 lib/models/team.dart (Team: name/city/history) and
 lib/models/trivia_question.dart (TriviaQuestion: prompt) duplicate Equipo and
-Trivia in English, and are reachable from lib/data/mock_data.dart and
-lib/data/demo_highlights.dart.
+Trivia in English, and are reachable from lib/data/mock_data.dart.
+`demo_highlights.dart` was removed in US-11.
 
 Tarea: Consolidate onto the Spanish domain (Equipo, Trivia). Migrate or delete
 the mock/demo helpers that depend on the English types. Do not rename any

@@ -55,7 +55,7 @@ class LmbPlusurApp extends StatelessWidget {
           settings,
         );
       case AppRoutes.highlights:
-        return _page(HighlightsScreen(equipo: equipo!), settings);
+        return _page(HighlightsScreen(equipo: equipo), settings);
       default:
         return _page(const SplashScreen(), settings);
     }

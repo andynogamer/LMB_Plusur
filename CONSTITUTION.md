@@ -17,7 +17,7 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 | [`docs/ar-architecture.md`](./docs/ar-architecture.md) | The AR technical contract: layers, `ArTracker` seam, state machine, error taxonomy, budgets. |
 | [`docs/ar-marker-guide.md`](./docs/ar-marker-guide.md) | How to author printable markers ARCore can actually track. |
 
-**Version**: 2.4.4 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-08
+**Version**: 2.4.5 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-08
 
 > **v2.0.0 — AR reset.** AR attempt #1 (branch `ar-have-too-many-errors`) was
 > abandoned and work restarted on `fresh-start`. Article VI was rewritten from
@@ -103,6 +103,10 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 > **v2.4.4 — D-23 Pericos wordmark.** First of five candidates. Raw 100.
 > Shipped as-is. The other four were not scored. Every Zona Sur club now
 > has a scan target. Do not re-encode the wordmark.
+>
+> **v2.4.5 — US-11 catalog.** The video archive loads `assets/videos.json`.
+> Playback URLs are public samples until R-03. No new decision. Filters
+> stay US-12.
 
 ---
 
@@ -620,7 +624,9 @@ MUST NOT:
    The AR route is `ArScanScreen`. Do not restore the `Timer` or the Guerreros
    default. Scan UI must keep reading `ArSessionState` only.
 5. **Video filter UI missing.**
-6. **Highlights/videos still demo** — swap to real remote URLs (R-03).
+6. **Video archive UI loads local JSON** (`assets/videos.json`). Playback
+   URLs are public samples until R-03. Do not add a backend. Filters are
+   US-12, not this catalog.
 7. **Tests exist for the AR core** (`marker_registry`, session controller, scan
    screen). Device acceptance for real detection is recorded on AR-05; do not
    treat an asset-vs-itself test as proof.
@@ -630,7 +636,8 @@ MUST NOT:
 10. **Parallel English domain (Article IV violation)** — `models/team.dart`
    (`Team`, `name`, `city`, `history`) and `models/trivia_question.dart`
    (`TriviaQuestion`, `prompt`) duplicate `Equipo` / `Trivia`, and are reachable
-   from `data/mock_data.dart` and `data/demo_highlights.dart`. Consolidate onto
+   from `data/mock_data.dart`. `demo_highlights.dart` is gone; the archive
+   is `assets/videos.json`. Consolidate onto
    the Spanish domain in a dedicated cleanup item — do not extend them.
 
 Track fixes via `WORK_ITEMS.md`.

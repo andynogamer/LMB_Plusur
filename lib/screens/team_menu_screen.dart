@@ -84,7 +84,7 @@ class _TeamMenuScreenState extends State<TeamMenuScreen> {
                       children: [
                         Text(
                           _ultimoPuntaje == null
-                              ? '${equipo.trivias.length} trivias  ·  3 highlights'
+                              ? '${equipo.trivias.length} trivias'
                               : '${equipo.trivias.length} trivias  ·  Último puntaje: $_ultimoPuntaje / 5',
                           style: GoogleFonts.poppins(
                             color: AppColors.muted,
@@ -139,8 +139,8 @@ class _TeamMenuScreenState extends State<TeamMenuScreen> {
                   ),
                   const SizedBox(height: 12),
                   FeatureCard(
-                    title: 'Highlights',
-                    subtitle: 'Reproduce los momentos destacados.',
+                    title: 'Videos',
+                    subtitle: 'Reproduce el archivo de este club.',
                     icon: Icons.play_circle_fill_rounded,
                     onTap: () {
                       Navigator.of(context).pushNamed(

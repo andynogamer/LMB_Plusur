@@ -55,7 +55,7 @@ class _MainBody extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Explora la historia, juega trivia y revive los highlights de tu equipo.',
+            'Explora la historia, juega trivia y revive los videos de la Zona Sur.',
             style: GoogleFonts.poppins(
               color: AppColors.muted,
               fontSize: 14,
@@ -76,7 +76,13 @@ class _MainBody extends StatelessWidget {
             icon: Icons.sports_baseball_rounded,
             onTap: () => Navigator.of(context).pushNamed(AppRoutes.teams),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
+          FeatureCard(
+            title: 'Archivo de videos',
+            subtitle: 'Reproduce el acervo de la Zona Sur.',
+            icon: Icons.play_circle_fill_rounded,
+            onTap: () => Navigator.of(context).pushNamed(AppRoutes.highlights),
+          ),
         ],
       ),
     );

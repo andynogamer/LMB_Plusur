@@ -35,6 +35,7 @@ flutter:
   assets:
     - assets/
     - assets/data.json
+    - assets/videos.json
     - assets/ar_markers.json
     - assets/images/
     - assets/sfx/
