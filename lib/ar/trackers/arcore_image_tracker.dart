@@ -421,7 +421,8 @@ class ArCoreImageTracker implements ArTracker {
     }
 
     final rng = math.Random();
-    const count = 10;
+    // Cap node count — mid-tier Filament + screen particles already paint.
+    const count = 6;
     var placed = 0;
     for (var i = 0; i < count; i++) {
       final angle = (i / count) * math.pi * 2 + rng.nextDouble() * 0.35;

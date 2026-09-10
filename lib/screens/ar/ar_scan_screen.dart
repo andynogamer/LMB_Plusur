@@ -459,135 +459,157 @@ class _ArScanScreenState extends State<ArScanScreen>
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<ArSessionState>(
-      valueListenable: _uiState,
-      builder: (context, state, _) => _scaffold(context, state),
-    );
-  }
-
-  Widget _scaffold(BuildContext context, ArSessionState state) {
-    final showDemoBadge = _liveIsDemo || state is ArLocked && state.isDemo;
-    final failed = state is ArFailed ? state : null;
     final camera = _cameraTracker;
-
+    // Keep the platform view outside session/action rebuilds so Filament
+    // is not torn down when chrome setState runs.
     return Scaffold(
       backgroundColor: AppColors.navy,
       body: Stack(
         fit: StackFit.expand,
         children: [
-          if (camera != null) Positioned.fill(child: camera.buildSurface()),
-          if (state is ArLocked && (_efectoPressed || _celebracionVfx))
+          if (camera != null)
             Positioned.fill(
-              child: ArBaseballVfx(
-                active: true,
-                oneshot: _celebracionVfx && !_efectoPressed,
-                onFinished: () {
-                  if (!mounted) return;
-                  setState(() => _celebracionVfx = false);
-                },
-              ),
+              key: const ValueKey('ar-camera-surface'),
+              child: camera.buildSurface(),
             ),
-          DecoratedBox(
-            decoration: camera == null
-                ? const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Color(0xFF1C2048), Color(0xFF0B0D1F)],
-                    ),
-                  )
-                : const BoxDecoration(),
-            child: SafeArea(
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          onPressed: () => Navigator.of(context).maybePop(),
-                          style: IconButton.styleFrom(
-                            backgroundColor:
-                                AppColors.navy.withValues(alpha: 0.55),
-                          ),
-                          icon: const Icon(
-                            Icons.arrow_back_rounded,
-                            color: AppColors.white,
-                          ),
-                        ),
-                        const Spacer(),
-                        if (showDemoBadge) ...[
-                          const ArDemoBadge(),
-                          const SizedBox(width: 10),
-                        ],
-                        Container(
-                          padding: const EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppColors.button.withValues(alpha: 0.4),
-                            ),
-                          ),
-                          child: const AppLogo(size: 46),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Spacer(),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
-                    child: DecoratedBox(
-                      decoration: camera == null
-                          ? const BoxDecoration()
-                          : BoxDecoration(
-                              color: AppColors.navy.withValues(alpha: 0.78),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: camera == null ? 0 : 16,
-                          vertical: camera == null ? 0 : 16,
-                        ),
-                        child: failed == null
-                            ? ArSessionBody(
-                                state: state,
-                                equipoHint: widget.equipoHint,
-                                onSimulateNext:
-                                    _liveIsDemo ? _simulateNext : null,
-                                modelNote: state is ArLocked ? _modelNote : null,
-                                infoActive: state is ArLocked && _infoPressed,
-                                actions: state is ArLocked
-                                    ? ArActionBar(
-                                        gestoPressed: _gestoPressed,
-                                        infoPressed: _infoPressed,
-                                        efectoPressed: _efectoPressed,
-                                        note: _actionNote,
-                                        onGesto: () => unawaited(
-                                          _onGesto(state.marcador),
-                                        ),
-                                        onInfo: () => unawaited(
-                                          _onInfo(state.marcador),
-                                        ),
-                                        onEfecto: () => unawaited(_onEfecto()),
-                                      )
-                                    : null,
-                                onExit: state is ArLocked
-                                    ? () => Navigator.of(context).maybePop()
-                                    : null,
-                              )
-                            : ArFailedPanel(
-                                failure: failed,
-                                onRetry: _retry,
-                              ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          ValueListenableBuilder<ArSessionState>(
+            valueListenable: _uiState,
+            builder: (context, state, _) =>
+                _chrome(context, state, hasCamera: camera != null),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _chrome(
+    BuildContext context,
+    ArSessionState state, {
+    required bool hasCamera,
+  }) {
+    final showDemoBadge = _liveIsDemo || state is ArLocked && state.isDemo;
+    final failed = state is ArFailed ? state : null;
+    final showVfx =
+        state is ArLocked && (_efectoPressed || _celebracionVfx);
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        if (showVfx)
+          Positioned.fill(
+            child: ArBaseballVfx(
+              active: true,
+              oneshot: _celebracionVfx && !_efectoPressed,
+              onFinished: () {
+                if (!mounted) return;
+                setState(() => _celebracionVfx = false);
+              },
+            ),
+          ),
+        DecoratedBox(
+          decoration: hasCamera
+              ? const BoxDecoration()
+              : const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFF1C2048), Color(0xFF0B0D1F)],
+                  ),
+                ),
+          child: SafeArea(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: () => Navigator.of(context).maybePop(),
+                        style: IconButton.styleFrom(
+                          backgroundColor:
+                              AppColors.navy.withValues(alpha: 0.55),
+                        ),
+                        icon: const Icon(
+                          Icons.arrow_back_rounded,
+                          color: AppColors.white,
+                        ),
+                      ),
+                      const Spacer(),
+                      if (showDemoBadge) ...[
+                        const ArDemoBadge(),
+                        const SizedBox(width: 10),
+                      ],
+                      Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColors.button.withValues(alpha: 0.4),
+                          ),
+                        ),
+                        child: const AppLogo(size: 46),
+                      ),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
+                  child: DecoratedBox(
+                    decoration: hasCamera
+                        ? BoxDecoration(
+                            color: AppColors.navy.withValues(alpha: 0.78),
+                            borderRadius: BorderRadius.circular(16),
+                          )
+                        : const BoxDecoration(),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: hasCamera ? 16 : 0,
+                        vertical: hasCamera ? 16 : 0,
+                      ),
+                      child: failed == null
+                          ? ArSessionBody(
+                              state: state,
+                              equipoHint: widget.equipoHint,
+                              onSimulateNext:
+                                  _liveIsDemo ? _simulateNext : null,
+                              modelNote:
+                                  state is ArLocked ? _modelNote : null,
+                              infoActive:
+                                  state is ArLocked && _infoPressed,
+                              actions: state is ArLocked
+                                  ? ArActionBar(
+                                      gestoPressed: _gestoPressed,
+                                      infoPressed: _infoPressed,
+                                      efectoPressed: _efectoPressed,
+                                      note: _actionNote,
+                                      onGesto: () => unawaited(
+                                        _onGesto(state.marcador),
+                                      ),
+                                      onInfo: () => unawaited(
+                                        _onInfo(state.marcador),
+                                      ),
+                                      onEfecto: () =>
+                                          unawaited(_onEfecto()),
+                                    )
+                                  : null,
+                              onExit: state is ArLocked
+                                  ? () =>
+                                      Navigator.of(context).maybePop()
+                                  : null,
+                            )
+                          : ArFailedPanel(
+                              failure: failed,
+                              onRetry: _retry,
+                            ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

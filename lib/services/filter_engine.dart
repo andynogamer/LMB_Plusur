@@ -49,7 +49,7 @@ abstract final class FilterEngine {
     return switch (filtro) {
       FiltroPartido.ninguno => child,
       FiltroPartido.desenfoque => ImageFiltered(
-          imageFilter: ImageFilter.blur(sigmaX: 3.2, sigmaY: 3.2),
+          imageFilter: ImageFilter.blur(sigmaX: 2.4, sigmaY: 2.4),
           child: child,
         ),
       FiltroPartido.pixelado => _Pixelado(child: child),
@@ -62,7 +62,7 @@ abstract final class FilterEngine {
           child: child,
         ),
       FiltroPartido.suavizado => ImageFiltered(
-          imageFilter: ImageFilter.blur(sigmaX: 1.1, sigmaY: 1.1),
+          imageFilter: ImageFilter.blur(sigmaX: 0.9, sigmaY: 0.9),
           child: child,
         ),
       FiltroPartido.pasteles => ColorFiltered(

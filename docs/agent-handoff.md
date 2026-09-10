@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-09-09 · by: US-13 particle burst + drifting balls
+**Last updated:** 2026-09-09 · by: US-15 APK release build
 
 ---
 
@@ -94,7 +94,7 @@ Measured later, four of them were. **Never copy code from that branch.**
   low-poly player, Piratas = trophy box. Device hold-to-card and the 5×
   enter/leave run are not done.
 - AR-07 (code) — Actions exist only in `ArLocked`. **Celebración** plays
-  `celebracion` then idle, and places ~10 drifting baseball VFX nodes.
+  `celebracion` then idle, and places ~6 drifting baseball VFX nodes.
   **Información** reads `titulo` / `infoTexto`, speaks them (TTS es-MX), and
   runs one 360° yaw. Stadium and trophy `animaciones` are empty. Device
   confirmation not run.
@@ -110,6 +110,15 @@ Measured later, four of them were. **Never copy code from that branch.**
   VFX (`attachEffect` / `updateEffect` / `clearEffect`, ~2.8 s drift then
   shrink-away) plus screen-space particle chrome (`ArBaseballVfx`). One
   VFX at a time. Device toggle-spam not run.
+- US-14 — **Done (code).** Splash warm-up (~1.1 s) + logo `cacheWidth`;
+  video chrome isolated from filter rebuilds; `DataService` memoization;
+  AR camera outside action rebuilds; VFX capped at 6 balls. Notes:
+  `docs/performance.md`. Device wall-clock still human-open. Do not
+  recompress Águila/Diablos markers without `arcoreimg`.
+- US-15 — **Done (build).** `flutter build apk` →
+  `build/app/outputs/flutter-apk/app-release.apk` (~70 MB). Release signs
+  with debug keystore (class OK). README has run + install steps. Confirm
+  splash→main once on a phone. No Play Store keystore in repo.
 - US-11 — Video archive loads `assets/videos.json` through
   `DataService.cargarVideos()`. Main = full catalog; team menu = that club.
   Broken URL → Spanish copy. US-12 filters via `FilterEngine`. Sample URLs
@@ -139,11 +148,11 @@ Measured later, four of them were. **Never copy code from that branch.**
 **Next**
 
 ```
-US-14: performance pass
+US-16: README product brief (partially started — expand bilingual tips)
 ```
 
-Debug APK from earlier today does **not** include this session. Rebuild after
-both plugin patches before installing.
+Release APK path: `build/app/outputs/flutter-apk/app-release.apk`.
+Rebuild after both plugin patches before installing.
 
 `AppRoutes.ar` probes ARCore first. Unsupported devices see the existing
 failure panel. Capable devices start `ArCoreImageTracker` (camera behind the
@@ -199,7 +208,8 @@ chrome). Do not fall back to the fake tracker when that session fails.
   that length. Native returns to `idle` when the one-shot ends.
   In-scene VFX uses `attachEffect` / `updateEffect` / `clearEffect` with
   `assets/models/efecto_jonron/modelo.glb` (`--efecto-only` to regenerate).
-  Screen-space particles live in `ArBaseballVfx` (chrome only).
+  Screen-space particles live in `ArBaseballVfx` (chrome only). Cap is
+  **6** in-scene balls after US-14.
 - ⚠️ **Plugin 1.1.3 never ticks Filament clips.** After every
   `flutter pub get`, re-run both patches (pub restores the unpatched
   plugin). Do not bump the pin. A missing clip or a missing patch returns
@@ -254,7 +264,9 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
-| 2026-09-09 | **US-13 polish.** ~10 drifting baseball nodes + shrink-away; screen particles in `ArBaseballVfx`. Seam: `updateEffect(progress)`. |
+| 2026-09-09 | **US-15.** `flutter build apk` green (~70 MB). README install steps. Release uses debug signing (class). |
+| 2026-09-09 | **US-14.** Video filter jank fix, splash warm-up, DataService cache, AR camera isolation, VFX caps. See `docs/performance.md`. |
+| 2026-09-09 | **US-13 polish.** Drifting baseball nodes + shrink-away; screen particles in `ArBaseballVfx`. Seam: `updateEffect(progress)`. |
 | 2026-09-09 | **US-13 closed.** `celebracion` clip + in-scene `efecto_jonron` ARNode. D-22 amended. Optional 2D banner is chrome only. Constitution → v2.4.8. |
 | 2026-09-09 | **US-13 reopened.** Screen-space burst alone fails the 15pt 3D gate and architecture §6. |
 | 2026-09-08 | **US-12 filters.** Preview on the archive player. Allowed: desenfoque, pixelado, térmica, ajuste de color, suavizado, pasteles, alta saturación. Forbidden set absent. Constitution → v2.4.6. |
@@ -262,8 +274,6 @@ Rules of thumb:
 | 2026-09-08 | **Pericos wordmark.** First of five candidates. Raw 100. Shipped as-is as `marcador_estadio_pericos`. The other four were not scored. Constitution → v2.4.4. |
 | 2026-09-08 | **Águila crest.** Four candidates scored. Swoosh: no keypoints. "A" + eagle head: 20. Wordmark: raw 100, not shipped (+N watermark). Crest: raw 100, shipped as-is as `marcador_estadio_aguila`. Do not re-encode. Constitution → v2.4.3. |
 | 2026-09-08 | **Conspiradores wordmark.** First of four candidates. Raw 100. Shipped as-is as `marcador_estadio_conspiradores`. The other three were not scored. Constitution → v2.4.2. |
-| 2026-09-08 | **Guerreros shield logo.** First of four candidates. Raw 90. Shipped as-is. The other three were not scored. |
-| 2026-09-08 | **Diablos flame logo.** First of four candidates. Raw 60, white-flatten 80. Shipped. The other three were not scored. |
 
 ## 8. How to work
 
@@ -276,7 +286,7 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 ## 9. Current task
 
-> Next: US-14 performance pass. Do not add forbidden video filters.
+> Next: US-16 README product brief (EN/ES polish + AR marker tips).
 
 _(The human edits this line each session. Leave it pointing at the next item
 when you finish.)_

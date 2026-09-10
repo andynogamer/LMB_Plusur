@@ -46,8 +46,8 @@
 | US-11 | 📗 | 🔴 P0 | Video archive UI (remote URLs) | ☑ | Videos |
 | US-12 | 📗 | 🔴 P0 | Video filters — allowed set only | ☑ | Filters |
 | US-13 | 📗 | 🟠 P1 | Baseball-coherent 3D animations / VFX | ☑ | 15pt effects |
-| US-14 | 📗 | 🟡 P2 | Performance pass (load / stability) | ☐ | 15pt perf |
-| US-15 | 📗 | 🟡 P2 | Android APK release build | ☐ | Packaging |
+| US-14 | 📗 | 🟡 P2 | Performance pass (load / stability) | ☑ | 15pt perf |
+| US-15 | 📗 | 🟡 P2 | Android APK release build | ☑ | Packaging |
 | US-16 | 📗 | 🟢 P3 | README product brief for humans | ☐ | Docs |
 | DEBT-01 | 🐛 | 🟡 P2 | Remove parallel English domain (`Team`, `TriviaQuestion`) | ☐ | Article IV |
 | ~~US-05…US-08~~ | — | — | ~~Old monolithic AR items~~ | ⊘ | Replaced by AR-01…AR-07 |
@@ -705,7 +705,10 @@ Fuera de alcance: cinematic cutscenes, Unity.
 
 ---
 
-## US-14 · 📗 · 🟡 P2 · Performance pass · ☐ Pendiente
+## US-14 · 📗 · 🟡 P2 · Performance pass · ☑ Hecho
+
+**Code landed 2026-09-09.** Device wall-clock timings still human-open;
+notes in `docs/performance.md`.
 
 **Prompt**
 ```
@@ -724,9 +727,19 @@ Archivos: as needed + docs/performance.md
 Fuera de alcance: rewriting entire architecture.
 ```
 
+**Done in this pass:** video tick no longer rebuilds filters; splash warm-up
+(~1.1 s) instead of a fixed 3 s; logo decode capped; DataService cache; AR
+camera isolated from chrome rebuilds; VFX node/particle counts lowered;
+blur sigmas softened. Did **not** re-encode Águila/Diablos markers (score risk).
+
 ---
 
-## US-15 · 📗 · 🟡 P2 · Android APK release build · ☐ Pendiente
+## US-15 · 📗 · 🟡 P2 · Android APK release build · ☑ Hecho
+
+**Code/docs landed 2026-09-09.** `flutter build apk` produced
+`build/app/outputs/flutter-apk/app-release.apk` (~70 MB). Release still signs
+with the **debug** keystore (class demos OK). Device install past splash is
+human-open once — follow README.
 
 **Prompt**
 ```
@@ -744,6 +757,10 @@ Criterios de aceptación:
 Archivos: android/, README.md
 Fuera de alcance: Play Store listing, IPA unless time remains.
 ```
+
+**Done in this pass:** clarified debug signing comment in
+`android/app/build.gradle.kts`; README run + install + optional keystore notes;
+release APK built green. No minify/Proguard to fix. IPA out of scope.
 
 ---
 

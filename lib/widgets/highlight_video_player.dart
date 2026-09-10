@@ -38,14 +38,8 @@ class _HighlightVideoPlayerState extends State<HighlightVideoPlayer> {
     try {
       await controller.initialize();
       controller.setLooping(true);
-      controller.addListener(() {
-        if (!mounted) return;
-        if (controller.value.hasError) {
-          setState(() => _failed = true);
-          return;
-        }
-        setState(() {});
-      });
+      // Errors only — do not setState on every playback tick (rebuilds filters).
+      controller.addListener(_onControllerTick);
       if (!mounted) {
         await controller.dispose();
         return;
@@ -54,6 +48,14 @@ class _HighlightVideoPlayerState extends State<HighlightVideoPlayer> {
     } catch (_) {
       await controller.dispose();
       if (mounted) setState(() => _failed = true);
+    }
+  }
+
+  void _onControllerTick() {
+    final controller = _controller;
+    if (!mounted || controller == null) return;
+    if (controller.value.hasError && !_failed) {
+      setState(() => _failed = true);
     }
   }
 
@@ -67,7 +69,9 @@ class _HighlightVideoPlayerState extends State<HighlightVideoPlayer> {
 
   @override
   void dispose() {
-    _controller?.dispose();
+    final controller = _controller;
+    controller?.removeListener(_onControllerTick);
+    controller?.dispose();
     super.dispose();
   }
 
@@ -134,13 +138,7 @@ class _HighlightVideoPlayerState extends State<HighlightVideoPlayer> {
       );
     }
 
-    final playing = controller.value.isPlaying;
-    final position = controller.value.position;
-    final duration = controller.value.duration;
-    final progress = duration.inMilliseconds == 0
-        ? 0.0
-        : (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0);
-
+    // Video + filter stay outside the tick rebuild; chrome listens separately.
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -155,22 +153,61 @@ class _HighlightVideoPlayerState extends State<HighlightVideoPlayer> {
             ),
           ),
         ),
-        DecoratedBox(
+        const DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
                 Colors.transparent,
-                Colors.black.withValues(alpha: 0.55),
+                Color(0x8C000000),
               ],
-              stops: const [0.55, 1],
+              stops: [0.55, 1],
             ),
           ),
         ),
+        ListenableBuilder(
+          listenable: controller,
+          builder: (context, _) => _Chrome(
+            controller: controller,
+            muted: _muted,
+            onTogglePlay: _togglePlay,
+            onToggleMute: _toggleMute,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _Chrome extends StatelessWidget {
+  const _Chrome({
+    required this.controller,
+    required this.muted,
+    required this.onTogglePlay,
+    required this.onToggleMute,
+  });
+
+  final VideoPlayerController controller;
+  final bool muted;
+  final VoidCallback onTogglePlay;
+  final VoidCallback onToggleMute;
+
+  @override
+  Widget build(BuildContext context) {
+    final playing = controller.value.isPlaying;
+    final position = controller.value.position;
+    final duration = controller.value.duration;
+    final progress = duration.inMilliseconds == 0
+        ? 0.0
+        : (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0);
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
         Center(
           child: IconButton(
-            onPressed: _togglePlay,
+            onPressed: onTogglePlay,
             iconSize: 68,
             icon: Icon(
               playing ? Icons.pause_circle_filled : Icons.play_circle_fill,
@@ -185,7 +222,7 @@ class _HighlightVideoPlayerState extends State<HighlightVideoPlayer> {
           child: Row(
             children: [
               IconButton(
-                onPressed: _togglePlay,
+                onPressed: onTogglePlay,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints.tightFor(width: 32, height: 32),
                 icon: Icon(
@@ -194,11 +231,11 @@ class _HighlightVideoPlayerState extends State<HighlightVideoPlayer> {
                 ),
               ),
               IconButton(
-                onPressed: _toggleMute,
+                onPressed: onToggleMute,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints.tightFor(width: 32, height: 32),
                 icon: Icon(
-                  _muted ? Icons.volume_off : Icons.volume_up,
+                  muted ? Icons.volume_off : Icons.volume_up,
                   color: AppColors.white,
                   size: 20,
                 ),

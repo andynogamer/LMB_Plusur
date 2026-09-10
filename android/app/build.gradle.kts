@@ -32,8 +32,10 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // Class / local demos: sign with the debug keystore so
+            // `flutter build apk` and `flutter run --release` work without a
+            // upload keystore. For Play Store, add a release signingConfig
+            // and point release at it — do not commit keystore passwords.
             signingConfig = signingConfigs.getByName("debug")
         }
     }

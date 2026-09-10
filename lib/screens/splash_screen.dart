@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../routes/app_routes.dart';
+import '../theme/app_assets.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/screen_background.dart';
@@ -17,10 +18,10 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  Timer? _timer;
   late final AnimationController _controller;
   late final Animation<double> _fade;
   late final Animation<double> _scale;
+  bool _navigated = false;
 
   @override
   void initState() {
@@ -33,15 +34,29 @@ class _SplashScreenState extends State<SplashScreen>
     _scale = Tween<double>(begin: 0.86, end: 1).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
     );
-    _timer = Timer(const Duration(seconds: 3), () {
-      if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed(AppRoutes.main);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_bootAndGo());
     });
+  }
+
+  /// Warm logo decode + Poppins, then leave. No fixed 3 s idle wait.
+  Future<void> _bootAndGo() async {
+    if (!mounted) return;
+    final warm = Future.wait<void>([
+      precacheImage(const AssetImage(AppAssets.logo), context),
+      GoogleFonts.pendingFonts([GoogleFonts.poppins()]),
+    ]);
+    await Future.wait<void>([
+      warm,
+      Future<void>.delayed(const Duration(milliseconds: 1100)),
+    ]);
+    if (!mounted || _navigated) return;
+    _navigated = true;
+    Navigator.of(context).pushReplacementNamed(AppRoutes.main);
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
     _controller.dispose();
     super.dispose();
   }

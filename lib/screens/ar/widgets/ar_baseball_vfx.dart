@@ -36,8 +36,8 @@ class _ArBaseballVfxState extends State<ArBaseballVfx>
   @override
   void initState() {
     super.initState();
-    _sparks = List.generate(36, (_) => _Spark.random(_rng));
-    _confetti = List.generate(22, (_) => _Confetti.random(_rng));
+    _sparks = List.generate(24, (_) => _Spark.random(_rng));
+    _confetti = List.generate(14, (_) => _Confetti.random(_rng));
     _controller = AnimationController(
       vsync: this,
       duration: ArBaseballVfx.duration,
