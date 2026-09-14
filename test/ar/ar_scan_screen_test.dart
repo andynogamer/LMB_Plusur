@@ -43,7 +43,11 @@ void main() {
   setUp(() {
     FeedbackService.instance.enabled = false;
     ArSpeechService.instance.enabled = false;
-    leones = _marcador(id: 'marcador_estadio_leones', titulo: titulo, infoTexto: info);
+    leones = _marcador(
+      id: 'marcador_estadio_leones',
+      titulo: titulo,
+      infoTexto: info,
+    );
     registry = MarkerRegistry.fromMarcadores([leones]);
   });
 
@@ -51,7 +55,10 @@ void main() {
     WidgetTester tester, {
     required FakeArTracker tracker,
     Equipo? hint,
+    Marcador? marcador,
+    MarkerRegistry? registryOverride,
   }) async {
+    final target = marcador ?? leones;
     await tester.pumpWidget(
       MaterialApp(
         routes: {
@@ -60,8 +67,11 @@ void main() {
         home: ArScanScreen(
           equipoHint: hint,
           tracker: tracker,
-          registry: registry,
-          marcadores: [leones],
+          registry: registryOverride ??
+              (marcador == null
+                  ? registry
+                  : MarkerRegistry.fromMarcadores([target])),
+          marcadores: [target],
         ),
       ),
     );
@@ -70,12 +80,30 @@ void main() {
     await tester.pump();
   }
 
+  Future<void> lock(FakeArTracker tracker, Marcador marcador) async {
+    tracker.emit(
+      ArDetection(
+        trackerName: marcador.id,
+        pose: Matrix4.identity(),
+        isFullyTracked: true,
+      ),
+    );
+    tracker.emit(
+      ArDetection(
+        trackerName: marcador.id,
+        pose: Matrix4.identity(),
+        isFullyTracked: true,
+      ),
+    );
+  }
+
   testWidgets('el contenido del marcador solo aparece en ArLocked', (tester) async {
     final tracker = FakeArTracker();
     await pumpScan(tester, tracker: tracker);
 
     expect(find.byKey(const Key('ar-searching')), findsOneWidget);
-    expect(find.text('Apunta al logo del equipo…'.toUpperCase()), findsOneWidget);
+    expect(find.byKey(const Key('ar-viewfinder')), findsOneWidget);
+    expect(find.text('Apunta al logo del equipo…'), findsOneWidget);
     expect(find.byKey(const Key('ar-marker-content')), findsNothing);
     expect(find.text(info), findsNothing);
 
@@ -91,6 +119,7 @@ void main() {
 
     expect(find.byKey(const Key('ar-searching')), findsNothing);
     expect(find.byKey(const Key('ar-candidate')), findsOneWidget);
+    expect(find.byKey(const Key('ar-viewfinder')), findsOneWidget);
     expect(find.textContaining('1/2'), findsOneWidget);
     expect(find.byKey(const Key('ar-marker-content')), findsNothing);
     expect(find.text(info), findsNothing);
@@ -106,9 +135,11 @@ void main() {
     await tester.pump();
 
     expect(find.byKey(const Key('ar-locked')), findsOneWidget);
+    expect(find.byKey(const Key('ar-viewfinder')), findsNothing);
     expect(find.byKey(const Key('ar-marker-content')), findsOneWidget);
     expect(find.text(titulo), findsOneWidget);
-    expect(find.text(info), findsOneWidget);
+    expect(find.text(info), findsNothing);
+    expect(find.text('SALIR'), findsNothing);
     expect(find.text('MODO DEMO'), findsOneWidget);
   });
 
@@ -126,10 +157,8 @@ void main() {
       ),
     );
 
-    expect(
-      find.text('Apunta al logo de Leones de Yucatán'.toUpperCase()),
-      findsOneWidget,
-    );
+    expect(find.text('Apunta al logo de Leones de Yucatán'), findsOneWidget);
+    expect(find.byKey(const Key('ar-viewfinder')), findsOneWidget);
   });
 
   testWidgets('cada fallo muestra su copia y la salida manual', (tester) async {
@@ -177,7 +206,9 @@ void main() {
     expect(find.text('lista-equipos'), findsOneWidget);
   });
 
-  testWidgets('las acciones solo existen en ArLocked', (tester) async {
+  testWidgets('las acciones solo existen tras el lock y no cubren info', (
+    tester,
+  ) async {
     final tracker = FakeArTracker();
     await pumpScan(tester, tracker: tracker);
 
@@ -196,31 +227,24 @@ void main() {
     await tester.pump();
     expect(find.byKey(const Key('ar-actions')), findsNothing);
 
-    tracker.emit(
-      ArDetection(
-        trackerName: leones.id,
-        pose: Matrix4.identity(),
-        isFullyTracked: true,
-      ),
-    );
+    await lock(tracker, leones);
     await tester.pump();
     await tester.pump();
 
     expect(find.byKey(const Key('ar-locked')), findsOneWidget);
     expect(find.byKey(const Key('ar-actions')), findsOneWidget);
-    expect(find.text(info), findsOneWidget);
-
-    await tester.tap(find.byKey(const Key('ar-action-gesto')));
-    await tester.pump();
-    expect(find.byKey(const Key('ar-action-note')), findsOneWidget);
-    expect(find.text(kCelebracionMissingCopy), findsOneWidget);
-    expect(tracker.playedClips, isEmpty);
+    expect(find.byKey(const Key('ar-action-gesto')), findsNothing);
+    expect(find.byKey(const Key('ar-action-info')), findsOneWidget);
+    expect(find.byKey(const Key('ar-action-efecto')), findsOneWidget);
+    expect(find.text(info), findsNothing);
+    expect(find.text('SALIR'), findsNothing);
 
     await tester.tap(find.byKey(const Key('ar-action-info')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     expect(tracker.presentationYaw, greaterThan(0));
     expect(find.byKey(const Key('ar-info-panel')), findsOneWidget);
+    expect(find.text(info), findsOneWidget);
 
     tracker.emit(
       ArDetection(
@@ -233,8 +257,11 @@ void main() {
     await tester.pump();
 
     expect(find.byKey(const Key('ar-lost')), findsOneWidget);
-    expect(find.byKey(const Key('ar-actions')), findsNothing);
-    expect(find.byKey(const Key('ar-marker-content')), findsNothing);
+    expect(find.byKey(const Key('ar-locked')), findsOneWidget);
+    expect(find.byKey(const Key('ar-actions')), findsOneWidget);
+    expect(find.byKey(const Key('ar-marker-content')), findsOneWidget);
+    expect(find.text('Vuelve a apuntar a $titulo.'), findsOneWidget);
+    expect(find.text(info), findsOneWidget);
   });
 
   testWidgets('celebracion pide el clip y reposo vuelve a idle', (tester) async {
@@ -246,34 +273,11 @@ void main() {
       animaciones: const [kClipIdle, kClipGesto, kClipCelebracion],
     );
     final tracker = FakeArTracker();
-    await tester.pumpWidget(
-      MaterialApp(
-        home: ArScanScreen(
-          tracker: tracker,
-          registry: MarkerRegistry.fromMarcadores([player]),
-          marcadores: [player],
-        ),
-      ),
-    );
-    await tester.pump();
-    await tester.pump();
+    await pumpScan(tester, tracker: tracker, marcador: player);
 
     expect(find.byKey(const Key('ar-actions')), findsNothing);
 
-    tracker.emit(
-      ArDetection(
-        trackerName: player.id,
-        pose: Matrix4.identity(),
-        isFullyTracked: true,
-      ),
-    );
-    tracker.emit(
-      ArDetection(
-        trackerName: player.id,
-        pose: Matrix4.identity(),
-        isFullyTracked: true,
-      ),
-    );
+    await lock(tracker, player);
     await tester.pump();
     await tester.pump();
 
@@ -283,6 +287,7 @@ void main() {
         (trackerName: player.id, clipName: kClipIdle, loop: true),
       ),
     );
+    expect(find.byKey(const Key('ar-action-gesto')), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('ar-action-gesto')));
     await tester.pump();
@@ -313,20 +318,7 @@ void main() {
     final tracker = FakeArTracker();
     await pumpScan(tester, tracker: tracker);
 
-    tracker.emit(
-      ArDetection(
-        trackerName: leones.id,
-        pose: Matrix4.identity(),
-        isFullyTracked: true,
-      ),
-    );
-    tracker.emit(
-      ArDetection(
-        trackerName: leones.id,
-        pose: Matrix4.identity(),
-        isFullyTracked: true,
-      ),
-    );
+    await lock(tracker, leones);
     await tester.pump();
     await tester.pump();
 

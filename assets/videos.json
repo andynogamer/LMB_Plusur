@@ -1,78 +1,72 @@
 [
   {
-    "id": "video_zona_sur_apertura",
-    "titulo": "Apertura de la Zona Sur",
-    "descripcion": "Clip de muestra del archivo. El acervo definitivo sigue pendiente.",
-    "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
-  },
-  {
-    "id": "video_diablos_jonron",
-    "titulo": "Jonrón de muestra — Diablos",
-    "descripcion": "Momento de archivo de los Diablos Rojos del México. URL pública de muestra.",
-    "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+    "id": "video_diablos_zona_sur",
+    "titulo": "Temporada en la Zona Sur",
+    "descripcion": "Resumen y jugadas destacadas de la temporada en la Zona Sur",
+    "url": "https://www.youtube.com/watch?v=mLRgM4xSxHM",
     "equipoId": "diablos_rojos"
   },
   {
-    "id": "video_bravos_doblete",
-    "titulo": "Doble de muestra — Bravos",
-    "descripcion": "Momento de archivo de los Bravos de León. URL pública de muestra.",
-    "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+    "id": "video_bravos_temporada",
+    "titulo": "Mejores jugadas de la temporada",
+    "descripcion": "Resumen y mejores jugadas de la temporada",
+    "url": "https://www.youtube.com/watch?v=0y74fTNmIeU",
     "equipoId": "bravos_leon"
   },
   {
-    "id": "video_conspiradores_out",
-    "titulo": "Out de muestra — Conspiradores",
-    "descripcion": "Momento de archivo de los Conspiradores de Querétaro. URL pública de muestra.",
-    "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
+    "id": "video_conspiradores_novena",
+    "titulo": "La novena en la Zona Sur",
+    "descripcion": "Highlights de la novena en la Zona Sur",
+    "url": "https://www.youtube.com/watch?v=XzR_3mDDPVc",
     "equipoId": "conspiradores_queretaro"
   },
   {
-    "id": "video_aguila_pitcheo",
-    "titulo": "Pitcheo de muestra — Águila",
-    "descripcion": "Momento de archivo de El Águila de Veracruz. URL pública de muestra.",
-    "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    "id": "video_aguila_puerto",
+    "titulo": "Encuentros del puerto",
+    "descripcion": "Resumen de los encuentros del puerto en la temporada",
+    "url": "https://www.youtube.com/watch?v=0y74fTNmIeU",
     "equipoId": "aguila_veracruz"
   },
   {
-    "id": "video_guerreros_carrera",
-    "titulo": "Carrera de muestra — Guerreros",
-    "descripcion": "Momento de archivo de los Guerreros de Oaxaca. URL pública de muestra.",
-    "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+    "id": "video_guerreros_acciones",
+    "titulo": "Acciones del conjunto bélico",
+    "descripcion": "Acciones destacadas del conjunto bélico en la Zona Sur",
+    "url": "https://www.youtube.com/watch?v=XzR_3mDDPVc",
     "equipoId": "guerreros_oaxaca"
   },
   {
-    "id": "video_leones_jonron",
-    "titulo": "Jonrón de muestra — Leones",
-    "descripcion": "Momento de archivo de los Leones de Yucatán. URL pública de muestra.",
-    "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+    "id": "video_leones_campana",
+    "titulo": "Campaña peninsular",
+    "descripcion": "Acciones y momentos clave del equipo peninsular en la campaña",
+    "url": "https://www.youtube.com/watch?v=XzR_3mDDPVc",
     "equipoId": "leones_yucatan"
   },
   {
-    "id": "video_olmecas_robo",
-    "titulo": "Robo de muestra — Olmecas",
-    "descripcion": "Momento de archivo de los Olmecas de Tabasco. URL pública de muestra.",
-    "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
+    "id": "video_olmecas_juego_5",
+    "titulo": "Juego 5 · Final de Zona Sur",
+    "descripcion": "Resumen del Juego 5 de la Final de Zona Sur",
+    "url": "https://www.youtube.com/watch?v=TtD989lgRtA",
     "equipoId": "olmecas_tabasco"
   },
   {
-    "id": "video_pericos_hit",
-    "titulo": "Hit de muestra — Pericos",
-    "descripcion": "Momento de archivo de los Pericos de Puebla. URL pública de muestra.",
-    "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    "id": "video_pericos_serie_campeonato",
+    "titulo": "Serie de Campeonato de la Zona Sur",
+    "descripcion": "Highlights de la Serie de Campeonato de la Zona Sur",
+    "url": "https://www.youtube.com/watch?v=tnUJwIMK1fY",
     "equipoId": "pericos_puebla"
   },
   {
-    "id": "video_piratas_jonron",
-    "titulo": "Jonrón de muestra — Piratas",
-    "descripcion": "Momento de archivo de los Piratas de Campeche. URL pública de muestra.",
-    "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+    "id": "video_piratas_filibusteros",
+    "titulo": "Jugadas del equipo filibustero",
+    "descripcion": "Jugadas destacadas del equipo filibustero",
+    "url": "https://www.youtube.com/watch?v=XzR_3mDDPVc",
     "equipoId": "piratas_campeche"
   },
   {
-    "id": "video_tigres_ponche",
-    "titulo": "Ponche de muestra — Tigres",
-    "descripcion": "Momento de archivo de los Tigres de Quintana Roo. URL pública de muestra.",
-    "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+    "id": "video_tigres_zona_sur",
+    "titulo": "Juegos de la Zona Sur",
+    "descripcion": "Highlights y resumen de juegos de la Zona Sur",
+    "url": "https://www.youtube.com/watch?v=0y74fTNmIeU",
     "equipoId": "tigres_quintana_roo"
   }
 ]

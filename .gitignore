@@ -22,6 +22,9 @@ Thumbs.db
 # Downloaded dev tooling (arcoreimg is ~4.5 MB from Google's ARCore SDK)
 tools/bin/
 
+# One-off screenshot capture (playwright + node_modules)
+tools/_shots/
+
 # Secrets
 .env
 *.jks

@@ -17,7 +17,7 @@ trivia, simulated stats. **No Unity. No API. No logins.**
 | Path | What it is |
 |---|---|
 | `docs/agent-handoff.md` | **Session entry point.** Current state + env gotchas. Read first, update last. |
-| `CONSTITUTION.md` | Non-negotiable principles + decisions log (v2.2.0). |
+| `CONSTITUTION.md` | Non-negotiable principles + decisions log (v2.4.10). |
 | `AGENTS.md` | This file. |
 | `WORK_ITEMS.md` | Backlog as copy-paste agent prompts. |
 | `docs/ar-postmortem.md` | Why AR attempt #1 failed. **Read before any AR work.** |
@@ -29,7 +29,7 @@ trivia, simulated stats. **No Unity. No API. No logins.**
 | `tools/` | Dev scripts (e.g. `score_markers.ps1`). |
 | `pubspec.yaml` | Dependencies — do **not** enable Unity widget. |
 | `test/` | Flutter tests (thin today). |
-| `README.md` | Human run docs (still template). |
+| `README.md` | Human product / run brief (EN+ES). |
 
 ---
 

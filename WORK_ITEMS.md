@@ -48,16 +48,17 @@
 | US-13 | 📗 | 🟠 P1 | Baseball-coherent 3D animations / VFX | ☑ | 15pt effects |
 | US-14 | 📗 | 🟡 P2 | Performance pass (load / stability) | ☑ | 15pt perf |
 | US-15 | 📗 | 🟡 P2 | Android APK release build | ☑ | Packaging |
-| US-16 | 📗 | 🟢 P3 | README product brief for humans | ☐ | Docs |
+| US-16 | 📗 | 🟢 P3 | README product brief for humans | ☑ | Docs |
+| US-17 | 📗 | 🟠 P1 | AR overlay chrome — compact, camera-first | ☑ | UI / chrome |
 | DEBT-01 | 🐛 | 🟡 P2 | Remove parallel English domain (`Team`, `TriviaQuestion`) | ☐ | Article IV |
+| BUG-02 | 🐛 | 🟠 P1 | ArFailed “Abrir ajustes” / “Instalar” go to teams | ☐ | Failure UX |
 | ~~US-05…US-08~~ | — | — | ~~Old monolithic AR items~~ | ⊘ | Replaced by AR-01…AR-07 |
 | ~~BUG-01~~ | — | — | ~~AR mock always Guerreros~~ | ⊘ | Deleted with the mock in AR-03 |
 
 **Human blockers (not agent-solo):** **print** the 4 markers from AR-00 at
 ≥ 15 cm on matte paper and measure their width (blocks AR-05 only, so agents can
-run AR-01…AR-04 in parallel); supply baseball remote video URLs (R-03); optional
-nicer GLB art (low-poly D-22 catalog already ships); record explanatory demo
-video (10pt).
+run AR-01…AR-04 in parallel); optional nicer GLB art (low-poly D-22 catalog
+already ships); record explanatory demo video (10pt).
 
 > Marker art is **no longer a blocker** — `arcoreimg` measurement on 2026-09-07
 > found four club logos scoring ≥ 75 after normalization (D-20/D-21).
@@ -764,7 +765,14 @@ release APK built green. No minify/Proguard to fix. IPA out of scope.
 
 ---
 
-## US-16 · 📗 · 🟢 P3 · README product brief · ☐ Pendiente
+## US-16 · 📗 · 🟢 P3 · README product brief · ☑ Hecho
+
+**Done 2026-09-09.** Product + run brief. Known debt #8 cleared;
+constitution → **v2.4.9**.
+
+**Updated 2026-09-13.** README rewritten as the public / portfolio overview
+(English). Six phone-sized shots in `docs/screenshots/`. AR camera omitted
+(web capture + disclaimer). Run / APK / marker tips kept.
 
 **Prompt**
 ```
@@ -784,6 +792,63 @@ Fuera de alcance: marketing site.
 
 ---
 
+## US-17 · 📗 · 🟠 P1 · AR overlay chrome — compact, camera-first · ☑ Hecho
+
+**Done 2026-09-09.** Camera-first overlay. Searching/candidate: center
+viewfinder + short hint. Locked: title + actions; `infoTexto` only while
+Información is active; no Salir. Celebración hidden unless the marker lists
+`celebracion`. `ArLost` keeps chrome + re-aim hint. `¡JONRÓN!` is a top
+chip. Action state is `ArChromeSnapshot` (no scaffold `setState` on taps).
+`flutter analyze` clean; `flutter test test/ar/ar_scan_screen_test.dart`
+6 passed.
+
+**Prompt**
+```
+Contexto: 2026-09-09 UI audit. The locked AR overlay is a large navy card that
+covers the camera where the printed marker and GLB sit: always-visible
+infoTexto (~2–3 sentences), three action rows, and a duplicate Salir next to
+the back button. Stadium/trophy markers still show Celebración, then the
+Spanish “no tiene animación” note. Searching is a bottom text block with no
+viewfinder. ArLost (architecture §4: keep content + re-aim hint) currently
+replaces the locked chrome and hides actions. The ¡JONRÓN! banner sits over
+the tracked pose. Action setState rebuilds the Scaffold that owns the
+platform view (US-14 isolation incomplete).
+
+Tarea: Make AR chrome camera-first and match AppColors / Poppins / compact
+controls (Article IX). Do not change detection, the state machine, or GLBs.
+
+1) ArLocked: thin chrome — title chip + action bar. Show infoTexto only while
+   Información is active (expand-in-place or a bottom sheet). Drop the Salir
+   button; the existing back IconButton is the exit.
+2) Hide Celebración when marcador.animaciones does not contain `celebracion`.
+   Keep Efecto jonrón (in-scene VFX works on static GLBs). Do not invent a
+   `gesto` button in this slice.
+3) ArSearching / ArCandidate: short hint + a center viewfinder reticle. Do
+   not cover the middle of the camera with the navy card.
+4) ArLost: keep locked chrome (title + actions) and add a re-aim hint
+   (“Vuelve a apuntar a {titulo}”). Update widget tests that currently assert
+   content disappears.
+5) ¡JONRÓN! banner: small top chip, not a scale-burst over the model.
+6) Drive action pressed / notes with a ValueNotifier (or equivalent) so
+   tapping Celebración / Información / Efecto does not setState the Scaffold
+   that holds camera.buildSurface().
+
+Criterios de aceptación:
+- Locked overlay no longer shows infoTexto until Información is pressed.
+- Stadium/trophy lock does not offer Celebración.
+- Searching shows a viewfinder; the camera center stays visible.
+- ArLost still shows marker title + actions plus a re-aim hint.
+- Back button is the only exit control in ArLocked.
+- Widget tests updated; flutter analyze clean on touched files.
+- No plugin import outside lib/ar/trackers/. No matcher. No new 3D.
+
+Archivos: lib/screens/ar/, test/ar/ar_scan_screen_test.dart
+Fuera de alcance: BUG-02 (failed-panel actions), US-09 stats, US-10 modes,
+device hold checks (AR-06/07), marker art, plugin bump.
+```
+
+---
+
 # 🐛 BUGS / DEBT
 
 ## BUG-01 · ⊘ Cerrado por diseño
@@ -793,6 +858,37 @@ equipo. The screen is **deleted** in AR-03 and the architecture makes the bug
 class unrepresentable: content can only render in `ArLocked`, `ArPreparing →
 ArLocked` is an illegal transition, and demo mode must cycle all markers
 (Article VI.5/VI.6). No separate fix needed — do not reopen.
+
+---
+
+## BUG-02 · 🐛 · 🟠 P1 · Failed-panel recovery actions are stubs · ☐ Pendiente
+
+**Prompt**
+```
+Contexto: Architecture §8 lists recovery actions per ArTrackerFailure.
+ArFailedPanel always appends “Elegir equipo manualmente” (correct) but
+_onAction only special-cases “Reintentar”. “Abrir ajustes” and “Instalar”
+both Navigator.pushNamed(AppRoutes.teams) — same as the manual path.
+permission_handler is already a transitive dep of the AR plugin.
+
+Tarea: Wire the labelled actions:
+- Reintentar → existing onRetry
+- Abrir ajustes → Permission.camera / openAppSettings()
+- Instalar → launch Play Store for com.google.ar.core (https or market URI)
+- Elegir equipo / Elegir equipo manualmente → AppRoutes.teams
+Do not put plugin imports in the panel; keep navigation/settings in the
+screen or a tiny helper. Spanish labels unchanged.
+
+Criterios de aceptación:
+- Widget test: permissionDenied “Abrir ajustes” does not push teams.
+- Widget test: arCoreNeedsInstall “Instalar” does not push teams.
+- Manual-path button still reaches the team list on every failure.
+- flutter analyze clean.
+
+Archivos: lib/screens/ar/widgets/ar_failed_panel.dart,
+lib/screens/ar/ar_scan_screen.dart if needed, test/ar/ar_scan_screen_test.dart
+Fuera de alcance: US-17 chrome layout, detection, native Gradle.
+```
 
 ---
 
@@ -830,7 +926,8 @@ Fuera de alcance: AR work, renaming JSON keys, redesigning the data layer.
 3. **AR native:** AR-04 → AR-05 → AR-06 → AR-07 (grading core)
 4. US-11 → US-12 (video + filters grading core)
 5. US-09 → US-10 → US-13 (depth / bonus — all build on AR-07)
-6. DEBT-01 → US-14 → US-15 → US-16 (cleanup / ship)
+6. ~~DEBT-01 → US-14 → US-15 → US-16~~ US-14…US-17 done. Remaining:
+   **BUG-02** (failed actions) then US-09 / US-10 / DEBT-01.
 
 Do not start AR-04 until AR-01…AR-03 are merged and green. That ordering is the
 whole point of the reset: the state machine and content mapping are proven

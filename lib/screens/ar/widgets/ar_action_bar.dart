@@ -22,7 +22,8 @@ const String kCelebracionMissingCopy =
 const String kCelebracionFailedCopy =
     'No pudimos reproducir la celebración. El escaneo sigue activo.';
 
-/// Two action types plus a baseball VFX toggle, reachable only from [ArLocked].
+/// Two action types plus a baseball VFX toggle, reachable from [ArLocked]
+/// and [ArLost]. Celebración is omitted when the GLB has no clip.
 class ArActionBar extends StatelessWidget {
   const ArActionBar({
     super.key,
@@ -32,6 +33,7 @@ class ArActionBar extends StatelessWidget {
     required this.onGesto,
     required this.onInfo,
     required this.onEfecto,
+    this.showCelebracion = true,
     this.note,
   });
 
@@ -41,45 +43,58 @@ class ArActionBar extends StatelessWidget {
   final VoidCallback onGesto;
   final VoidCallback onInfo;
   final VoidCallback onEfecto;
+
+  /// False for stadium / trophy GLBs with empty `animaciones`.
+  final bool showCelebracion;
   final String? note;
 
   @override
   Widget build(BuildContext context) {
+    final info = _ActionButton(
+      buttonKey: const Key('ar-action-info'),
+      label: 'Información',
+      icon: Icons.record_voice_over_rounded,
+      selected: infoPressed,
+      onPressed: onInfo,
+    );
+    final efecto = _ActionButton(
+      buttonKey: const Key('ar-action-efecto'),
+      label: efectoPressed ? 'Quitar efecto' : 'Efecto jonrón',
+      icon: Icons.auto_awesome_rounded,
+      selected: efectoPressed,
+      onPressed: onEfecto,
+    );
+
     return Column(
       key: const Key('ar-actions'),
       mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: _ActionButton(
-                buttonKey: const Key('ar-action-gesto'),
-                label: gestoPressed ? 'Reposo' : 'Celebración',
-                icon: Icons.sports_baseball_rounded,
-                selected: gestoPressed,
-                onPressed: onGesto,
+        if (showCelebracion) ...[
+          Row(
+            children: [
+              Expanded(
+                child: _ActionButton(
+                  buttonKey: const Key('ar-action-gesto'),
+                  label: gestoPressed ? 'Reposo' : 'Celebración',
+                  icon: Icons.sports_baseball_rounded,
+                  selected: gestoPressed,
+                  onPressed: onGesto,
+                ),
               ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _ActionButton(
-                buttonKey: const Key('ar-action-info'),
-                label: 'Información',
-                icon: Icons.record_voice_over_rounded,
-                selected: infoPressed,
-                onPressed: onInfo,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        _ActionButton(
-          buttonKey: const Key('ar-action-efecto'),
-          label: efectoPressed ? 'Quitar efecto' : 'Efecto jonrón',
-          icon: Icons.auto_awesome_rounded,
-          selected: efectoPressed,
-          onPressed: onEfecto,
-        ),
+              const SizedBox(width: 8),
+              Expanded(child: info),
+            ],
+          ),
+          const SizedBox(height: 8),
+          efecto,
+        ] else
+          Row(
+            children: [
+              Expanded(child: info),
+              const SizedBox(width: 8),
+              Expanded(child: efecto),
+            ],
+          ),
         if (note != null) ...[
           const SizedBox(height: 8),
           Text(

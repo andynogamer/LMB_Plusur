@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 
 import '../services/filter_engine.dart';
 import '../theme/app_colors.dart';
+import '../utils/youtube_id.dart';
 
 class HighlightVideoPlayer extends StatefulWidget {
   const HighlightVideoPlayer({
@@ -24,6 +28,7 @@ class HighlightVideoPlayer extends StatefulWidget {
 
 class _HighlightVideoPlayerState extends State<HighlightVideoPlayer> {
   VideoPlayerController? _controller;
+  YoutubePlayerController? _youtube;
   bool _failed = false;
   bool _muted = false;
 
@@ -34,6 +39,23 @@ class _HighlightVideoPlayerState extends State<HighlightVideoPlayer> {
   }
 
   Future<void> _init() async {
+    final videoId = youtubeVideoId(widget.url);
+    if (videoId != null) {
+      _youtube = YoutubePlayerController.fromVideoId(
+        videoId: videoId,
+        autoPlay: false,
+        params: const YoutubePlayerParams(
+          showFullscreenButton: false,
+          interfaceLanguage: 'es',
+          captionLanguage: 'es',
+          strictRelatedVideos: true,
+          showVideoAnnotations: false,
+        ),
+      );
+      if (mounted) setState(() {});
+      return;
+    }
+
     final controller = VideoPlayerController.networkUrl(Uri.parse(widget.url));
     try {
       await controller.initialize();
@@ -64,14 +86,28 @@ class _HighlightVideoPlayerState extends State<HighlightVideoPlayer> {
     super.didUpdateWidget(oldWidget);
     if (!widget.isActive) {
       _controller?.pause();
+      _youtube?.pauseVideo();
     }
+    if (oldWidget.url != widget.url) {
+      _disposePlayers();
+      _failed = false;
+      _init();
+    }
+  }
+
+  void _disposePlayers() {
+    final controller = _controller;
+    controller?.removeListener(_onControllerTick);
+    controller?.dispose();
+    _controller = null;
+    final youtube = _youtube;
+    _youtube = null;
+    if (youtube != null) unawaited(youtube.close());
   }
 
   @override
   void dispose() {
-    final controller = _controller;
-    controller?.removeListener(_onControllerTick);
-    controller?.dispose();
+    _disposePlayers();
     super.dispose();
   }
 
@@ -127,6 +163,19 @@ class _HighlightVideoPlayerState extends State<HighlightVideoPlayer> {
               ),
             ),
           ],
+        ),
+      );
+    }
+
+    final youtube = _youtube;
+    if (youtube != null) {
+      return FilterEngine.aplicar(
+        widget.filtro,
+        YoutubePlayer(
+          controller: youtube,
+          aspectRatio: 16 / 9,
+          backgroundColor: Colors.black,
+          enableFullScreenOnVerticalDrag: false,
         ),
       );
     }

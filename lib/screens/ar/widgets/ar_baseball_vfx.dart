@@ -105,34 +105,30 @@ class _ArBaseballVfxState extends State<ArBaseballVfx>
                   ),
                 ),
                 Align(
-                  alignment: const Alignment(0, -0.55),
-                  child: Transform.scale(
-                    scale: 0.85 +
-                        0.15 *
-                            Curves.elasticOut
-                                .transform(t.clamp(0.0, 1.0)),
+                  alignment: Alignment.topCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 72),
                     child: DecoratedBox(
                       decoration: BoxDecoration(
-                        color: AppColors.navy.withValues(alpha: 0.82),
-                        borderRadius: BorderRadius.circular(14),
+                        color: AppColors.navy.withValues(alpha: 0.88),
+                        borderRadius: BorderRadius.circular(99),
                         border: Border.all(
-                          color: AppColors.button.withValues(alpha: 0.85),
-                          width: 1.5,
+                          color: AppColors.button.withValues(alpha: 0.7),
                         ),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 10,
+                          horizontal: 14,
+                          vertical: 6,
                         ),
                         child: Text(
                           '¡JONRÓN!',
                           key: const Key('ar-vfx-banner'),
                           style: GoogleFonts.poppins(
                             color: AppColors.white,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 28,
-                            letterSpacing: 1.4,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                            letterSpacing: 1.1,
                           ),
                         ),
                       ),

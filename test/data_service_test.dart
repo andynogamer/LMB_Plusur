@@ -55,9 +55,18 @@ void main() {
   test('DataService carga el archivo de videos local', () async {
     final videos = await DataService().cargarVideos();
 
-    expect(videos, isNotEmpty);
-    expect(videos.every((v) => v.titulo.isNotEmpty && v.url.startsWith('https://')), isTrue);
-    expect(videos.any((v) => v.equipoId == null), isTrue);
+    expect(videos, hasLength(10));
+    expect(
+      videos.every(
+        (v) =>
+            v.titulo.isNotEmpty &&
+            v.url.startsWith('https://www.youtube.com/watch?v='),
+      ),
+      isTrue,
+    );
+    expect(videos.every((v) => v.equipoId != null), isTrue);
+    expect(videos.map((v) => v.equipoId).toSet(), hasLength(10));
     expect(videos.any((v) => v.equipoId == 'leones_yucatan'), isTrue);
+    expect(videos.any((v) => v.equipoId == 'olmecas_tabasco'), isTrue);
   });
 }

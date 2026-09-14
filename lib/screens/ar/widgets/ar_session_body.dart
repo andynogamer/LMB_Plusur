@@ -6,7 +6,8 @@ import '../../../models/equipo_model.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/primary_button.dart';
 
-/// One panel per [ArSessionState]. Marker content is rendered only in [ArLocked].
+/// Bottom chrome per [ArSessionState]. Marker title is [ArLocked] / [ArLost]
+/// only. [infoTexto] is shown only while Información is active.
 class ArSessionBody extends StatelessWidget {
   const ArSessionBody({
     super.key,
@@ -14,7 +15,6 @@ class ArSessionBody extends StatelessWidget {
     required this.equipoHint,
     this.onSimulateNext,
     this.modelNote,
-    this.onExit,
     this.actions,
     this.infoActive = false,
   });
@@ -26,61 +26,58 @@ class ArSessionBody extends StatelessWidget {
   /// Spanish copy when the GLB is missing or failed. Null when the model is
   /// placed, or when this is not a real session.
   final String? modelNote;
-  final VoidCallback? onExit;
 
-  /// Action bar. Rendered only from [ArLocked].
+  /// Action bar. Rendered from [ArLocked] and [ArLost].
   final Widget? actions;
 
-  /// Información action is speaking or spinning. Highlights the marker panel.
+  /// Información action is speaking or spinning. Reveals [Marcador.infoTexto].
   final bool infoActive;
 
   @override
   Widget build(BuildContext context) {
     return switch (state) {
-      ArPreparing() => const _StatusPanel(
+      ArPreparing() => const _StatusChip(
           panelKey: Key('ar-preparing'),
-          icon: Icons.hourglass_top_rounded,
           title: 'Preparando la experiencia AR',
           body: 'Comprobando si este dispositivo puede escanear.',
         ),
-      ArSearching() => _StatusPanel(
+      ArSearching() => _StatusChip(
           panelKey: const Key('ar-searching'),
-          icon: Icons.center_focus_strong_rounded,
-          title: _hintCopy(equipoHint),
-          body: 'Busca un marcador registrado. Nada se confirma sin un escaneo.',
+          title: hintCopy(equipoHint),
           footer: onSimulateNext == null
               ? null
               : PrimaryButton(
                   label: 'Simular siguiente marcador',
                   icon: Icons.view_in_ar_rounded,
+                  height: 48,
                   onPressed: onSimulateNext,
                 ),
         ),
-      ArCandidate(:final hits, :final needed) => _StatusPanel(
+      ArCandidate(:final hits, :final needed) => _StatusChip(
           panelKey: const Key('ar-candidate'),
-          icon: Icons.center_focus_weak_rounded,
           title: 'Confirmando marcador',
-          body: 'Progreso del escaneo: $hits/$needed',
+          body: '$hits/$needed',
         ),
       ArLocked(:final marcador) => _LockedPanel(
           marcadorTitulo: marcador.titulo,
           infoTexto: marcador.infoTexto,
           modelNote: modelNote,
-          onExit: onExit,
           actions: actions,
           infoActive: infoActive,
         ),
-      ArLost(:final marcador) => _StatusPanel(
-          panelKey: const Key('ar-lost'),
-          icon: Icons.gps_off_rounded,
-          title: 'Marcador fuera de cuadro',
-          body: 'Vuelve a apuntar a ${marcador.titulo}.',
+      ArLost(:final marcador) => _LockedPanel(
+          marcadorTitulo: marcador.titulo,
+          infoTexto: marcador.infoTexto,
+          modelNote: modelNote,
+          actions: actions,
+          infoActive: infoActive,
+          lostHint: 'Vuelve a apuntar a ${marcador.titulo}.',
         ),
       ArFailed() => const SizedBox.shrink(),
     };
   }
 
-  static String _hintCopy(Equipo? hint) {
+  static String hintCopy(Equipo? hint) {
     if (hint != null) {
       return 'Apunta al logo de ${hint.nombre}';
     }
@@ -88,19 +85,17 @@ class ArSessionBody extends StatelessWidget {
   }
 }
 
-class _StatusPanel extends StatelessWidget {
-  const _StatusPanel({
+class _StatusChip extends StatelessWidget {
+  const _StatusChip({
     required this.panelKey,
-    required this.icon,
     required this.title,
-    required this.body,
+    this.body,
     this.footer,
   });
 
   final Key panelKey;
-  final IconData icon;
   final String title;
-  final String body;
+  final String? body;
   final Widget? footer;
 
   @override
@@ -109,29 +104,30 @@ class _StatusPanel extends StatelessWidget {
       key: panelKey,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, color: AppColors.button, size: 36),
-        const SizedBox(height: 10),
         Text(
-          title.toUpperCase(),
+          title,
           textAlign: TextAlign.center,
           style: GoogleFonts.poppins(
             color: AppColors.white,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.1,
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+            height: 1.3,
           ),
         ),
-        const SizedBox(height: 8),
-        Text(
-          body,
-          textAlign: TextAlign.center,
-          style: GoogleFonts.poppins(
-            color: AppColors.muted,
-            fontWeight: FontWeight.w500,
-            fontSize: 13,
+        if (body != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            body!,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              color: AppColors.muted,
+              fontWeight: FontWeight.w500,
+              fontSize: 12,
+            ),
           ),
-        ),
+        ],
         if (footer != null) ...[
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           footer!,
         ],
       ],
@@ -144,17 +140,17 @@ class _LockedPanel extends StatelessWidget {
     required this.marcadorTitulo,
     required this.infoTexto,
     this.modelNote,
-    this.onExit,
     this.actions,
     this.infoActive = false,
+    this.lostHint,
   });
 
   final String marcadorTitulo;
   final String infoTexto;
   final String? modelNote;
-  final VoidCallback? onExit;
   final Widget? actions;
   final bool infoActive;
+  final String? lostHint;
 
   @override
   Widget build(BuildContext context) {
@@ -162,56 +158,60 @@ class _LockedPanel extends StatelessWidget {
       key: const Key('ar-locked'),
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: 40,
-          height: 4,
-          decoration: BoxDecoration(
-            color: AppColors.button.withValues(alpha: 0.35),
-            borderRadius: BorderRadius.circular(99),
+        if (lostHint != null) ...[
+          Text(
+            lostHint!,
+            key: const Key('ar-lost'),
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              color: AppColors.button,
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+              height: 1.3,
+            ),
           ),
-        ),
-        const SizedBox(height: 14),
+          const SizedBox(height: 8),
+        ],
         Text(
           marcadorTitulo,
           key: const Key('ar-marker-content'),
           textAlign: TextAlign.center,
           style: GoogleFonts.poppins(
             color: AppColors.white,
-            fontWeight: FontWeight.w800,
-            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            fontSize: 15,
+            height: 1.2,
           ),
         ),
-        const SizedBox(height: 8),
-        DecoratedBox(
-          key: const Key('ar-info-panel'),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: infoActive
-                  ? AppColors.button
-                  : Colors.transparent,
+        if (infoActive) ...[
+          const SizedBox(height: 8),
+          DecoratedBox(
+            key: const Key('ar-info-panel'),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.button),
             ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            child: Text(
-              infoTexto,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                color: AppColors.muted,
-                fontWeight: FontWeight.w500,
-                fontSize: 14,
-                height: 1.35,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              child: Text(
+                infoTexto,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  color: AppColors.muted,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 13,
+                  height: 1.35,
+                ),
               ),
             ),
           ),
-        ),
+        ],
         if (actions != null) ...[
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           actions!,
         ],
         if (modelNote != null) ...[
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Text(
             modelNote!,
             key: const Key('ar-model-fallback'),
@@ -219,17 +219,9 @@ class _LockedPanel extends StatelessWidget {
             style: GoogleFonts.poppins(
               color: AppColors.white,
               fontWeight: FontWeight.w600,
-              fontSize: 13,
+              fontSize: 12,
               height: 1.35,
             ),
-          ),
-        ],
-        if (onExit != null) ...[
-          const SizedBox(height: 14),
-          PrimaryButton(
-            label: 'Salir',
-            icon: Icons.close_rounded,
-            onPressed: onExit,
           ),
         ],
       ],

@@ -4,7 +4,7 @@ This file is the **source of truth for project governance**. Agents MUST read it
 before writing specs, plans, or code. If a change conflicts with an article,
 stop and resolve the conflict in a spec — do not silently override this document.
 
-Human-facing product overview lives in `README.md` (to be expanded). Agent
+Human-facing product overview lives in `README.md`. Agent
 operating rules live in `AGENTS.md`. The ordered backlog lives in
 `WORK_ITEMS.md`.
 
@@ -17,7 +17,14 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 | [`docs/ar-architecture.md`](./docs/ar-architecture.md) | The AR technical contract: layers, `ArTracker` seam, state machine, error taxonomy, budgets. |
 | [`docs/ar-marker-guide.md`](./docs/ar-marker-guide.md) | How to author printable markers ARCore can actually track. |
 
-**Version**: 2.4.8 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-09
+**Version**: 2.4.10 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-09
+
+> **v2.4.10 — R-03 video catalog.** `assets/videos.json` holds one YouTube
+> highlight per Zona Sur club. Playback uses `youtube_player_iframe` (not
+> `video_player` on watch URLs). Sample Google MP4s are gone. No new decision.
+
+> **v2.4.9 — README product brief (US-16).** `README.md` is the human run /
+> product overview (EN+ES). Known debt #8 (Flutter template README) is cleared.
 
 > **v2.0.0 — AR reset.** AR attempt #1 (branch `ar-have-too-many-errors`) was
 > abandoned and work restarted on `fresh-start`. Article VI was rewritten from
@@ -146,7 +153,7 @@ agents (`CONSTITUTION.md`, `AGENTS.md`, `WORK_ITEMS.md`) are written in
 | Team content | Local JSON | `assets/data.json` | Implemented for 10 Zona Sur clubs (historia + trivias). |
 | AR | **Flutter-native (D-01)** — ARCore/ARKit Augmented Images behind an `ArTracker` seam (D-12) | `lib/ar/`, `lib/screens/ar/` | AR-05 accepted on device. AR-06 places a GLB on the pose; AR-07 code plays `idle`/`gesto` and speaks `infoTexto` only in `ArLocked`. Device hold/dispose and action confirmation not checked. Demo only with `LMB_AR_DEMO`. |
 | Video filters | Flutter on-device | `FilterEngine` | Allowed set only. Forbidden filters absent. |
-| Highlights / videos | Remote URLs (D-07) | demo data today | Placeholders until URLs are filled. |
+| Highlights / videos | Remote URLs (D-07) | `assets/videos.json` | YouTube catalog (R-03). |
 
 This constitution is **Flutter-first**. The Dart app owns navigation, content,
 camera UX, filters, and feature composition. Native ARKit/ARCore (or equivalent
@@ -522,7 +529,7 @@ Splash → Main
 |---|---|---|
 | Historia | Implemented | `equipo.historia` + fundación. |
 | Trivia / retos | Implemented (extend) | From `trivias`; last score only; AR trivia mode planned. |
-| Video archive + filters | Planned | Remote URL catalog; allowed filters only. |
+| Video archive + filters | Implemented | YouTube catalog (R-03); allowed filters only. |
 | AR markers (≥3) | 5 logos in DB (scores ≥ 75); 3 accepted on device | Gate is 75, not 90. Human: Leones, Olmecas, Piratas lock. Bravos and Tigres raw are not device-checked. |
 | AR controls | Code (AR-07); device not checked | ≥2 action types on `ArLocked` only: gesto (`idle`/`gesto`) and información (`infoTexto` + TTS + one 360°). |
 | Simulated live stats | Planned | Local mock “tiempo real”. |
@@ -639,13 +646,16 @@ MUST NOT:
 5. **Video filters are preview-only on the archive player.** Allowed
    families live in `FilterEngine`. Do not add blanco y negro, escala de
    grises, sepia, exposición, or invert.
-6. **Video archive UI loads local JSON** (`assets/videos.json`). Playback
-   URLs are public samples until R-03. Do not add a backend. Filters are
-   US-12, not this catalog.
+6. **Video archive loads local JSON** (`assets/videos.json`). Playback
+   URLs are YouTube watch links (R-03). `HighlightVideoPlayer` uses
+   `youtube_player_iframe` for those ids; `video_player` remains for any
+   leftover MP4. Flutter `ColorFilter` may not tint the YouTube WebView
+   on Android (platform-view hole). Do not add a backend.
 7. **Tests exist for the AR core** (`marker_registry`, session controller, scan
    screen). Device acceptance for real detection is recorded on AR-05; do not
    treat an asset-vs-itself test as proof.
-8. **README still Flutter template.**
+8. **~~README still Flutter template.~~** Cleared in US-16 (v2.4.9) —
+   `README.md` is the bilingual product / run brief.
 9. **`flutter_unity_widget` comment in `pubspec.yaml`** — leave unused; do not
    activate. Delete it when Article VI work lands.
 10. **Parallel English domain (Article IV violation)** — `models/team.dart`
@@ -696,7 +706,7 @@ Open residual (non-blocking for backlog writing):
 |---|---|
 | ~~R-01~~ | ~~Exact plugin choice for image tracking + 3D.~~ **Resolved by D-12.** |
 | ~~R-02~~ | ~~Which 3 of 10 teams (or objects) are the first scannable markers.~~ **Resolved by D-20.** |
-| R-03 | Final remote video URL list (baseball-themed). |
+| ~~R-03~~ | ~~Final remote video URL list (baseball-themed).~~ **Resolved 2026-09-09** — ten YouTube highlights in `assets/videos.json`. |
 | R-04 | Whether `ar_flutter_plugin_plus` survives device acceptance. It is a young, low-adoption fork; D-19 is the ratified escape hatch if it does not. |
 
 ---

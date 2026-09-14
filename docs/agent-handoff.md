@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-09-09 · by: US-15 APK release build
+**Last updated:** 2026-09-13 · by: portfolio README + screenshots
 
 ---
 
@@ -20,7 +20,7 @@ These are **binding**, not advisory:
 
 | # | File | What it gives you |
 |---|---|---|
-| 1 | `CONSTITUTION.md` | Governance, v2.4.8, decisions D-01…D-23 |
+| 1 | `CONSTITUTION.md` | Governance, v2.4.10, decisions D-01…D-23 |
 | 2 | `AGENTS.md` | How to work here (auto-loaded as a workspace rule) |
 | 3 | `WORK_ITEMS.md` | The backlog. Each item's `Prompt` block **is** the spec |
 | 4 | `docs/ar-postmortem.md` | Why AR attempt #1 was thrown away (RC-1…RC-7) |
@@ -71,10 +71,17 @@ Measured later, four of them were. **Never copy code from that branch.**
   Blank wall and a non-registered club logo triggered nothing. Lock time was
   not stopwatched.
 - AR-03 — `ArScanScreen` is the AR route. One panel per `ArSessionState`.
-  Marker content (`titulo` / `infoTexto`) renders only in `ArLocked`.
-  `MODO DEMO` shows while `isDemo` is true. `ArFailed` uses the §8 Spanish
-  copy and always includes **Elegir equipo manualmente**. The `Timer` mock
-  (`lib/screens/ar_view_screen.dart`) is **deleted**. Do not restore it.
+  Title renders in `ArLocked` / `ArLost`. `infoTexto` only while
+  Información is active. `MODO DEMO` shows while `isDemo` is true.
+  `ArFailed` uses the §8 Spanish copy and always includes **Elegir equipo
+  manualmente**. The `Timer` mock (`lib/screens/ar_view_screen.dart`) is
+  **deleted**. Do not restore it.
+- **US-17** — Camera-first chrome. Searching/candidate: center viewfinder +
+  short bottom hint. Locked: title + actions; no Salir (back button only).
+  Celebración hidden unless `animaciones` contains `celebracion`. `ArLost`
+  keeps title/actions and adds “Vuelve a apuntar a {titulo}”. `¡JONRÓN!`
+  is a small top chip. Action pressed state lives in `ArChromeSnapshot`
+  (`ValueNotifier`) so taps do not `setState` the camera scaffold.
 - AR-02 — `ArTracker` seam, sealed `ArSessionState`, `ArSessionController`
   (debounce: same name N times in 2 s, default N=2, injectable clock),
   `FakeArTracker`. No plugin. `ArLocked` is reachable only after a confirmed
@@ -119,10 +126,18 @@ Measured later, four of them were. **Never copy code from that branch.**
   `build/app/outputs/flutter-apk/app-release.apk` (~70 MB). Release signs
   with debug keystore (class OK). README has run + install steps. Confirm
   splash→main once on a phone. No Play Store keystore in repo.
-- US-11 — Video archive loads `assets/videos.json` through
-  `DataService.cargarVideos()`. Main = full catalog; team menu = that club.
-  Broken URL → Spanish copy. US-12 filters via `FilterEngine`. Sample URLs
-  until R-03. Do not restore `DemoHighlights`.
+- US-16 — **Done, rewritten 2026-09-13.** `README.md` is the public / portfolio
+  overview (English, Spanish UI noted). Six phone-sized shots live in
+  `docs/screenshots/`. Run + APK + marker tips are still there. Governance
+  files are no longer the README hero. Known debt #8 stays cleared.
+- US-11 / **R-03** — Video archive loads `assets/videos.json` through
+  `DataService.cargarVideos()`. One YouTube highlight per Zona Sur club
+  (watch URLs). Main = full catalog; team menu = that club. Playback is
+  `youtube_player_iframe` (pulls `webview_flutter`, `url_launcher`).
+  `video_player` stays for any leftover MP4. Broken URL → Spanish copy.
+  US-12 filters wrap the player; ColorFilter may not tint the YouTube
+  WebView on Android. Do not restore `DemoHighlights`. Some clubs share
+  a video id (human-supplied list).
 - US-12 — Allowed filter families only. Forbidden set absent.
 - AR-00 / D-23 — scan targets are **logos**, not substitute cards. Gate is
   **≥ 75**, not 90. Active: Leones 100, Olmecas 100, Piratas 100, Bravos 90,
@@ -145,11 +160,26 @@ Measured later, four of them were. **Never copy code from that branch.**
 - Print Bravos and the raw Tigres logo at ≥ 15 cm matte and try a lock.
   Those two are in the database but not yet confirmed on a phone.
 
+**Open product / UI gaps (audit 2026-09-09; US-17 closed the chrome list)**
+
+- **BUG-02:** `ArFailedPanel` “Abrir ajustes” and “Instalar” both push the
+  team list. Only Reintentar is wired.
+- Backlog still open for grading depth: **US-09** simulated stats, **US-10**
+  AR modes (galería / trivia AR / video inmersivo). Historia still uses a
+  generic `ImagePlaceholder` (no club photo). `mock_data.dart` / English
+  `Team` types are unused (DEBT-01). Constitution “Feature contracts” table
+  is stale (videos still say Planned; markers still say 5 logos).
+
+Do not mix BUG-02 with US-09/US-10.
+
 **Next**
 
 ```
-US-16: README product brief (partially started — expand bilingual tips)
+BUG-02: ArFailed “Abrir ajustes” / “Instalar” go to teams
 ```
+
+Then US-09 / US-10, or human device gates (AR-06/07, print Bravos/Tigres,
+APK splash). DEBT-01 is cleanup.
 
 Release APK path: `build/app/outputs/flutter-apk/app-release.apk`.
 Rebuild after both plugin patches before installing.
@@ -230,9 +260,25 @@ chrome). Do not fall back to the fake tracker when that session fails.
   by accident. Plugin 1.1.3 also never tells Dart about paused images, so
   `ArLost` will not fire from a real session until a later plugin change —
   paused is still never reported as fully tracked.
+- Action pressed / notes live in `ArChromeSnapshot` (`ValueNotifier` on
+  `ArScanScreen`). Tapping Celebración / Información / Efecto must **not**
+  `setState` the `Scaffold` that owns `camera.buildSurface()`. Session
+  start still `setState`s once to attach the platform view.
 - **Superseded AR-04 wiring:** a capable device no longer uses
   `FakeArTracker`. That was temporary until AR-05. Demo is
   `--dart-define=LMB_AR_DEMO=true` only.
+- YouTube archive clips use `youtube_player_iframe` (WebView). Flutter
+  `ColorFilter` / `ImageFilter` often do **not** tint that platform view
+  on Android. Filters still wrap the widget for MP4 leftovers. Do not
+  scrape YouTube into `video_player`. After `flutter pub get`, re-run
+  the two AR plugin patches.
+- **README screenshots (2026-09-13).** `flutter run -d web-server` paints a
+  blank page unless a Dart debug client connects. Use `flutter build web`
+  and a static server instead. Headless Chrome needs SwiftShader
+  (`--use-gl=angle --use-angle=swiftshader`) for Flutter canvaskit.
+  Flutter web has no usable semantics tree, so taps are coordinate-based
+  at 390×844. Do not shoot the live AR camera for the gallery — web has
+  no ARCore. Shots: `docs/screenshots/*.png`.
 
 ## 6. Before you finish — update the docs (mandatory)
 
@@ -264,16 +310,16 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-09-13 | **README.** Portfolio rewrite: English product overview, six phone-viewport shots in `docs/screenshots/`, AR camera omitted with a web-capture disclaimer. Run/APK steps kept. Next still BUG-02. |
+| 2026-09-09 | **R-03.** Ten YouTube highlights in `assets/videos.json`. Player uses `youtube_player_iframe`. Sample MP4s removed. Constitution → v2.4.10. Some clubs share a video id (human list). |
+| 2026-09-09 | **US-17.** Camera-first AR chrome: viewfinder, info on demand, hide Celebración on static GLBs, keep chrome on ArLost, small ¡JONRÓN! chip, action notifier. `flutter test test/ar/ar_scan_screen_test.dart` 6 passed. Next: BUG-02. |
+| 2026-09-09 | **AR UI audit.** Locked chrome covers the GLB; Celebración shown on static models; failed “Abrir ajustes”/“Instalar” go to teams. Added US-17 + BUG-02. Next is US-17, not DEBT-01. |
+| 2026-09-09 | **US-16.** Bilingual README product/run brief. Known debt #8 cleared. Constitution → v2.4.9. |
 | 2026-09-09 | **US-15.** `flutter build apk` green (~70 MB). README install steps. Release uses debug signing (class). |
 | 2026-09-09 | **US-14.** Video filter jank fix, splash warm-up, DataService cache, AR camera isolation, VFX caps. See `docs/performance.md`. |
 | 2026-09-09 | **US-13 polish.** Drifting baseball nodes + shrink-away; screen particles in `ArBaseballVfx`. Seam: `updateEffect(progress)`. |
 | 2026-09-09 | **US-13 closed.** `celebracion` clip + in-scene `efecto_jonron` ARNode. D-22 amended. Optional 2D banner is chrome only. Constitution → v2.4.8. |
 | 2026-09-09 | **US-13 reopened.** Screen-space burst alone fails the 15pt 3D gate and architecture §6. |
-| 2026-09-08 | **US-12 filters.** Preview on the archive player. Allowed: desenfoque, pixelado, térmica, ajuste de color, suavizado, pasteles, alta saturación. Forbidden set absent. Constitution → v2.4.6. |
-| 2026-09-08 | **US-11 video archive.** Catalog in `assets/videos.json`. Main and team menu open it. Broken URL shows Spanish copy. Sample remote URLs until R-03. Constitution → v2.4.5. |
-| 2026-09-08 | **Pericos wordmark.** First of five candidates. Raw 100. Shipped as-is as `marcador_estadio_pericos`. The other four were not scored. Constitution → v2.4.4. |
-| 2026-09-08 | **Águila crest.** Four candidates scored. Swoosh: no keypoints. "A" + eagle head: 20. Wordmark: raw 100, not shipped (+N watermark). Crest: raw 100, shipped as-is as `marcador_estadio_aguila`. Do not re-encode. Constitution → v2.4.3. |
-| 2026-09-08 | **Conspiradores wordmark.** First of four candidates. Raw 100. Shipped as-is as `marcador_estadio_conspiradores`. The other three were not scored. Constitution → v2.4.2. |
 
 ## 8. How to work
 
@@ -286,7 +332,7 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 ## 9. Current task
 
-> Next: US-16 README product brief (EN/ES polish + AR marker tips).
+> Next: BUG-02 failed-panel recovery actions. Then US-09 / US-10.
 
 _(The human edits this line each session. Leave it pointing at the next item
 when you finish.)_

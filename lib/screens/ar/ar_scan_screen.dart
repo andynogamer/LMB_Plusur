@@ -18,9 +18,11 @@ import '../../theme/app_colors.dart';
 import '../../widgets/app_logo.dart';
 import 'widgets/ar_action_bar.dart';
 import 'widgets/ar_baseball_vfx.dart';
+import 'widgets/ar_chrome_snapshot.dart';
 import 'widgets/ar_demo_badge.dart';
 import 'widgets/ar_failed_panel.dart';
 import 'widgets/ar_session_body.dart';
+import 'widgets/ar_viewfinder.dart';
 
 /// Scan surface driven only by [ArSessionState]. No detection booleans.
 ///
@@ -62,18 +64,30 @@ class _ArScanScreenState extends State<ArScanScreen>
   ArTracker? _ownedTracker;
   ArCoreImageTracker? _cameraTracker;
   bool _liveIsDemo = false;
-  String? _modelNote;
-  String? _actionNote;
-  bool _gestoPressed = false;
-  bool _infoPressed = false;
-  bool _efectoPressed = false;
-  bool _celebracionVfx = false;
   ArTracker? _liveTracker;
   Timer? _gestoTimer;
   late final AnimationController _spin;
   late final AnimationController _efectoDrive;
   final ValueNotifier<ArSessionState> _uiState =
       ValueNotifier<ArSessionState>(const ArPreparing());
+  final ValueNotifier<ArChromeSnapshot> _chromeActions =
+      ValueNotifier<ArChromeSnapshot>(ArChromeSnapshot.empty);
+
+  bool _efectoLooping = false;
+
+  ArChromeSnapshot get _chrome => _chromeActions.value;
+
+  void _patchChrome(ArChromeSnapshot next) {
+    _chromeActions.value = next;
+  }
+
+  Marcador? _activeMarcador(ArSessionState state) {
+    return switch (state) {
+      ArLocked(:final marcador) => marcador,
+      ArLost(:final marcador) => marcador,
+      _ => null,
+    };
+  }
 
   @override
   void initState() {
@@ -88,8 +102,8 @@ class _ArScanScreenState extends State<ArScanScreen>
       ..addStatusListener((status) {
         if (status != AnimationStatus.completed || !mounted) return;
         _liveTracker?.setPresentationYaw(0);
-        if (_infoPressed) {
-          setState(() => _infoPressed = false);
+        if (_chrome.infoPressed) {
+          _patchChrome(_chrome.copyWith(infoPressed: false));
         }
       });
     _efectoDrive = AnimationController(
@@ -192,7 +206,7 @@ class _ArScanScreenState extends State<ArScanScreen>
       _uiState.value = next;
       if (next is ArLocked) {
         unawaited(_attachLockedModel(tracker, next));
-      } else {
+      } else if (next is! ArLost) {
         unawaited(_releaseActions());
       }
     });
@@ -222,11 +236,8 @@ class _ArScanScreenState extends State<ArScanScreen>
     final note = tracker is ArCoreImageTracker
         ? modelFallbackCopy(tracker.modelAttach)
         : null;
-    if (mounted && (_modelNote != note || _actionNote != null)) {
-      setState(() {
-        _modelNote = note;
-        _actionNote = null;
-      });
+    if (_chrome.modelNote != note) {
+      _patchChrome(_chrome.copyWith(modelNote: note));
     }
     if (locked.marcador.animaciones.contains(kClipIdle)) {
       await tracker.playClip(
@@ -250,20 +261,8 @@ class _ArScanScreenState extends State<ArScanScreen>
     await _liveTracker?.clearEffect();
     await ArSpeechService.instance.stop();
     if (!mounted) return;
-    if (!_gestoPressed &&
-        !_infoPressed &&
-        !_efectoPressed &&
-        !_celebracionVfx &&
-        _actionNote == null) {
-      return;
-    }
-    setState(() {
-      _gestoPressed = false;
-      _infoPressed = false;
-      _efectoPressed = false;
-      _celebracionVfx = false;
-      _actionNote = null;
-    });
+    if (_chrome == ArChromeSnapshot.empty) return;
+    _patchChrome(ArChromeSnapshot.empty);
   }
 
   void _startEfectoDrive({required bool loop}) {
@@ -273,11 +272,9 @@ class _ArScanScreenState extends State<ArScanScreen>
       ..forward(from: 0);
   }
 
-  bool _efectoLooping = false;
-
   Future<void> _onEfectoDriveStatus(AnimationStatus status) async {
     if (status != AnimationStatus.completed || !mounted) return;
-    if (_efectoLooping && _efectoPressed) {
+    if (_efectoLooping && _chrome.efectoPressed) {
       await _restartEfectoLoop();
       return;
     }
@@ -288,24 +285,21 @@ class _ArScanScreenState extends State<ArScanScreen>
 
   Future<void> _restartEfectoLoop() async {
     final tracker = _liveTracker;
-    final state = _uiState.value;
-    if (tracker == null || state is! ArLocked || !_efectoPressed) return;
+    final marcador = _activeMarcador(_uiState.value);
+    if (tracker == null || marcador == null || !_chrome.efectoPressed) return;
     await tracker.clearEffect();
     final placed = await tracker.attachEffect(
-      trackerName: state.marcador.id,
+      trackerName: marcador.id,
       glbAsset: kEfectoJonronAsset,
     );
-    if (!mounted || !placed || !_efectoPressed) return;
+    if (!mounted || !placed || !_chrome.efectoPressed) return;
     _efectoDrive.forward(from: 0);
   }
 
   Future<void> _finishOneshotEfecto() async {
     await _liveTracker?.clearEffect();
     if (!mounted) return;
-    setState(() {
-      _gestoPressed = false;
-      _celebracionVfx = false;
-    });
+    _patchChrome(_chrome.copyWith(gestoPressed: false, celebracionVfx: false));
   }
 
   Future<void> _onGesto(Marcador marcador) async {
@@ -314,10 +308,10 @@ class _ArScanScreenState extends State<ArScanScreen>
     if (!marcador.animaciones.contains(kClipCelebracion)) {
       await FeedbackService.instance.error();
       if (!mounted) return;
-      setState(() => _actionNote = kCelebracionMissingCopy);
+      _patchChrome(_chrome.copyWith(actionNote: kCelebracionMissingCopy));
       return;
     }
-    if (_gestoPressed) {
+    if (_chrome.gestoPressed) {
       _gestoTimer?.cancel();
       _gestoTimer = null;
       _efectoDrive.stop();
@@ -328,10 +322,7 @@ class _ArScanScreenState extends State<ArScanScreen>
         loop: true,
       );
       if (!mounted) return;
-      setState(() {
-        _gestoPressed = false;
-        _celebracionVfx = false;
-      });
+      _patchChrome(_chrome.copyWith(gestoPressed: false, celebracionVfx: false));
       return;
     }
     final played = await tracker.playClip(
@@ -342,7 +333,7 @@ class _ArScanScreenState extends State<ArScanScreen>
     if (!mounted) return;
     if (!played) {
       await FeedbackService.instance.error();
-      setState(() => _actionNote = kCelebracionFailedCopy);
+      _patchChrome(_chrome.copyWith(actionNote: kCelebracionFailedCopy));
       return;
     }
     await FeedbackService.instance.success();
@@ -351,75 +342,80 @@ class _ArScanScreenState extends State<ArScanScreen>
       glbAsset: kEfectoJonronAsset,
     );
     if (!mounted) return;
-    setState(() {
-      _gestoPressed = true;
-      _celebracionVfx = placed;
-      _efectoPressed = false;
-      _actionNote = null;
-    });
+    _patchChrome(
+      _chrome.copyWith(
+        gestoPressed: true,
+        celebracionVfx: placed,
+        efectoPressed: false,
+        actionNote: null,
+      ),
+    );
     if (placed) {
       _startEfectoDrive(loop: false);
     } else {
       _gestoTimer?.cancel();
       _gestoTimer = Timer(kCelebracionClipLength, () {
         if (!mounted) return;
-        setState(() => _gestoPressed = false);
+        _patchChrome(_chrome.copyWith(gestoPressed: false));
       });
     }
   }
 
   Future<void> _onEfecto() async {
     final tracker = _liveTracker;
-    final state = _uiState.value;
-    if (tracker == null || state is! ArLocked) return;
+    final marcador = _activeMarcador(_uiState.value);
+    if (tracker == null || marcador == null) return;
     await FeedbackService.instance.tap();
     if (!mounted) return;
-    if (_efectoPressed) {
+    if (_chrome.efectoPressed) {
       _efectoDrive.stop();
       _efectoLooping = false;
       await tracker.clearEffect();
       if (!mounted) return;
-      setState(() {
-        _efectoPressed = false;
-        _celebracionVfx = false;
-        _actionNote = null;
-      });
+      _patchChrome(
+        _chrome.copyWith(
+          efectoPressed: false,
+          celebracionVfx: false,
+          actionNote: null,
+        ),
+      );
       return;
     }
     final placed = await tracker.attachEffect(
-      trackerName: state.marcador.id,
+      trackerName: marcador.id,
       glbAsset: kEfectoJonronAsset,
     );
     if (!mounted) return;
     if (!placed) {
       await FeedbackService.instance.error();
-      setState(() => _actionNote = 'No pudimos mostrar el efecto 3D.');
+      _patchChrome(
+        _chrome.copyWith(actionNote: 'No pudimos mostrar el efecto 3D.'),
+      );
       return;
     }
-    setState(() {
-      _efectoPressed = true;
-      _celebracionVfx = true;
-      _gestoPressed = false;
-      _actionNote = null;
-    });
+    _patchChrome(
+      _chrome.copyWith(
+        efectoPressed: true,
+        celebracionVfx: true,
+        gestoPressed: false,
+        actionNote: null,
+      ),
+    );
     _startEfectoDrive(loop: true);
   }
 
   Future<void> _onInfo(Marcador marcador) async {
-    if (_infoPressed) {
+    if (_chrome.infoPressed) {
       await ArSpeechService.instance.stop();
       _spin.stop();
       _liveTracker?.setPresentationYaw(0);
       if (!mounted) return;
-      setState(() => _infoPressed = false);
+      _patchChrome(_chrome.copyWith(infoPressed: false));
       return;
     }
     await FeedbackService.instance.success();
     if (!mounted) return;
-    setState(() {
-      _infoPressed = true;
-      _actionNote = null;
-    });
+    _patchChrome(_chrome.copyWith(infoPressed: true, actionNote: null));
     _spin.forward(from: 0);
     await ArSpeechService.instance.speak(
       '${marcador.titulo}. ${marcador.infoTexto}',
@@ -453,6 +449,7 @@ class _ArScanScreenState extends State<ArScanScreen>
     unawaited(ArSpeechService.instance.stop());
     _states?.cancel();
     _uiState.dispose();
+    _chromeActions.dispose();
     unawaited(_controller?.dispose());
     super.dispose();
   }
@@ -461,7 +458,7 @@ class _ArScanScreenState extends State<ArScanScreen>
   Widget build(BuildContext context) {
     final camera = _cameraTracker;
     // Keep the platform view outside session/action rebuilds so Filament
-    // is not torn down when chrome setState runs.
+    // is not torn down when chrome notifiers tick.
     return Scaffold(
       backgroundColor: AppColors.navy,
       body: Stack(
@@ -474,23 +471,35 @@ class _ArScanScreenState extends State<ArScanScreen>
             ),
           ValueListenableBuilder<ArSessionState>(
             valueListenable: _uiState,
-            builder: (context, state, _) =>
-                _chrome(context, state, hasCamera: camera != null),
+            builder: (context, state, _) {
+              return ValueListenableBuilder<ArChromeSnapshot>(
+                valueListenable: _chromeActions,
+                builder: (context, actions, _) => _overlay(
+                  context,
+                  state,
+                  actions,
+                  hasCamera: camera != null,
+                ),
+              );
+            },
           ),
         ],
       ),
     );
   }
 
-  Widget _chrome(
+  Widget _overlay(
     BuildContext context,
-    ArSessionState state, {
+    ArSessionState state,
+    ArChromeSnapshot actions, {
     required bool hasCamera,
   }) {
-    final showDemoBadge = _liveIsDemo || state is ArLocked && state.isDemo;
+    final showDemoBadge = _liveIsDemo || (state is ArLocked && state.isDemo);
     final failed = state is ArFailed ? state : null;
-    final showVfx =
-        state is ArLocked && (_efectoPressed || _celebracionVfx);
+    final marcador = _activeMarcador(state);
+    final showVfx = marcador != null &&
+        (actions.efectoPressed || actions.celebracionVfx);
+    final showViewfinder = state is ArSearching || state is ArCandidate;
 
     return Stack(
       fit: StackFit.expand,
@@ -499,10 +508,10 @@ class _ArScanScreenState extends State<ArScanScreen>
           Positioned.fill(
             child: ArBaseballVfx(
               active: true,
-              oneshot: _celebracionVfx && !_efectoPressed,
+              oneshot: actions.celebracionVfx && !actions.efectoPressed,
               onFinished: () {
                 if (!mounted) return;
-                setState(() => _celebracionVfx = false);
+                _patchChrome(_chrome.copyWith(celebracionVfx: false));
               },
             ),
           ),
@@ -552,20 +561,24 @@ class _ArScanScreenState extends State<ArScanScreen>
                     ],
                   ),
                 ),
-                const Spacer(),
+                Expanded(
+                  child: showViewfinder
+                      ? ArViewfinder(confirming: state is ArCandidate)
+                      : const SizedBox.expand(),
+                ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                   child: DecoratedBox(
-                    decoration: hasCamera
-                        ? BoxDecoration(
-                            color: AppColors.navy.withValues(alpha: 0.78),
-                            borderRadius: BorderRadius.circular(16),
-                          )
-                        : const BoxDecoration(),
+                    decoration: BoxDecoration(
+                      color: AppColors.navy.withValues(
+                        alpha: hasCamera ? 0.78 : 0.55,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: hasCamera ? 16 : 0,
-                        vertical: hasCamera ? 16 : 0,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
                       ),
                       child: failed == null
                           ? ArSessionBody(
@@ -574,29 +587,24 @@ class _ArScanScreenState extends State<ArScanScreen>
                               onSimulateNext:
                                   _liveIsDemo ? _simulateNext : null,
                               modelNote:
-                                  state is ArLocked ? _modelNote : null,
+                                  marcador != null ? actions.modelNote : null,
                               infoActive:
-                                  state is ArLocked && _infoPressed,
-                              actions: state is ArLocked
-                                  ? ArActionBar(
-                                      gestoPressed: _gestoPressed,
-                                      infoPressed: _infoPressed,
-                                      efectoPressed: _efectoPressed,
-                                      note: _actionNote,
-                                      onGesto: () => unawaited(
-                                        _onGesto(state.marcador),
-                                      ),
-                                      onInfo: () => unawaited(
-                                        _onInfo(state.marcador),
-                                      ),
-                                      onEfecto: () =>
-                                          unawaited(_onEfecto()),
-                                    )
-                                  : null,
-                              onExit: state is ArLocked
-                                  ? () =>
-                                      Navigator.of(context).maybePop()
-                                  : null,
+                                  marcador != null && actions.infoPressed,
+                              actions: marcador == null
+                                  ? null
+                                  : ArActionBar(
+                                      showCelebracion: marcador.animaciones
+                                          .contains(kClipCelebracion),
+                                      gestoPressed: actions.gestoPressed,
+                                      infoPressed: actions.infoPressed,
+                                      efectoPressed: actions.efectoPressed,
+                                      note: actions.actionNote,
+                                      onGesto: () =>
+                                          unawaited(_onGesto(marcador)),
+                                      onInfo: () =>
+                                          unawaited(_onInfo(marcador)),
+                                      onEfecto: () => unawaited(_onEfecto()),
+                                    ),
                             )
                           : ArFailedPanel(
                               failure: failed,
