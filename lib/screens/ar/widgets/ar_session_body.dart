@@ -17,7 +17,6 @@ class ArSessionBody extends StatelessWidget {
     this.modelNote,
     this.actions,
     this.modePanel,
-    this.modelSelector,
     this.infoActive = false,
   });
 
@@ -32,7 +31,6 @@ class ArSessionBody extends StatelessWidget {
   /// Action bar. Rendered from [ArLocked] and [ArLost].
   final Widget? actions;
   final Widget? modePanel;
-  final Widget? modelSelector;
 
   /// Información action is speaking or spinning. Reveals [Marcador.infoTexto].
   final bool infoActive;
@@ -68,7 +66,6 @@ class ArSessionBody extends StatelessWidget {
           modelNote: modelNote,
           actions: actions,
           modePanel: modePanel,
-          modelSelector: modelSelector,
           infoActive: infoActive,
         ),
       ArLost(:final marcador) => _LockedPanel(
@@ -77,7 +74,6 @@ class ArSessionBody extends StatelessWidget {
           modelNote: modelNote,
           actions: actions,
           modePanel: modePanel,
-          modelSelector: modelSelector,
           infoActive: infoActive,
           lostHint: 'Vuelve a apuntar a ${marcador.titulo}.',
         ),
@@ -150,7 +146,6 @@ class _LockedPanel extends StatelessWidget {
     this.modelNote,
     this.actions,
     this.modePanel,
-    this.modelSelector,
     this.infoActive = false,
     this.lostHint,
   });
@@ -160,7 +155,6 @@ class _LockedPanel extends StatelessWidget {
   final String? modelNote;
   final Widget? actions;
   final Widget? modePanel;
-  final Widget? modelSelector;
   final bool infoActive;
   final String? lostHint;
 
@@ -225,10 +219,6 @@ class _LockedPanel extends StatelessWidget {
         if (modePanel != null) ...[
           const SizedBox(height: 10),
           modePanel!,
-        ],
-        if (modelSelector != null) ...[
-          const SizedBox(height: 10),
-          modelSelector!,
         ],
         if (modelNote != null) ...[
           const SizedBox(height: 8),

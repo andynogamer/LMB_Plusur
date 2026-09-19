@@ -482,6 +482,7 @@ class _ArScanScreenState extends State<ArScanScreen>
   }
 
   Future<void> _onInfo(Marcador marcador) async {
+    if (_mode.value == ArExperienceMode.trivia) return;
     if (_chrome.infoPressed) {
       await ArSpeechService.instance.stop();
       _spin.stop();
@@ -490,12 +491,32 @@ class _ArScanScreenState extends State<ArScanScreen>
       _patchChrome(_chrome.copyWith(infoPressed: false));
       return;
     }
+
     await FeedbackService.instance.success();
     if (!mounted) return;
     _patchChrome(_chrome.copyWith(infoPressed: true, actionNote: null));
     _spin.forward(from: 0);
     await ArSpeechService.instance.speak(
       '${marcador.titulo}. ${marcador.infoTexto}',
+    );
+  }
+
+  void _onModeChanged(ArExperienceMode next) {
+    if (next == ArExperienceMode.trivia && _chrome.infoPressed) {
+      unawaited(ArSpeechService.instance.stop());
+      _spin
+        ..stop()
+        ..reset();
+      _liveTracker?.setPresentationYaw(0);
+      _patchChrome(_chrome.copyWith(infoPressed: false));
+    }
+    _mode.value = next;
+    _patchChrome(
+      _chrome.copyWith(
+        actionNote: next == ArExperienceMode.trivia
+            ? 'Modo Trivia AR activado.'
+            : 'Modo Galería AR activado.',
+      ),
     );
   }
 
@@ -581,6 +602,15 @@ class _ArScanScreenState extends State<ArScanScreen>
     final showVfx =
         marcador != null && (actions.efectoPressed || actions.celebracionVfx);
     final showViewfinder = state is ArSearching || state is ArCandidate;
+    final modelSelector = marcador == null
+        ? null
+        : ValueListenableBuilder<ArModelChoice>(
+            valueListenable: _modelChoice,
+            builder: (context, choice, _) => ArModelSelector(
+              choice: choice,
+              onChanged: (next) => unawaited(_changeModel(marcador, next)),
+            ),
+          );
 
     return Stack(
       fit: StackFit.expand,
@@ -647,87 +677,89 @@ class _ArScanScreenState extends State<ArScanScreen>
                       ? ArViewfinder(confirming: state is ArCandidate)
                       : const SizedBox.expand(),
                 ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: AppColors.navy.withValues(
-                        alpha: hasCamera ? 0.78 : 0.55,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 12,
-                      ),
-                      child: failed == null
-                          ? ArSessionBody(
-                              state: state,
-                              equipoHint: widget.equipoHint,
-                              onSimulateNext:
-                                  _liveIsDemo ? _simulateNext : null,
-                              modelNote:
-                                  marcador != null ? actions.modelNote : null,
-                              infoActive:
-                                  marcador != null && actions.infoPressed,
-                              actions: marcador == null
-                                  ? null
-                                  : ArActionBar(
-                                      showCelebracion: marcador.animaciones
-                                          .contains(kClipCelebracion),
-                                      gestoPressed: actions.gestoPressed,
-                                      infoPressed: actions.infoPressed,
-                                      efectoPressed: actions.efectoPressed,
-                                      note: actions.actionNote,
-                                      onGesto: () =>
-                                          unawaited(_onGesto(marcador)),
-                                      onInfo: () =>
-                                          unawaited(_onInfo(marcador)),
-                                      onEfecto: () => unawaited(_onEfecto()),
-                                    ),
-                              modePanel: marcador == null
-                                  ? null
-                                  : ValueListenableBuilder<ArExperienceMode>(
-                                      valueListenable: _mode,
-                                      builder: (context, mode, _) =>
-                                          ArModePanel(
-                                        marcador: marcador,
-                                        equipo: _equipoFor(marcador),
-                                        mode: mode,
-                                        onModeChanged: (next) {
-                                          _mode.value = next;
-                                          _patchChrome(
-                                            _chrome.copyWith(
-                                              actionNote: next ==
-                                                      ArExperienceMode.trivia
-                                                  ? 'Modo Trivia AR activado.'
-                                                  : 'Modo Galería AR activado.',
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                              modelSelector: marcador == null
-                                  ? null
-                                  : ValueListenableBuilder<ArModelChoice>(
-                                      valueListenable: _modelChoice,
-                                      builder: (context, choice, _) =>
-                                          ArModelSelector(
-                                        marcador: marcador,
-                                        choice: choice,
-                                        onChanged: (next) => unawaited(
-                                          _changeModel(marcador, next),
-                                        ),
-                                      ),
-                                    ),
-                            )
-                          : ArFailedPanel(
-                              failure: failed,
-                              onRetry: _retry,
-                              onOpenSettings: _openSettings,
-                              onInstall: _installArCore,
+                Flexible(
+                  child: SingleChildScrollView(
+                    reverse: true,
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (modelSelector != null) ...[
+                          modelSelector,
+                          const SizedBox(height: 8),
+                        ],
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: AppColors.navy.withValues(
+                              alpha: hasCamera ? 0.78 : 0.55,
                             ),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                            child: failed == null
+                                ? ArSessionBody(
+                                    state: state,
+                                    equipoHint: widget.equipoHint,
+                                    onSimulateNext:
+                                        _liveIsDemo ? _simulateNext : null,
+                                    modelNote: marcador != null
+                                        ? actions.modelNote
+                                        : null,
+                                    infoActive:
+                                        marcador != null && actions.infoPressed,
+                                    actions: marcador == null
+                                        ? null
+                                        : ValueListenableBuilder<
+                                            ArExperienceMode>(
+                                            valueListenable: _mode,
+                                            builder: (context, mode, _) =>
+                                                ArActionBar(
+                                              showCelebracion: marcador
+                                                  .animaciones
+                                                  .contains(kClipCelebracion),
+                                              gestoPressed:
+                                                  actions.gestoPressed,
+                                              infoPressed: actions.infoPressed,
+                                              efectoPressed:
+                                                  actions.efectoPressed,
+                                              infoEnabled: mode ==
+                                                  ArExperienceMode.gallery,
+                                              note: actions.actionNote,
+                                              onGesto: () =>
+                                                  unawaited(_onGesto(marcador)),
+                                              onInfo: () =>
+                                                  unawaited(_onInfo(marcador)),
+                                              onEfecto: () =>
+                                                  unawaited(_onEfecto()),
+                                            ),
+                                          ),
+                                    modePanel: marcador == null
+                                        ? null
+                                        : ValueListenableBuilder<
+                                            ArExperienceMode>(
+                                            valueListenable: _mode,
+                                            builder: (context, mode, _) =>
+                                                ArModePanel(
+                                              marcador: marcador,
+                                              equipo: _equipoFor(marcador),
+                                              mode: mode,
+                                              onModeChanged: _onModeChanged,
+                                            ),
+                                          ),
+                                  )
+                                : ArFailedPanel(
+                                    failure: failed,
+                                    onRetry: _retry,
+                                    onOpenSettings: _openSettings,
+                                    onInstall: _installArCore,
+                                  ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),

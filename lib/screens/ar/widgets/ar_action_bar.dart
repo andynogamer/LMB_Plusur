@@ -33,6 +33,7 @@ class ArActionBar extends StatelessWidget {
     required this.onGesto,
     required this.onInfo,
     required this.onEfecto,
+    this.infoEnabled = true,
     this.showCelebracion = true,
     this.note,
   });
@@ -43,6 +44,7 @@ class ArActionBar extends StatelessWidget {
   final VoidCallback onGesto;
   final VoidCallback onInfo;
   final VoidCallback onEfecto;
+  final bool infoEnabled;
 
   /// False for stadium / trophy GLBs with empty `animaciones`.
   final bool showCelebracion;
@@ -55,7 +57,7 @@ class ArActionBar extends StatelessWidget {
       label: 'Información',
       icon: Icons.record_voice_over_rounded,
       selected: infoPressed,
-      onPressed: onInfo,
+      onPressed: infoEnabled ? onInfo : null,
     );
     final efecto = _ActionButton(
       buttonKey: const Key('ar-action-efecto'),
@@ -127,7 +129,7 @@ class _ActionButton extends StatelessWidget {
   final String label;
   final IconData icon;
   final bool selected;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {

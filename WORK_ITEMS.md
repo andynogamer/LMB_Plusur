@@ -912,6 +912,8 @@ placement in the tracker scene graph and keep the selector in Flutter chrome.
 Criterios de aceptación:
 - Selector appears only after ArLocked / ArLost.
 - Estadio and Jugador request the selected club's D-22 GLB.
+- Model choices use compact stadium/baseball icon controls outside the main card.
+- Información is disabled while Trivia AR is active.
 - Switching does not stop or recreate the AR session.
 - The selected node remains pose-anchored and missing assets fail gracefully.
 - flutter analyze and AR tests remain green.

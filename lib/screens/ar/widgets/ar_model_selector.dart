@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-import '../../../models/marcador_model.dart';
 import '../../../theme/app_colors.dart';
 
 enum ArModelChoice { defaultModel, stadium, player }
@@ -9,72 +7,34 @@ enum ArModelChoice { defaultModel, stadium, player }
 class ArModelSelector extends StatelessWidget {
   const ArModelSelector({
     super.key,
-    required this.marcador,
     required this.choice,
     required this.onChanged,
   });
 
-  final Marcador marcador;
   final ArModelChoice choice;
   final ValueChanged<ArModelChoice> onChanged;
 
-  String get _clubPath => 'assets/models/${marcador.equipoId}';
-
-  String _assetFor(ArModelChoice value) {
-    return switch (value) {
-      ArModelChoice.defaultModel => marcador.modelAsset,
-      ArModelChoice.stadium => '$_clubPath/estadio.glb',
-      ArModelChoice.player => '$_clubPath/jugador.glb',
-    };
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Row(
       key: const Key('ar-model-selector'),
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(
-          'MODELO 3D',
-          textAlign: TextAlign.center,
-          style: GoogleFonts.poppins(
-            color: AppColors.muted,
-            fontWeight: FontWeight.w700,
-            fontSize: 10,
-            letterSpacing: 0.8,
-          ),
+        _ModelButton(
+          buttonKey: const Key('ar-model-stadium'),
+          tooltip: 'Mostrar estadio',
+          icon: Icons.stadium_rounded,
+          selected: choice == ArModelChoice.stadium,
+          onPressed: () => onChanged(ArModelChoice.stadium),
         ),
-        const SizedBox(height: 6),
-        Row(
-          children: [
-            Expanded(
-              child: _ModelButton(
-                label: 'Estadio',
-                icon: Icons.stadium_rounded,
-                selected: choice == ArModelChoice.stadium,
-                onPressed: () => onChanged(ArModelChoice.stadium),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _ModelButton(
-                label: 'Jugador',
-                icon: Icons.sports_baseball_rounded,
-                selected: choice == ArModelChoice.player,
-                onPressed: () => onChanged(ArModelChoice.player),
-              ),
-            ),
-          ],
+        const SizedBox(width: 8),
+        _ModelButton(
+          buttonKey: const Key('ar-model-player'),
+          tooltip: 'Mostrar jugador',
+          icon: Icons.sports_baseball_rounded,
+          selected: choice == ArModelChoice.player,
+          onPressed: () => onChanged(ArModelChoice.player),
         ),
-        if (choice == ArModelChoice.defaultModel)
-          Text(
-            'Modelo actual: ${_assetFor(choice).split('/').last}',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
-              color: AppColors.muted,
-              fontSize: 10,
-            ),
-          ),
       ],
     );
   }
@@ -82,36 +42,41 @@ class ArModelSelector extends StatelessWidget {
 
 class _ModelButton extends StatelessWidget {
   const _ModelButton({
-    required this.label,
+    required this.buttonKey,
+    required this.tooltip,
     required this.icon,
     required this.selected,
     required this.onPressed,
   });
 
-  final String label;
+  final Key buttonKey;
+  final String tooltip;
   final IconData icon;
   final bool selected;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton.icon(
-      onPressed: onPressed,
-      icon: Icon(icon, size: 16),
-      label: Text(label.toUpperCase()),
-      style: OutlinedButton.styleFrom(
-        foregroundColor: selected ? AppColors.black : AppColors.white,
-        backgroundColor: selected ? AppColors.button : Colors.transparent,
-        side: BorderSide(
-          color: selected
+    return Tooltip(
+      message: tooltip,
+      child: IconButton(
+        key: buttonKey,
+        onPressed: onPressed,
+        icon: Icon(icon, size: 22),
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints.tightFor(width: 44, height: 44),
+        style: IconButton.styleFrom(
+          foregroundColor: selected ? AppColors.black : AppColors.white,
+          backgroundColor: selected
               ? AppColors.button
-              : AppColors.button.withValues(alpha: 0.4),
+              : AppColors.navyCard.withValues(alpha: 0.9),
+          side: BorderSide(
+            color: selected
+                ? AppColors.button
+                : AppColors.button.withValues(alpha: 0.4),
+          ),
         ),
-        padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 4),
-        textStyle: GoogleFonts.poppins(
-          fontWeight: FontWeight.w800,
-          fontSize: 10,
-        ),
+        tooltip: tooltip,
       ),
     );
   }
