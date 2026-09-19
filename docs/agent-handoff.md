@@ -178,6 +178,9 @@ Measured later, four of them were. **Never copy code from that branch.**
 - **US-19 / D-25:** club GLBs are authored Y-up, so the tracker applies a local
   90° X rotation to place them parallel to the scanned logo. Información now
   rotates around the logo normal.
+- When **Jugador** is selected from the D-22 catalog, the screen now starts its
+  `idle` clip and exposes the player celebration action independently of the
+  original marker model's animation metadata. Stadium selection remains static.
 
 Do not mix BUG-02 with US-09/US-10.
 
@@ -318,6 +321,7 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-09-19 | **Animation follow-up.** Model selection now drives clip capability: D-22 Jugador starts `idle` and exposes celebration even when the scanned marker's default asset was static. Focused AR tests pass. |
 | 2026-09-19 | **US-19 / D-25.** Oriented the authored club GLBs parallel to the scanned logo plane and changed Información's presentation spin to the marker normal. Corrected the local X rotation sign after device-oriented review so the model is not upside down. Added matrix coverage; analyze and the full 49-test suite pass. |
 | 2026-09-19 | **US-18 UX refinement.** Moved stadium/player selection to compact icon controls outside the main card and disabled Información in Trivia AR; added regression coverage for both overflow paths. |
 | 2026-09-19 | **US-18 / D-24.** Added locked-session stadium/player model selection. Flutter chooses the catalog GLB; the tracker replaces the anchored node in place. Focused analyze and 10 AR tests pass. |

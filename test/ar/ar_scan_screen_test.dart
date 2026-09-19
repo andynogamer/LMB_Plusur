@@ -336,6 +336,11 @@ void main() {
       tracker.attachedModels.last.glbAsset,
       'assets/models/leones_yucatan/jugador.glb',
     );
+    expect(
+      tracker.playedClips.last.clipName,
+      kClipIdle,
+    );
+    expect(find.byKey(const Key('ar-action-gesto')), findsOneWidget);
     expect(find.byKey(const Key('ar-locked')), findsOneWidget);
     expect(find.byKey(const Key('ar-model-selector')), findsOneWidget);
   });
