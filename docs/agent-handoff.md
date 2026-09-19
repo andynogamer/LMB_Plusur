@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-09-19 · by: US-19 AR model plane orientation
+**Last updated:** 2026-09-19 · by: Android launcher icon and APK packaging
 
 ---
 
@@ -125,7 +125,9 @@ Measured later, four of them were. **Never copy code from that branch.**
 - US-15 — **Done (build).** `flutter build apk` →
   `build/app/outputs/flutter-apk/app-release.apk` (~70 MB). Release signs
   with debug keystore (class OK). README has run + install steps. Confirm
-  splash→main once on a phone. No Play Store keystore in repo.
+  splash→main once on a phone. No Play Store keystore in repo. Android launcher
+  icons now use a centered square crop of the authored LMB logo in all legacy
+  mdpi–xxxhdpi density folders.
 - US-16 — **Done, rewritten 2026-09-13.** `README.md` is the public / portfolio
   overview (English, Spanish UI noted). Six phone-sized shots live in
   `docs/screenshots/`. Run + APK + marker tips are still there. Governance
@@ -136,8 +138,14 @@ Measured later, four of them were. **Never copy code from that branch.**
   `youtube_player_iframe` (pulls `webview_flutter`, `url_launcher`).
   `video_player` stays for any leftover MP4. Broken URL → Spanish copy.
   US-12 filters wrap the player; ColorFilter may not tint the YouTube
-  WebView on Android. Do not restore `DemoHighlights`. Some clubs share
-  a video id (human-supplied list).
+  WebView on Android. `VideoArchivo.miniaturaUrl` now derives an
+  `i.ytimg.com` preview, and YouTube cards/player previews show that image
+  before the WebView mounts. CSS-compatible allowed filters are reapplied to
+  the iframe during playback through the plugin's public WebView controller;
+  Pixelado remains preview-only because CSS cannot reliably pixelate a
+  cross-origin iframe. Direct MP4 URLs still use the fully filtered
+  `video_player` path. Do not restore `DemoHighlights`. Some clubs share a
+  video id (human-supplied list).
 - US-12 — Allowed filter families only. Forbidden set absent.
 - AR-00 / D-23 — scan targets are **logos**, not substitute cards. Gate is
   **≥ 75**, not 90. Active: Leones 100, Olmecas 100, Piratas 100, Bravos 90,
@@ -184,6 +192,16 @@ Measured later, four of them were. **Never copy code from that branch.**
 - **BUG-03:** Información now stays open after its one presentation turn.
   The turn resets the model yaw only; the user closes the panel with the same
   button or by leaving the locked/lost state.
+- **BUG-04:** Video cards no longer start as black rectangles: YouTube
+  thumbnails are shown with a safe fallback. CSS-compatible filter chips
+  remain active on the YouTube iframe during playback; iframe creation is
+  handled with a bounded retry and filter changes reapply after playback
+  begins. Pixelado is explicitly preview-only. Direct video URLs retain live
+  filter processing.
+- **US-02 refinement:** The selected-team menu no longer repeats
+  **Abrir experiencia AR**. The primary shell's **Escanear Logo** card remains
+  the scanner entry, while the team menu stays focused on team-specific
+  content.
 
 Do not mix BUG-02 with US-09/US-10.
 
@@ -282,10 +300,12 @@ chrome). Do not fall back to the fake tracker when that session fails.
   `FakeArTracker`. That was temporary until AR-05. Demo is
   `--dart-define=LMB_AR_DEMO=true` only.
 - YouTube archive clips use `youtube_player_iframe` (WebView). Flutter
-  `ColorFilter` / `ImageFilter` often do **not** tint that platform view
-  on Android. Filters still wrap the widget for MP4 leftovers. Do not
-  scrape YouTube into `video_player`. After `flutter pub get`, re-run
-  the two AR plugin patches.
+  `ColorFilter` / `ImageFilter` do **not** tint that platform view on Android.
+  The video widget now uses the plugin's public `WebViewController` to apply
+  CSS filters to the iframe; Pixelado cannot be made reliable there and stays
+  preview-only. Filters still wrap the widget for MP4 leftovers. Do not scrape
+  YouTube into `video_player`. After `flutter pub get`, re-run the two AR
+  plugin patches.
 - **README screenshots (2026-09-13).** `flutter run -d web-server` paints a
   blank page unless a Dart debug client connects. Use `flutter build web`
   and a static server instead. Headless Chrome needs SwiftShader
@@ -324,6 +344,10 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-09-19 | **US-15 packaging refinement.** Generated Android launcher icons from the authored LMB logo using a centered square crop across mdpi, hdpi, xhdpi, xxhdpi and xxxhdpi. Release APK remains on the existing debug-signing class-demo path. |
+| 2026-09-19 | **US-09 / US-02 refinement.** Replaced the random/infinite stats counter with a deterministic plate-appearance simulator: three outs per half-inning, runners, hits, runs and final-game logic. Removed the redundant AR entry from the already-selected team menu; the main shell remains the scanner entry. `flutter analyze` and focused tests pass. |
+| 2026-09-19 | **BUG-04 follow-up.** Fixed the YouTube filter race: the first CSS application could run before the `YoutubePlayer` and its iframe existed, leaving the pressed filter chip out of sync with playback. The player now applies CSS after the platform view mounts, retries until the iframe is present, and reapplies it when the selected filter changes. Analyze and the full 52-test suite pass. |
+| 2026-09-19 | **BUG-04.** Added real YouTube thumbnails with a network/error fallback. CSS-compatible filters now remain active on the YouTube iframe during playback through the plugin WebView controller; Pixelado stays preview-only. Direct MP4 playback remains fully filtered. Added `VideoArchivo.miniaturaUrl` and CSS mapping tests. |
 | 2026-09-19 | **BUG-03.** Kept the AR Información panel open after the presentation turn; only the model yaw resets automatically. Added a persistence regression test. |
 | 2026-09-19 | **Animation follow-up.** Model selection now drives clip capability: D-22 Jugador starts `idle` and exposes celebration even when the scanned marker's default asset was static. Focused AR tests pass. |
 | 2026-09-19 | **US-19 / D-25.** Oriented the authored club GLBs parallel to the scanned logo plane and changed Información's presentation spin to the marker normal. Corrected the local X rotation sign after device-oriented review so the model is not upside down. Added matrix coverage; analyze and the full 49-test suite pass. |

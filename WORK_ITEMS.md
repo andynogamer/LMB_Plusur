@@ -53,6 +53,7 @@
 | DEBT-01 | 🐛 | 🟡 P2 | Remove parallel English domain (`Team`, `TriviaQuestion`) | ☑ | Article IV |
 | BUG-02 | 🐛 | 🟠 P1 | ArFailed “Abrir ajustes” / “Instalar” go to teams | ☑ | Failure UX |
 | BUG-03 | 🐛 | 🟠 P1 | Keep AR information open until the user closes it | ☑ | AR UX |
+| BUG-04 | 🐛 | 🟠 P1 | Restore video thumbnails and visible YouTube filter previews | ☑ | Videos / filters |
 | US-18 | 📗 | 🟠 P1 | Select stadium or player model after AR lock | ☑ | AR depth |
 | US-19 | 📗 | 🟠 P1 | Lay AR model parallel to scanned logo | ☑ | AR depth |
 | ~~US-05…US-08~~ | — | — | ~~Old monolithic AR items~~ | ⊘ | Replaced by AR-01…AR-07 |
@@ -100,25 +101,26 @@ Fuera de alcance: server search, fuzzy ranking libraries, AR changes.
 
 ---
 
-## US-02 · 🟠 P1 · Abrir experiencia AR from team menu (D-11) · ☑ Hecho
+## US-02 · 🟠 P1 · Escanear Logo from primary shell (D-11) · ☑ Hecho
 
 **Prompt**
 ```
-Contexto: D-11 — manual path must offer “Abrir experiencia AR” that launches
-the scanner (optionally hinting the team logo). Full marker AR still requires
-a real scan (or labeled demo until AR-05).
+Contexto: D-11 — the primary shell offers “Escanear Logo” and launches the
+scanner. A selected team already has a team context, so its menu does not
+repeat the scanner entry. Full marker AR still requires a real scan (or
+labeled demo until AR-05).
 
-Tarea: Add a FeatureCard on TeamMenuScreen that navigates to the AR route,
-passing the selected Equipo as a hint argument. AR screen shows Spanish copy
-like “Apunta al logo de {nombre}”. Do not auto-complete detection without
-camera recognition unless demo mode is explicitly labeled.
+Tarea: Keep the primary-shell FeatureCard wired to the AR route. The AR screen
+may still receive an optional Equipo hint from other entry points, but the
+selected-team menu focuses on team content. Do not auto-complete detection
+without camera recognition unless demo mode is explicitly labeled.
 
 Criterios de aceptación:
-- Team menu has the new entry, styled like other FeatureCards.
+- Main shell has the scanner entry, styled like other FeatureCards.
 - AR screen receives optional equipo hint and shows it in UI copy.
 - Manual path still exposes historia / trivia / highlights as today.
 
-Archivos: lib/screens/team_menu_screen.dart, lib/screens/ar_view_screen.dart,
+Archivos: lib/screens/main_screen.dart, lib/screens/ar_view_screen.dart,
 lib/app.dart or routes if arguments need wiring
 Fuera de alcance: real marker tracking (now AR-05), 3D models.
 ```
@@ -593,6 +595,11 @@ Archivos: lib/services/stats_simulator.dart, AR/team UI wiring
 Fuera de alcance: real sports data feeds.
 ```
 
+**Refinamiento 2026-09-19:** Cada actualización representa una aparición al
+bate determinista: tres outs por mitad, alta/baja, corredores que avanzan,
+carreras por hit y cierre después de la novena cuando el marcador lo permite.
+La tarjeta muestra la mitad, outs, hits y `FINAL`.
+
 ---
 
 ## US-10 · 📗 · 🟠 P1 · Multiple AR modes · ☑ Hecho
@@ -765,6 +772,9 @@ Fuera de alcance: Play Store listing, IPA unless time remains.
 **Done in this pass:** clarified debug signing comment in
 `android/app/build.gradle.kts`; README run + install + optional keystore notes;
 release APK built green. No minify/Proguard to fix. IPA out of scope.
+**Packaging refinement 2026-09-19:** Android launcher icons now use the centered
+square crop of the authored `assets/images/LMB_plusur.png` in all legacy
+mdpi–xxxhdpi densities.
 
 ---
 
@@ -994,3 +1004,39 @@ before native risk enters the repo.
 
 Human in parallel: author + print the 3 marker cards (AR-00), make/get 3 GLBs,
 gather baseball video URLs, plan demo recording.
+
+## BUG-04 · 🐛 · 🟠 P1 · Restore video thumbnails and visible YouTube filter previews · ☑ Hecho
+
+**Prompt**
+```
+Contexto: El catálogo R-03 usa URLs de YouTube dentro de un WebView.
+El archivo mostraba tarjetas negras porque el póster no usaba una miniatura,
+y los filtros Flutter no pueden pintar encima del PlatformView de YouTube en
+Android.
+
+Tarea: Derivar la miniatura de cada URL de YouTube y usarla en el póster y en
+la vista previa del reproductor. Mantener los filtros permitidos visibles y
+funcionales sobre esa vista previa. Aplicar los filtros compatibles con CSS al
+iframe de YouTube durante el playback mediante el WebViewController público;
+Pixelado permanece sólo en preview porque CSS no puede hacerlo de forma
+fiable sobre un iframe cross-origin. No descargar, extraer ni retransmitir
+videos de YouTube. Mantener el pipeline de video_player filtrable para URLs
+directas.
+
+Criterios de aceptación:
+- Las tarjetas del archivo muestran la miniatura de YouTube, con fallback
+  estable si la red o la URL fallan.
+- Al seleccionar un filtro permitido antes de reproducir, el efecto se ve
+  sobre la miniatura filtrada.
+- Al pulsar reproducir, los filtros CSS compatibles permanecen activos en el
+  iframe; Pixelado se identifica como preview-only.
+- No se agregan filtros prohibidos ni una API/backend.
+- flutter analyze y las pruebas de videos pasan.
+```
+
+**Hecho 2026-09-19:** `VideoArchivo.miniaturaUrl` deriva la URL `i.ytimg.com`,
+el archivo usa miniaturas reales con fallback, y `HighlightVideoPlayer` muestra
+la miniatura filtrable antes de montar el WebView de YouTube. Los filtros CSS
+compatibles permanecen en el iframe durante la reproducción; Pixelado queda
+limitado a preview. URLs directas siguen usando `video_player` y el pipeline
+de filtros completo.

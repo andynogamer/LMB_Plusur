@@ -12,12 +12,14 @@ class HighlightVideoPlayer extends StatefulWidget {
   const HighlightVideoPlayer({
     super.key,
     required this.url,
+    this.thumbnailUrl,
     this.isActive = false,
     this.onPlay,
     this.filtro = FiltroPartido.ninguno,
   });
 
   final String url;
+  final String? thumbnailUrl;
   final bool isActive;
   final VoidCallback? onPlay;
   final FiltroPartido filtro;
@@ -31,6 +33,8 @@ class _HighlightVideoPlayerState extends State<HighlightVideoPlayer> {
   YoutubePlayerController? _youtube;
   bool _failed = false;
   bool _muted = false;
+  bool _youtubeStarted = false;
+  bool _filterScheduleActive = false;
 
   @override
   void initState() {
@@ -91,7 +95,12 @@ class _HighlightVideoPlayerState extends State<HighlightVideoPlayer> {
     if (oldWidget.url != widget.url) {
       _disposePlayers();
       _failed = false;
+      _youtubeStarted = false;
       _init();
+    } else if (oldWidget.filtro != widget.filtro &&
+        _youtubeStarted &&
+        _youtube != null) {
+      _scheduleYoutubeFilter(_youtube!);
     }
   }
 
@@ -119,6 +128,65 @@ class _HighlightVideoPlayerState extends State<HighlightVideoPlayer> {
     } else {
       widget.onPlay?.call();
       await controller.play();
+    }
+  }
+
+  Future<void> _startYoutube() async {
+    final youtube = _youtube;
+    if (youtube == null) return;
+    widget.onPlay?.call();
+    setState(() => _youtubeStarted = true);
+    _scheduleYoutubeFilter(youtube);
+    await youtube.playVideo();
+  }
+
+  void _scheduleYoutubeFilter(YoutubePlayerController youtube) {
+    if (_filterScheduleActive) return;
+    _filterScheduleActive = true;
+    unawaited(_applyYoutubeFilterWhenMounted(youtube));
+  }
+
+  Future<void> _applyYoutubeFilterWhenMounted(
+    YoutubePlayerController youtube,
+  ) async {
+    try {
+      for (var attempt = 0; attempt < 20; attempt++) {
+        if (!mounted || !identical(_youtube, youtube) || !_youtubeStarted) {
+          return;
+        }
+        await WidgetsBinding.instance.endOfFrame;
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+        if (!mounted || !identical(_youtube, youtube) || !_youtubeStarted) {
+          return;
+        }
+        await _applyYoutubeFilter(youtube);
+      }
+    } finally {
+      _filterScheduleActive = false;
+    }
+  }
+
+  Future<void> _applyYoutubeFilter(YoutubePlayerController youtube) async {
+    final css = FilterEngine.youtubeCss(widget.filtro);
+    try {
+      await youtube.webViewController.runJavaScript('''
+      (function applyLmbFilter(attempt) {
+        var frames = document.querySelectorAll('.embed-container iframe');
+        if (frames.length > 0) {
+          frames.forEach(function(frame) {
+            frame.style.filter = '$css';
+          });
+          return;
+        }
+        if (attempt < 20) {
+          window.setTimeout(function() {
+            applyLmbFilter(attempt + 1);
+          }, 100);
+        }
+      })(0);
+    ''');
+    } catch (_) {
+      // The WebView may still be mounting; the bounded caller retries.
     }
   }
 
@@ -169,21 +237,23 @@ class _HighlightVideoPlayerState extends State<HighlightVideoPlayer> {
 
     final youtube = _youtube;
     if (youtube != null) {
-      return FilterEngine.aplicar(
-        widget.filtro,
-        YoutubePlayer(
-          controller: youtube,
-          aspectRatio: 16 / 9,
-          backgroundColor: Colors.black,
-          enableFullScreenOnVerticalDrag: false,
-        ),
+      if (!_youtubeStarted) {
+        return _youtubePreview();
+      }
+      _scheduleYoutubeFilter(youtube);
+      return YoutubePlayer(
+        controller: youtube,
+        aspectRatio: 16 / 9,
+        backgroundColor: Colors.black,
+        enableFullScreenOnVerticalDrag: false,
       );
     }
 
     final controller = _controller;
     if (controller == null || !controller.value.isInitialized) {
       return const Center(
-        child: CircularProgressIndicator(color: AppColors.button, strokeWidth: 2.4),
+        child: CircularProgressIndicator(
+            color: AppColors.button, strokeWidth: 2.4),
       );
     }
 
@@ -222,6 +292,45 @@ class _HighlightVideoPlayerState extends State<HighlightVideoPlayer> {
             muted: _muted,
             onTogglePlay: _togglePlay,
             onToggleMute: _toggleMute,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _youtubePreview() {
+    final thumbnail = widget.thumbnailUrl;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        FilterEngine.aplicar(
+          widget.filtro,
+          thumbnail == null
+              ? const ColoredBox(color: Colors.black)
+              : Image.network(
+                  thumbnail,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) =>
+                      const ColoredBox(color: Colors.black),
+                ),
+        ),
+        const DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.transparent, Color(0xB3000000)],
+              stops: [0.4, 1],
+            ),
+          ),
+        ),
+        Center(
+          child: IconButton(
+            onPressed: _startYoutube,
+            icon: const Icon(Icons.play_circle_fill),
+            color: AppColors.white,
+            iconSize: 70,
+            tooltip: 'Reproducir video',
           ),
         ),
       ],
@@ -273,7 +382,8 @@ class _Chrome extends StatelessWidget {
               IconButton(
                 onPressed: onTogglePlay,
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints.tightFor(width: 32, height: 32),
+                constraints:
+                    const BoxConstraints.tightFor(width: 32, height: 32),
                 icon: Icon(
                   playing ? Icons.pause : Icons.play_arrow,
                   color: AppColors.white,
@@ -282,7 +392,8 @@ class _Chrome extends StatelessWidget {
               IconButton(
                 onPressed: onToggleMute,
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints.tightFor(width: 32, height: 32),
+                constraints:
+                    const BoxConstraints.tightFor(width: 32, height: 32),
                 icon: Icon(
                   muted ? Icons.volume_off : Icons.volume_up,
                   color: AppColors.white,

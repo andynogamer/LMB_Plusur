@@ -14,8 +14,18 @@ void main() {
     await Future<void>.delayed(const Duration(milliseconds: 35));
 
     expect(updates, greaterThanOrEqualTo(2));
-    expect(simulator.snapshot.inning, isNot(initial.inning));
-    expect(simulator.snapshot.localHits, greaterThan(initial.localHits));
+    expect(
+      simulator.snapshot.outsCount != initial.outsCount ||
+          simulator.snapshot.inning != initial.inning ||
+          simulator.snapshot.esParteLocal != initial.esParteLocal,
+      isTrue,
+    );
+    expect(
+      simulator.snapshot.localHits + simulator.snapshot.visitantHits,
+      greaterThanOrEqualTo(
+        initial.localHits + initial.visitantHits,
+      ),
+    );
     simulator.dispose();
   });
 
@@ -25,6 +35,7 @@ void main() {
 
     expect(second.snapshot.localScore, first.snapshot.localScore);
     expect(second.snapshot.visitantHits, first.snapshot.visitantHits);
+    expect(second.snapshot.mitad, first.snapshot.mitad);
     first.dispose();
     second.dispose();
   });
