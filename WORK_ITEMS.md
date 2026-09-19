@@ -52,6 +52,7 @@
 | US-17 | 📗 | 🟠 P1 | AR overlay chrome — compact, camera-first | ☑ | UI / chrome |
 | DEBT-01 | 🐛 | 🟡 P2 | Remove parallel English domain (`Team`, `TriviaQuestion`) | ☑ | Article IV |
 | BUG-02 | 🐛 | 🟠 P1 | ArFailed “Abrir ajustes” / “Instalar” go to teams | ☑ | Failure UX |
+| US-18 | 📗 | 🟠 P1 | Select stadium or player model after AR lock | ☑ | AR depth |
 | ~~US-05…US-08~~ | — | — | ~~Old monolithic AR items~~ | ⊘ | Replaced by AR-01…AR-07 |
 | ~~BUG-01~~ | — | — | ~~AR mock always Guerreros~~ | ⊘ | Deleted with the mock in AR-03 |
 
@@ -895,6 +896,25 @@ Fuera de alcance: US-17 chrome layout, detection, native Gradle.
 ## DEBT-01 · 🐛 · 🟡 P2 · Remove the parallel English domain · ☑ Hecho
 
 **Prompt**
+```
+
+## US-18 · 📗 · 🟠 P1 · Select stadium or player model after AR lock · ☑ Hecho
+
+**Prompt**
+```
+Contexto: Once a marker is locked, every Zona Sur club has a stadium and player
+GLB in the D-22 catalog. The first marker model remains the default.
+
+Tarea: In the locked AR chrome, let the fan choose Estadio or Jugador. Replace
+the tracked node in place without restarting the AR session. Keep model
+placement in the tracker scene graph and keep the selector in Flutter chrome.
+
+Criterios de aceptación:
+- Selector appears only after ArLocked / ArLost.
+- Estadio and Jugador request the selected club's D-22 GLB.
+- Switching does not stop or recreate the AR session.
+- The selected node remains pose-anchored and missing assets fail gracefully.
+- flutter analyze and AR tests remain green.
 ```
 Contexto: Article IV — Spanish domain, English engineering. Known debt #9.
 lib/models/team.dart (Team: name/city/history) and

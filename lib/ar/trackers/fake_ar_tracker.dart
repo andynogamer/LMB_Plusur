@@ -36,6 +36,7 @@ class FakeArTracker implements ArTracker {
 
   /// Effect attach/clear calls for tests.
   final List<({String trackerName, String glbAsset})> attachedEffects = [];
+  final List<({String trackerName, String glbAsset})> attachedModels = [];
   int clearEffectCount = 0;
 
   double presentationYaw = 0;
@@ -59,7 +60,9 @@ class FakeArTracker implements ArTracker {
   Future<void> attachModel({
     required String trackerName,
     required String glbAsset,
-  }) async {}
+  }) async {
+    attachedModels.add((trackerName: trackerName, glbAsset: glbAsset));
+  }
 
   @override
   Future<bool> playClip({

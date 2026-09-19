@@ -15,7 +15,6 @@ import 'package:vector_math/vector_math_64.dart' show Vector3;
 
 import '../ar_tracker.dart';
 
-
 /// Same name must arrive twice inside 2 s before [ArLocked] (controller).
 /// One-shot emission (`continuousImageTracking: false`) never confirms.
 ///
@@ -90,7 +89,7 @@ void assertTrackableReferences(List<ArReferenceImage> references) {
       throw ArTrackerException(
         ArTrackerFailure.databaseBuildFailed,
         'reference name must equal filename stem and anchoMetros must be > 0 '
-            '(${reference.name})',
+        '(${reference.name})',
       );
     }
   }
@@ -119,6 +118,7 @@ class ArCoreImageTracker implements ArTracker {
   MethodChannel? _objectChannel;
   final Map<String, Matrix4> _poses = {};
   final Map<String, ARNode> _nodes = {};
+  final Map<String, String> _nodeAssets = {};
   final List<_EffectBall> _effectBalls = [];
   String? _effectTrackerName;
   double _effectProgress = 0;
@@ -320,7 +320,7 @@ class ArCoreImageTracker implements ArTracker {
       throw ArTrackerException(
         ArTrackerFailure.databaseBuildFailed,
         'setImageWidths unavailable (${error.code}): '
-            'run tools/patch_arcore_image_width.ps1',
+        'run tools/patch_arcore_image_width.ps1',
       );
     }
   }
@@ -498,7 +498,8 @@ class ArCoreImageTracker implements ArTracker {
     final fade = progress < 0.72
         ? 1.0
         : (1.0 - ((progress - 0.72) / 0.28)).clamp(0.0, 1.0);
-    final scale = (0.4 + 0.7 * Curves.easeOut.transform(progress.clamp(0.0, 0.35) / 0.35)) *
+    final scale = (0.4 +
+            0.7 * Curves.easeOut.transform(progress.clamp(0.0, 0.35) / 0.35)) *
         fade;
     // Soften scale near zero so Filament does not keep a speck.
     final visibleScale = fade <= 0.02 ? 0.001 : scale;
@@ -536,7 +537,8 @@ class ArCoreImageTracker implements ArTracker {
 
   ArTrackerFailure _availabilityFailure() {
     return switch (_availability) {
-      'SUPPORTED_NOT_INSTALLED' || 'SUPPORTED_APK_TOO_OLD' =>
+      'SUPPORTED_NOT_INSTALLED' ||
+      'SUPPORTED_APK_TOO_OLD' =>
         ArTrackerFailure.arCoreNeedsInstall,
       _ => ArTrackerFailure.arCoreUnavailable,
     };
@@ -563,10 +565,21 @@ class ArCoreImageTracker implements ArTracker {
       // Not fully tracked yet — do not place.
       return;
     }
-    if (_nodes.containsKey(trackerName)) {
-      _nodes[trackerName]!.transform = _anchoredPose(pose);
+    final existing = _nodes[trackerName];
+    if (existing != null && _nodeAssets[trackerName] == glbAsset) {
+      existing.transform = _anchoredPose(pose);
       modelAttach = ArModelAttach(ArModelAttachKind.placed, trackerName);
       return;
+    }
+    if (existing != null) {
+      final objects = _objects;
+      if (objects == null) {
+        modelAttach = ArModelAttach(ArModelAttachKind.failed, trackerName);
+        return;
+      }
+      await objects.removeNode(existing);
+      _nodes.remove(trackerName);
+      _nodeAssets.remove(trackerName);
     }
     try {
       await rootBundle.load(glbAsset);
@@ -597,6 +610,7 @@ class ArCoreImageTracker implements ArTracker {
       return;
     }
     _nodes[trackerName] = node;
+    _nodeAssets[trackerName] = glbAsset;
     modelAttach = ArModelAttach(ArModelAttachKind.placed, trackerName);
   }
 
@@ -605,6 +619,7 @@ class ArCoreImageTracker implements ArTracker {
     _stopped = true;
     await clearEffect();
     _nodes.clear();
+    _nodeAssets.clear();
     _poses.clear();
     _objects = null;
     _presentationYaw = 0;

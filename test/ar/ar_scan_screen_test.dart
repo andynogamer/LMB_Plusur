@@ -318,6 +318,28 @@ void main() {
     expect(find.text(info), findsOneWidget);
   });
 
+  testWidgets('permite cambiar el modelo sin salir de la sesión AR', (
+    tester,
+  ) async {
+    final tracker = FakeArTracker();
+    await pumpScan(tester, tracker: tracker);
+    await lock(tracker, leones);
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byKey(const Key('ar-model-selector')), findsOneWidget);
+    await tester.tap(find.text('JUGADOR'));
+    await tester.pump();
+    await tester.pump();
+
+    expect(
+      tracker.attachedModels.last.glbAsset,
+      'assets/models/leones_yucatan/jugador.glb',
+    );
+    expect(find.byKey(const Key('ar-locked')), findsOneWidget);
+    expect(find.byKey(const Key('ar-model-selector')), findsOneWidget);
+  });
+
   testWidgets('celebracion pide el clip y reposo vuelve a idle',
       (tester) async {
     final player = _marcador(

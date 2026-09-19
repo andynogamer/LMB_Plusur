@@ -24,6 +24,7 @@ import 'widgets/ar_chrome_snapshot.dart';
 import 'widgets/ar_demo_badge.dart';
 import 'widgets/ar_failed_panel.dart';
 import 'widgets/ar_mode_panel.dart';
+import 'widgets/ar_model_selector.dart';
 import 'widgets/ar_session_body.dart';
 import 'widgets/ar_viewfinder.dart';
 
@@ -80,6 +81,8 @@ class _ArScanScreenState extends State<ArScanScreen>
   bool _efectoLooping = false;
   final ValueNotifier<ArExperienceMode> _mode =
       ValueNotifier<ArExperienceMode>(ArExperienceMode.gallery);
+  final ValueNotifier<ArModelChoice> _modelChoice =
+      ValueNotifier<ArModelChoice>(ArModelChoice.defaultModel);
 
   ArChromeSnapshot get _chrome => _chromeActions.value;
 
@@ -217,6 +220,7 @@ class _ArScanScreenState extends State<ArScanScreen>
   ) async {
     _liveIsDemo = choice.isDemo;
     _mode.value = ArExperienceMode.gallery;
+    _modelChoice.value = ArModelChoice.defaultModel;
     _liveTracker = choice.tracker;
     _cameraTracker = choice.camera && choice.tracker is ArCoreImageTracker
         ? choice.tracker as ArCoreImageTracker
@@ -269,9 +273,10 @@ class _ArScanScreenState extends State<ArScanScreen>
   }
 
   Future<void> _attachLockedModel(ArTracker tracker, ArLocked locked) async {
+    final asset = _assetForModel(locked.marcador, _modelChoice.value);
     await tracker.attachModel(
       trackerName: locked.marcador.id,
-      glbAsset: locked.marcador.modelAsset,
+      glbAsset: asset,
     );
     if (!mounted) return;
     final note = tracker is ArCoreImageTracker
@@ -280,13 +285,43 @@ class _ArScanScreenState extends State<ArScanScreen>
     if (_chrome.modelNote != note) {
       _patchChrome(_chrome.copyWith(modelNote: note));
     }
-    if (locked.marcador.animaciones.contains(kClipIdle)) {
+    if (locked.marcador.animaciones.contains(kClipIdle) &&
+        _modelChoice.value == ArModelChoice.defaultModel) {
       await tracker.playClip(
         trackerName: locked.marcador.id,
         clipName: kClipIdle,
         loop: true,
       );
     }
+  }
+
+  String _assetForModel(Marcador marcador, ArModelChoice choice) {
+    return switch (choice) {
+      ArModelChoice.defaultModel => marcador.modelAsset,
+      ArModelChoice.stadium => 'assets/models/${marcador.equipoId}/estadio.glb',
+      ArModelChoice.player => 'assets/models/${marcador.equipoId}/jugador.glb',
+    };
+  }
+
+  Future<void> _changeModel(
+    Marcador marcador,
+    ArModelChoice choice,
+  ) async {
+    final tracker = _liveTracker;
+    if (tracker == null) return;
+    _modelChoice.value = choice;
+    await _attachLockedModel(
+      tracker,
+      ArLocked(marcador: marcador, isDemo: _liveIsDemo),
+    );
+    if (!mounted) return;
+    _patchChrome(
+      _chrome.copyWith(
+        actionNote: choice == ArModelChoice.stadium
+            ? 'Modelo estadio seleccionado.'
+            : 'Modelo jugador seleccionado.',
+      ),
+    );
   }
 
   Future<void> _releaseActions() async {
@@ -495,6 +530,7 @@ class _ArScanScreenState extends State<ArScanScreen>
     _uiState.dispose();
     _chromeActions.dispose();
     _mode.dispose();
+    _modelChoice.dispose();
     unawaited(_controller?.dispose());
     super.dispose();
   }
@@ -670,6 +706,19 @@ class _ArScanScreenState extends State<ArScanScreen>
                                             ),
                                           );
                                         },
+                                      ),
+                                    ),
+                              modelSelector: marcador == null
+                                  ? null
+                                  : ValueListenableBuilder<ArModelChoice>(
+                                      valueListenable: _modelChoice,
+                                      builder: (context, choice, _) =>
+                                          ArModelSelector(
+                                        marcador: marcador,
+                                        choice: choice,
+                                        onChanged: (next) => unawaited(
+                                          _changeModel(marcador, next),
+                                        ),
                                       ),
                                     ),
                             )
