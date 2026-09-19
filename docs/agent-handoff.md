@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-09-19 · by: US-18 AR model choice
+**Last updated:** 2026-09-19 · by: US-19 AR model plane orientation
 
 ---
 
@@ -175,6 +175,15 @@ Measured later, four of them were. **Never copy code from that branch.**
   The choices are compact stadium/baseball icon controls outside the main card.
   **Información** is disabled while **Trivia AR** is active to keep the trivia
   prompt within the available chrome height.
+- **US-19 / D-25:** club GLBs are authored Y-up, so the tracker applies a local
+  90° X rotation to place them parallel to the scanned logo. Información now
+  rotates around the logo normal.
+- When **Jugador** is selected from the D-22 catalog, the screen now starts its
+  `idle` clip and exposes the player celebration action independently of the
+  original marker model's animation metadata. Stadium selection remains static.
+- **BUG-03:** Información now stays open after its one presentation turn.
+  The turn resets the model yaw only; the user closes the panel with the same
+  button or by leaving the locked/lost state.
 
 Do not mix BUG-02 with US-09/US-10.
 
@@ -315,6 +324,9 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-09-19 | **BUG-03.** Kept the AR Información panel open after the presentation turn; only the model yaw resets automatically. Added a persistence regression test. |
+| 2026-09-19 | **Animation follow-up.** Model selection now drives clip capability: D-22 Jugador starts `idle` and exposes celebration even when the scanned marker's default asset was static. Focused AR tests pass. |
+| 2026-09-19 | **US-19 / D-25.** Oriented the authored club GLBs parallel to the scanned logo plane and changed Información's presentation spin to the marker normal. Corrected the local X rotation sign after device-oriented review so the model is not upside down. Added matrix coverage; analyze and the full 49-test suite pass. |
 | 2026-09-19 | **US-18 UX refinement.** Moved stadium/player selection to compact icon controls outside the main card and disabled Información in Trivia AR; added regression coverage for both overflow paths. |
 | 2026-09-19 | **US-18 / D-24.** Added locked-session stadium/player model selection. Flutter chooses the catalog GLB; the tracker replaces the anchored node in place. Focused analyze and 10 AR tests pass. |
 | 2026-09-19 | **DEBT-01.** Removed the unused English `Team` / `TriviaQuestion` models and `MockData` cluster. No production imports or behavior changed; `flutter analyze` and the focused regression suite pass. Next: human/device acceptance gates. |

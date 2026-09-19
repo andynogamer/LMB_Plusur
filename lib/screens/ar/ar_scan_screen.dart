@@ -111,9 +111,6 @@ class _ArScanScreenState extends State<ArScanScreen>
       ..addStatusListener((status) {
         if (status != AnimationStatus.completed || !mounted) return;
         _liveTracker?.setPresentationYaw(0);
-        if (_chrome.infoPressed) {
-          _patchChrome(_chrome.copyWith(infoPressed: false));
-        }
       });
     _efectoDrive = AnimationController(
       vsync: this,
@@ -285,14 +282,21 @@ class _ArScanScreenState extends State<ArScanScreen>
     if (_chrome.modelNote != note) {
       _patchChrome(_chrome.copyWith(modelNote: note));
     }
-    if (locked.marcador.animaciones.contains(kClipIdle) &&
-        _modelChoice.value == ArModelChoice.defaultModel) {
+    if (_selectedModelHasAnimations(locked.marcador)) {
       await tracker.playClip(
         trackerName: locked.marcador.id,
         clipName: kClipIdle,
         loop: true,
       );
     }
+  }
+
+  bool _selectedModelHasAnimations(Marcador marcador) {
+    return switch (_modelChoice.value) {
+      ArModelChoice.player => true,
+      ArModelChoice.stadium => false,
+      ArModelChoice.defaultModel => marcador.animaciones.contains(kClipIdle),
+    };
   }
 
   String _assetForModel(Marcador marcador, ArModelChoice choice) {
@@ -381,7 +385,7 @@ class _ArScanScreenState extends State<ArScanScreen>
   Future<void> _onGesto(Marcador marcador) async {
     final tracker = _liveTracker;
     if (tracker == null) return;
-    if (!marcador.animaciones.contains(kClipCelebracion)) {
+    if (!_modelSupportsClip(marcador, kClipCelebracion)) {
       await FeedbackService.instance.error();
       if (!mounted) return;
       _patchChrome(_chrome.copyWith(actionNote: kCelebracionMissingCopy));
@@ -402,6 +406,7 @@ class _ArScanScreenState extends State<ArScanScreen>
           _chrome.copyWith(gestoPressed: false, celebracionVfx: false));
       return;
     }
+
     final played = await tracker.playClip(
       trackerName: marcador.id,
       clipName: kClipCelebracion,
@@ -436,6 +441,14 @@ class _ArScanScreenState extends State<ArScanScreen>
         _patchChrome(_chrome.copyWith(gestoPressed: false));
       });
     }
+  }
+
+  bool _modelSupportsClip(Marcador marcador, String clipName) {
+    return switch (_modelChoice.value) {
+      ArModelChoice.player => true,
+      ArModelChoice.stadium => false,
+      ArModelChoice.defaultModel => marcador.animaciones.contains(clipName),
+    };
   }
 
   Future<void> _onEfecto() async {
@@ -718,9 +731,11 @@ class _ArScanScreenState extends State<ArScanScreen>
                                             valueListenable: _mode,
                                             builder: (context, mode, _) =>
                                                 ArActionBar(
-                                              showCelebracion: marcador
-                                                  .animaciones
-                                                  .contains(kClipCelebracion),
+                                              showCelebracion:
+                                                  _modelSupportsClip(
+                                                marcador,
+                                                kClipCelebracion,
+                                              ),
                                               gestoPressed:
                                                   actions.gestoPressed,
                                               infoPressed: actions.infoPressed,
