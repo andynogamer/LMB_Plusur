@@ -17,7 +17,11 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 | [`docs/ar-architecture.md`](./docs/ar-architecture.md) | The AR technical contract: layers, `ArTracker` seam, state machine, error taxonomy, budgets. |
 | [`docs/ar-marker-guide.md`](./docs/ar-marker-guide.md) | How to author printable markers ARCore can actually track. |
 
-**Version**: 2.4.10 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-09
+**Version**: 2.4.11 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-19
+
+> **v2.4.11 — DEBT-01 English domain cleanup.** The unused `Team`,
+> `TriviaQuestion`, and `MockData` legacy cluster was removed. Production
+> content remains on the Spanish `Equipo` / `Trivia` domain.
 
 > **v2.4.10 — R-03 video catalog.** `assets/videos.json` holds one YouTube
 > highlight per Zona Sur club. Playback uses `youtube_player_iframe` (not
@@ -658,12 +662,9 @@ MUST NOT:
    `README.md` is the bilingual product / run brief.
 9. **`flutter_unity_widget` comment in `pubspec.yaml`** — leave unused; do not
    activate. Delete it when Article VI work lands.
-10. **Parallel English domain (Article IV violation)** — `models/team.dart`
-   (`Team`, `name`, `city`, `history`) and `models/trivia_question.dart`
-   (`TriviaQuestion`, `prompt`) duplicate `Equipo` / `Trivia`, and are reachable
-   from `data/mock_data.dart`. `demo_highlights.dart` is gone; the archive
-   is `assets/videos.json`. Consolidate onto
-   the Spanish domain in a dedicated cleanup item — do not extend them.
+10. **~~Parallel English domain (Article IV violation).~~** Cleared in DEBT-01
+   (2026-09-19). The unused `Team`, `TriviaQuestion`, and `MockData` legacy
+   cluster was removed; production data remains on `Equipo` / `Trivia`.
 
 Track fixes via `WORK_ITEMS.md`.
 

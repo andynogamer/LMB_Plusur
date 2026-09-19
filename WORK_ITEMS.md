@@ -50,7 +50,7 @@
 | US-15 | 📗 | 🟡 P2 | Android APK release build | ☑ | Packaging |
 | US-16 | 📗 | 🟢 P3 | README product brief for humans | ☑ | Docs |
 | US-17 | 📗 | 🟠 P1 | AR overlay chrome — compact, camera-first | ☑ | UI / chrome |
-| DEBT-01 | 🐛 | 🟡 P2 | Remove parallel English domain (`Team`, `TriviaQuestion`) | ☐ | Article IV |
+| DEBT-01 | 🐛 | 🟡 P2 | Remove parallel English domain (`Team`, `TriviaQuestion`) | ☑ | Article IV |
 | BUG-02 | 🐛 | 🟠 P1 | ArFailed “Abrir ajustes” / “Instalar” go to teams | ☑ | Failure UX |
 | ~~US-05…US-08~~ | — | — | ~~Old monolithic AR items~~ | ⊘ | Replaced by AR-01…AR-07 |
 | ~~BUG-01~~ | — | — | ~~AR mock always Guerreros~~ | ⊘ | Deleted with the mock in AR-03 |
@@ -892,7 +892,7 @@ Fuera de alcance: US-17 chrome layout, detection, native Gradle.
 
 ---
 
-## DEBT-01 · 🐛 · 🟡 P2 · Remove the parallel English domain · ☐ Pendiente
+## DEBT-01 · 🐛 · 🟡 P2 · Remove the parallel English domain · ☑ Hecho
 
 **Prompt**
 ```

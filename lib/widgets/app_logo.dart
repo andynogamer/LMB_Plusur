@@ -21,7 +21,6 @@ class AppLogo extends StatelessWidget {
         height: size,
         fit: BoxFit.cover,
         cacheWidth: px,
-        cacheHeight: px,
         filterQuality: FilterQuality.medium,
         semanticLabel: 'Logo LMB Plusur',
       ),

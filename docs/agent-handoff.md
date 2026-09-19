@@ -166,9 +166,8 @@ Measured later, four of them were. **Never copy code from that branch.**
   team list. **Fixed 2026-09-19:** settings now call
   `permission_handler`/`openAppSettings()`, installation opens the ARCore
   Google Play URL, and only the manual action navigates to teams.
-- Backlog still open for cleanup: **DEBT-01**. Historia still uses a
-  generic `ImagePlaceholder` (no club photo). `mock_data.dart` / English
-  `Team` types are unused (DEBT-01). Constitution “Feature contracts” table
+- Remaining cleanup is complete; Historia still uses a
+  generic `ImagePlaceholder` (no club photo). Constitution “Feature contracts” table
   is stale (videos still say Planned; markers still say 5 logos).
 
 Do not mix BUG-02 with US-09/US-10.
@@ -176,11 +175,10 @@ Do not mix BUG-02 with US-09/US-10.
 **Next**
 
 ```
-DEBT-01: remove the parallel English domain
+Human/device gates: AR-06/07 acceptance and printed marker checks
 ```
 
-Then human device gates (AR-06/07, print Bravos/Tigres,
-APK splash). DEBT-01 is cleanup.
+Next: human device gates (AR-06/07, print Bravos/Tigres, APK splash).
 
 Release APK path: `build/app/outputs/flutter-apk/app-release.apk`.
 Rebuild after both plugin patches before installing.
@@ -311,6 +309,7 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-09-19 | **DEBT-01.** Removed the unused English `Team` / `TriviaQuestion` models and `MockData` cluster. No production imports or behavior changed; `flutter analyze` and the focused regression suite pass. Next: human/device acceptance gates. |
 | 2026-09-19 | **US-10.** Added Galería AR / Trivia AR mode switching inside the locked AR chrome. Trivia reuses the scanned marker’s linked team question data, gives Spanish answer feedback, and keeps the existing model/action session intact. Added focused mode coverage; targeted analyze and 9 AR tests pass. Next: DEBT-01. |
 | 2026-09-19 | **US-09.** Added local `StatsSimulator` timer service and a themed Spanish simulated scoreboard to the team menu. Scores, inning, and hits update automatically without network calls or tap spam. Added service tests; targeted analyze and tests pass. Next: US-10. |
 | 2026-09-19 | **BUG-02.** Failed-panel recovery actions are wired: settings opens device app settings, install opens the ARCore Play Store URL, retry remains local, and manual selection alone navigates to teams. Added focused widget coverage; targeted analyze and 8 AR scan tests pass. `url_launcher` is now a direct dependency. Next: US-09. |
@@ -336,7 +335,7 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 ## 9. Current task
 
-> Next: DEBT-01 parallel English domain cleanup.
+> Next: human/device acceptance gates for AR-06/07 and printed markers.
 
 _(The human edits this line each session. Leave it pointing at the next item
 when you finish.)_

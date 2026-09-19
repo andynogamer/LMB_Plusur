@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lmb_plusur/ar/marker_registry.dart';
-import 'package:lmb_plusur/models/marcador_model.dart';
 import 'package:lmb_plusur/services/data_service.dart';
 
 /// Filename stem of an asset path. Lives in the test so production resolution
