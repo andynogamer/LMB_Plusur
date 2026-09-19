@@ -26,7 +26,7 @@ Matrix4 modelPoseForImage(
 }) {
   final pose = Matrix4.fromFloat64List(imagePose.storage);
   pose.translateByDouble(0, 0.01, 0, 1);
-  pose.rotateX(math.pi / 2);
+  pose.rotateX(-math.pi / 2);
   if (presentationYaw != 0) {
     pose.rotateZ(presentationYaw);
   }

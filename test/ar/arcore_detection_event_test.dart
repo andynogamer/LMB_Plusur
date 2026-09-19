@@ -136,9 +136,9 @@ void main() {
 
     expect(upDirection.x, closeTo(0, 0.000001));
     expect(upDirection.y, closeTo(0, 0.000001));
-    expect(upDirection.z, closeTo(1, 0.000001));
+    expect(upDirection.z, closeTo(-1, 0.000001));
     expect(normalDirection.x, closeTo(0, 0.000001));
-    expect(normalDirection.y, closeTo(-1, 0.000001));
+    expect(normalDirection.y, closeTo(1, 0.000001));
     expect(normalDirection.z, closeTo(0, 0.000001));
   });
 }
