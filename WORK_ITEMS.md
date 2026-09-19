@@ -41,8 +41,8 @@
 | AR-05 | 📗 | 🔴 P0 | Real detection → deterministic lock (kills BUG-01) | ☑ | 3 markers |
 | AR-06 | 📗 | 🔴 P0 | In-session 3D anchored on the marker pose | ◐ código · dispositivo ☐ | Buttons / UI |
 | AR-07 | 📗 | 🔴 P0 | ≥2 AR action types (anim, info+TTS, …) | ◐ código · dispositivo ☐ | 2 action types |
-| US-09 | 📗 | 🟠 P1 | Simulated live stats in AR / team | ☐ | Actions |
-| US-10 | 📗 | 🟠 P1 | Multiple AR modes (galería / trivia / video) | ☐ | Bonus + modes |
+| US-09 | 📗 | 🟠 P1 | Simulated live stats in AR / team | ☑ | Actions |
+| US-10 | 📗 | 🟠 P1 | Multiple AR modes (galería / trivia / video) | ☑ | Bonus + modes |
 | US-11 | 📗 | 🔴 P0 | Video archive UI (remote URLs) | ☑ | Videos |
 | US-12 | 📗 | 🔴 P0 | Video filters — allowed set only | ☑ | Filters |
 | US-13 | 📗 | 🟠 P1 | Baseball-coherent 3D animations / VFX | ☑ | 15pt effects |
@@ -51,7 +51,7 @@
 | US-16 | 📗 | 🟢 P3 | README product brief for humans | ☑ | Docs |
 | US-17 | 📗 | 🟠 P1 | AR overlay chrome — compact, camera-first | ☑ | UI / chrome |
 | DEBT-01 | 🐛 | 🟡 P2 | Remove parallel English domain (`Team`, `TriviaQuestion`) | ☐ | Article IV |
-| BUG-02 | 🐛 | 🟠 P1 | ArFailed “Abrir ajustes” / “Instalar” go to teams | ☐ | Failure UX |
+| BUG-02 | 🐛 | 🟠 P1 | ArFailed “Abrir ajustes” / “Instalar” go to teams | ☑ | Failure UX |
 | ~~US-05…US-08~~ | — | — | ~~Old monolithic AR items~~ | ⊘ | Replaced by AR-01…AR-07 |
 | ~~BUG-01~~ | — | — | ~~AR mock always Guerreros~~ | ⊘ | Deleted with the mock in AR-03 |
 
@@ -571,7 +571,7 @@ Device checks still open:
 
 ---
 
-## US-09 · 📗 · 🟠 P1 · Simulated live stats · ☐ Pendiente
+## US-09 · 📗 · 🟠 P1 · Simulated live stats · ☑ Hecho
 
 **Prompt**
 ```
@@ -592,7 +592,7 @@ Fuera de alcance: real sports data feeds.
 
 ---
 
-## US-10 · 📗 · 🟠 P1 · Multiple AR modes · ☐ Pendiente
+## US-10 · 📗 · 🟠 P1 · Multiple AR modes · ☑ Hecho
 
 **Prompt**
 ```
@@ -861,7 +861,7 @@ ArLocked` is an illegal transition, and demo mode must cycle all markers
 
 ---
 
-## BUG-02 · 🐛 · 🟠 P1 · Failed-panel recovery actions are stubs · ☐ Pendiente
+## BUG-02 · 🐛 · 🟠 P1 · Failed-panel recovery actions · ☑ Hecho
 
 **Prompt**
 ```

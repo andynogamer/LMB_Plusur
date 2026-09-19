@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-09-13 · by: portfolio README + screenshots
+**Last updated:** 2026-09-19 · by: US-10 multiple AR modes
 
 ---
 
@@ -163,9 +163,10 @@ Measured later, four of them were. **Never copy code from that branch.**
 **Open product / UI gaps (audit 2026-09-09; US-17 closed the chrome list)**
 
 - **BUG-02:** `ArFailedPanel` “Abrir ajustes” and “Instalar” both push the
-  team list. Only Reintentar is wired.
-- Backlog still open for grading depth: **US-09** simulated stats, **US-10**
-  AR modes (galería / trivia AR / video inmersivo). Historia still uses a
+  team list. **Fixed 2026-09-19:** settings now call
+  `permission_handler`/`openAppSettings()`, installation opens the ARCore
+  Google Play URL, and only the manual action navigates to teams.
+- Backlog still open for cleanup: **DEBT-01**. Historia still uses a
   generic `ImagePlaceholder` (no club photo). `mock_data.dart` / English
   `Team` types are unused (DEBT-01). Constitution “Feature contracts” table
   is stale (videos still say Planned; markers still say 5 logos).
@@ -175,10 +176,10 @@ Do not mix BUG-02 with US-09/US-10.
 **Next**
 
 ```
-BUG-02: ArFailed “Abrir ajustes” / “Instalar” go to teams
+DEBT-01: remove the parallel English domain
 ```
 
-Then US-09 / US-10, or human device gates (AR-06/07, print Bravos/Tigres,
+Then human device gates (AR-06/07, print Bravos/Tigres,
 APK splash). DEBT-01 is cleanup.
 
 Release APK path: `build/app/outputs/flutter-apk/app-release.apk`.
@@ -310,6 +311,9 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-09-19 | **US-10.** Added Galería AR / Trivia AR mode switching inside the locked AR chrome. Trivia reuses the scanned marker’s linked team question data, gives Spanish answer feedback, and keeps the existing model/action session intact. Added focused mode coverage; targeted analyze and 9 AR tests pass. Next: DEBT-01. |
+| 2026-09-19 | **US-09.** Added local `StatsSimulator` timer service and a themed Spanish simulated scoreboard to the team menu. Scores, inning, and hits update automatically without network calls or tap spam. Added service tests; targeted analyze and tests pass. Next: US-10. |
+| 2026-09-19 | **BUG-02.** Failed-panel recovery actions are wired: settings opens device app settings, install opens the ARCore Play Store URL, retry remains local, and manual selection alone navigates to teams. Added focused widget coverage; targeted analyze and 8 AR scan tests pass. `url_launcher` is now a direct dependency. Next: US-09. |
 | 2026-09-13 | **README.** Portfolio rewrite: English product overview, six phone-viewport shots in `docs/screenshots/`, AR camera omitted with a web-capture disclaimer. Run/APK steps kept. Next still BUG-02. |
 | 2026-09-09 | **R-03.** Ten YouTube highlights in `assets/videos.json`. Player uses `youtube_player_iframe`. Sample MP4s removed. Constitution → v2.4.10. Some clubs share a video id (human list). |
 | 2026-09-09 | **US-17.** Camera-first AR chrome: viewfinder, info on demand, hide Celebración on static GLBs, keep chrome on ArLost, small ¡JONRÓN! chip, action notifier. `flutter test test/ar/ar_scan_screen_test.dart` 6 passed. Next: BUG-02. |
@@ -332,7 +336,7 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 ## 9. Current task
 
-> Next: BUG-02 failed-panel recovery actions. Then US-09 / US-10.
+> Next: DEBT-01 parallel English domain cleanup.
 
 _(The human edits this line each session. Leave it pointing at the next item
 when you finish.)_

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lmb_plusur/ar/ar_tracker.dart';
 import 'package:lmb_plusur/ar/marker_registry.dart';
+import 'package:lmb_plusur/ar/ar_session_state.dart';
 import 'package:lmb_plusur/ar/trackers/fake_ar_tracker.dart';
 import 'package:lmb_plusur/models/equipo_model.dart';
 import 'package:lmb_plusur/models/marcador_model.dart';
@@ -97,7 +98,8 @@ void main() {
     );
   }
 
-  testWidgets('el contenido del marcador solo aparece en ArLocked', (tester) async {
+  testWidgets('el contenido del marcador solo aparece en ArLocked',
+      (tester) async {
     final tracker = FakeArTracker();
     await pumpScan(tester, tracker: tracker);
 
@@ -194,16 +196,68 @@ void main() {
       final tracker = FakeArTracker(startFailure: ArTrackerException(failure));
       await pumpScan(tester, tracker: tracker);
 
-      expect(find.byKey(const Key('ar-failed')), findsOneWidget, reason: failure.name);
+      expect(find.byKey(const Key('ar-failed')), findsOneWidget,
+          reason: failure.name);
       expect(find.text(expected[failure]!.$1), findsOneWidget);
       expect(find.text(expected[failure]!.$2), findsOneWidget);
-      expect(find.text(ArFailedPanel.manualPathLabel.toUpperCase()), findsOneWidget);
+      expect(find.text(ArFailedPanel.manualPathLabel.toUpperCase()),
+          findsOneWidget);
       expect(find.byKey(const Key('ar-marker-content')), findsNothing);
     }
 
     await tester.tap(find.text(ArFailedPanel.manualPathLabel.toUpperCase()));
     await tester.pumpAndSettle();
     expect(find.text('lista-equipos'), findsOneWidget);
+  });
+
+  testWidgets('permiso denegado abre ajustes y no la lista de equipos', (
+    tester,
+  ) async {
+    var settingsOpened = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        routes: {
+          AppRoutes.teams: (_) => const Scaffold(body: Text('lista-equipos')),
+        },
+        home: ArFailedPanel(
+          failure: const ArFailed(failure: ArTrackerFailure.permissionDenied),
+          onRetry: () {},
+          onOpenSettings: () => settingsOpened = true,
+          onInstall: () {},
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('ABRIR AJUSTES'));
+    await tester.pump();
+
+    expect(settingsOpened, isTrue);
+    expect(find.text('lista-equipos'), findsNothing);
+  });
+
+  testWidgets('ARCore faltante abre instalar y no la lista de equipos', (
+    tester,
+  ) async {
+    var installOpened = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        routes: {
+          AppRoutes.teams: (_) => const Scaffold(body: Text('lista-equipos')),
+        },
+        home: ArFailedPanel(
+          failure: const ArFailed(failure: ArTrackerFailure.arCoreNeedsInstall),
+          onRetry: () {},
+          onOpenSettings: () {},
+          onInstall: () => installOpened = true,
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('INSTALAR'));
+    await tester.pump();
+
+    expect(installOpened, isTrue);
+    expect(find.text('lista-equipos'), findsNothing);
   });
 
   testWidgets('las acciones solo existen tras el lock y no cubren info', (
@@ -264,7 +318,8 @@ void main() {
     expect(find.text(info), findsOneWidget);
   });
 
-  testWidgets('celebracion pide el clip y reposo vuelve a idle', (tester) async {
+  testWidgets('celebracion pide el clip y reposo vuelve a idle',
+      (tester) async {
     final player = _marcador(
       id: 'marcador_jugador_olmecas',
       titulo: 'El legado olmeca',
@@ -314,7 +369,8 @@ void main() {
     expect(tracker.clearEffectCount, greaterThan(0));
   });
 
-  testWidgets('efecto jonrón coloca el GLB 3D sin soltar la sesión', (tester) async {
+  testWidgets('efecto jonrón coloca el GLB 3D sin soltar la sesión',
+      (tester) async {
     final tracker = FakeArTracker();
     await pumpScan(tester, tracker: tracker);
 

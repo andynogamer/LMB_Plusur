@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../ar/ar_session_controller.dart';
 import '../../ar/ar_session_state.dart';
@@ -21,6 +23,7 @@ import 'widgets/ar_baseball_vfx.dart';
 import 'widgets/ar_chrome_snapshot.dart';
 import 'widgets/ar_demo_badge.dart';
 import 'widgets/ar_failed_panel.dart';
+import 'widgets/ar_mode_panel.dart';
 import 'widgets/ar_session_body.dart';
 import 'widgets/ar_viewfinder.dart';
 
@@ -60,6 +63,7 @@ class _ArScanScreenState extends State<ArScanScreen>
   ArSessionController? _controller;
   StreamSubscription<ArSessionState>? _states;
   List<Marcador> _marcadores = const [];
+  List<Equipo> _equipos = const [];
   int _cycleIndex = 0;
   ArTracker? _ownedTracker;
   ArCoreImageTracker? _cameraTracker;
@@ -74,6 +78,8 @@ class _ArScanScreenState extends State<ArScanScreen>
       ValueNotifier<ArChromeSnapshot>(ArChromeSnapshot.empty);
 
   bool _efectoLooping = false;
+  final ValueNotifier<ArExperienceMode> _mode =
+      ValueNotifier<ArExperienceMode>(ArExperienceMode.gallery);
 
   ArChromeSnapshot get _chrome => _chromeActions.value;
 
@@ -122,6 +128,7 @@ class _ArScanScreenState extends State<ArScanScreen>
   Future<void> _openSession() async {
     final marcadores =
         widget.marcadores ?? await DataService().cargarMarcadores();
+    _equipos = await DataService().cargarEquipos();
     if (!mounted) return;
 
     _marcadores = marcadores;
@@ -132,7 +139,8 @@ class _ArScanScreenState extends State<ArScanScreen>
     await _presentAndBind(choice, registry, marcadores);
   }
 
-  Future<({ArTracker tracker, bool isDemo, bool camera})> _chooseTracker() async {
+  Future<({ArTracker tracker, bool isDemo, bool camera})>
+      _chooseTracker() async {
     if (widget.tracker != null) {
       return (tracker: widget.tracker!, isDemo: widget.isDemo, camera: false);
     }
@@ -169,17 +177,50 @@ class _ArScanScreenState extends State<ArScanScreen>
     await _presentAndBind(choice, registry, marcadores);
   }
 
+  Future<void> _openSettings() async {
+    final opened = await openAppSettings();
+    if (!opened && mounted) {
+      _showRecoveryMessage('No pudimos abrir los ajustes del dispositivo.');
+    }
+  }
+
+  Future<void> _installArCore() async {
+    final arCoreUri = Uri.parse(
+      'https://play.google.com/store/apps/details?id=com.google.ar.core',
+    );
+    final opened = await launchUrl(
+      arCoreUri,
+      mode: LaunchMode.externalApplication,
+    );
+    if (!opened && mounted) {
+      _showRecoveryMessage('No pudimos abrir Google Play.');
+    }
+  }
+
+  void _showRecoveryMessage(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Equipo? _equipoFor(Marcador marcador) {
+    for (final equipo in _equipos) {
+      if (equipo.id == marcador.equipoId) return equipo;
+    }
+    return widget.equipoHint;
+  }
+
   Future<void> _presentAndBind(
     ({ArTracker tracker, bool isDemo, bool camera}) choice,
     MarkerRegistry registry,
     List<Marcador> marcadores,
   ) async {
     _liveIsDemo = choice.isDemo;
+    _mode.value = ArExperienceMode.gallery;
     _liveTracker = choice.tracker;
-    _cameraTracker =
-        choice.camera && choice.tracker is ArCoreImageTracker
-            ? choice.tracker as ArCoreImageTracker
-            : null;
+    _cameraTracker = choice.camera && choice.tracker is ArCoreImageTracker
+        ? choice.tracker as ArCoreImageTracker
+        : null;
     if (mounted) setState(() {});
     await _bind(
       choice.tracker,
@@ -322,7 +363,8 @@ class _ArScanScreenState extends State<ArScanScreen>
         loop: true,
       );
       if (!mounted) return;
-      _patchChrome(_chrome.copyWith(gestoPressed: false, celebracionVfx: false));
+      _patchChrome(
+          _chrome.copyWith(gestoPressed: false, celebracionVfx: false));
       return;
     }
     final played = await tracker.playClip(
@@ -425,7 +467,9 @@ class _ArScanScreenState extends State<ArScanScreen>
   void _simulateNext() {
     final tracker = widget.tracker ?? _ownedTracker;
     final controller = _controller;
-    if (tracker is! FakeArTracker || _marcadores.isEmpty || controller == null) {
+    if (tracker is! FakeArTracker ||
+        _marcadores.isEmpty ||
+        controller == null) {
       return;
     }
     final marcador = _marcadores[_cycleIndex % _marcadores.length];
@@ -450,6 +494,7 @@ class _ArScanScreenState extends State<ArScanScreen>
     _states?.cancel();
     _uiState.dispose();
     _chromeActions.dispose();
+    _mode.dispose();
     unawaited(_controller?.dispose());
     super.dispose();
   }
@@ -497,8 +542,8 @@ class _ArScanScreenState extends State<ArScanScreen>
     final showDemoBadge = _liveIsDemo || (state is ArLocked && state.isDemo);
     final failed = state is ArFailed ? state : null;
     final marcador = _activeMarcador(state);
-    final showVfx = marcador != null &&
-        (actions.efectoPressed || actions.celebracionVfx);
+    final showVfx =
+        marcador != null && (actions.efectoPressed || actions.celebracionVfx);
     final showViewfinder = state is ArSearching || state is ArCandidate;
 
     return Stack(
@@ -605,10 +650,34 @@ class _ArScanScreenState extends State<ArScanScreen>
                                           unawaited(_onInfo(marcador)),
                                       onEfecto: () => unawaited(_onEfecto()),
                                     ),
+                              modePanel: marcador == null
+                                  ? null
+                                  : ValueListenableBuilder<ArExperienceMode>(
+                                      valueListenable: _mode,
+                                      builder: (context, mode, _) =>
+                                          ArModePanel(
+                                        marcador: marcador,
+                                        equipo: _equipoFor(marcador),
+                                        mode: mode,
+                                        onModeChanged: (next) {
+                                          _mode.value = next;
+                                          _patchChrome(
+                                            _chrome.copyWith(
+                                              actionNote: next ==
+                                                      ArExperienceMode.trivia
+                                                  ? 'Modo Trivia AR activado.'
+                                                  : 'Modo Galería AR activado.',
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
                             )
                           : ArFailedPanel(
                               failure: failed,
                               onRetry: _retry,
+                              onOpenSettings: _openSettings,
+                              onInstall: _installArCore,
                             ),
                     ),
                   ),
