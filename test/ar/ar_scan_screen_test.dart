@@ -300,6 +300,10 @@ void main() {
     expect(find.byKey(const Key('ar-info-panel')), findsOneWidget);
     expect(find.text(info), findsOneWidget);
 
+    await tester.pump(const Duration(seconds: 2));
+    expect(find.byKey(const Key('ar-info-panel')), findsOneWidget);
+    expect(find.text(info), findsOneWidget);
+
     tracker.emit(
       ArDetection(
         trackerName: leones.id,

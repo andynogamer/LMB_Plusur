@@ -52,6 +52,7 @@
 | US-17 | 📗 | 🟠 P1 | AR overlay chrome — compact, camera-first | ☑ | UI / chrome |
 | DEBT-01 | 🐛 | 🟡 P2 | Remove parallel English domain (`Team`, `TriviaQuestion`) | ☑ | Article IV |
 | BUG-02 | 🐛 | 🟠 P1 | ArFailed “Abrir ajustes” / “Instalar” go to teams | ☑ | Failure UX |
+| BUG-03 | 🐛 | 🟠 P1 | Keep AR information open until the user closes it | ☑ | AR UX |
 | US-18 | 📗 | 🟠 P1 | Select stadium or player model after AR lock | ☑ | AR depth |
 | US-19 | 📗 | 🟠 P1 | Lay AR model parallel to scanned logo | ☑ | AR depth |
 | ~~US-05…US-08~~ | — | — | ~~Old monolithic AR items~~ | ⊘ | Replaced by AR-01…AR-07 |
@@ -923,6 +924,23 @@ Criterios de aceptación:
 ## US-19 · 📗 · 🟠 P1 · Lay AR model parallel to scanned logo · ☑ Hecho
 
 **Prompt**
+```
+
+## BUG-03 · 🐛 · 🟠 P1 · Keep AR information open until the user closes it · ☑ Hecho
+
+**Prompt**
+```
+Contexto: Información opened the panel while the model performed one
+presentation turn, then the animation completion handler closed the panel.
+
+Tarea: Keep the information panel visible after the turn completes. The user
+closes it by pressing Información again or by leaving the locked/lost state.
+
+Criterios de aceptación:
+- The info panel remains visible after the presentation turn.
+- The presentation yaw resets independently of panel visibility.
+- Existing AR actions and state transitions remain unchanged.
+- flutter analyze and AR tests remain green.
 ```
 Contexto: The app scans printed team logos. The current upright GLBs appear
 perpendicular to the logo plane, which is less natural for this experience.

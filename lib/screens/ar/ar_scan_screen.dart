@@ -111,9 +111,6 @@ class _ArScanScreenState extends State<ArScanScreen>
       ..addStatusListener((status) {
         if (status != AnimationStatus.completed || !mounted) return;
         _liveTracker?.setPresentationYaw(0);
-        if (_chrome.infoPressed) {
-          _patchChrome(_chrome.copyWith(infoPressed: false));
-        }
       });
     _efectoDrive = AnimationController(
       vsync: this,
