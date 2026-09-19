@@ -126,18 +126,6 @@ class _TeamMenuScreenState extends State<TeamMenuScreen> {
                   _StatsCard(equipo: equipo, snapshot: _stats.snapshot),
                   const SizedBox(height: 12),
                   FeatureCard(
-                    title: 'Abrir experiencia AR',
-                    subtitle: 'Apunta la cámara al logo de este equipo.',
-                    icon: Icons.view_in_ar_rounded,
-                    onTap: () {
-                      Navigator.of(context).pushNamed(
-                        AppRoutes.ar,
-                        arguments: equipo,
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  FeatureCard(
                     title: 'Historia',
                     subtitle: 'El origen y la identidad del club.',
                     icon: Icons.menu_book_rounded,
@@ -211,7 +199,9 @@ class _StatsCard extends StatelessWidget {
                 ),
               ),
               Text(
-                'Entrada ${snapshot.inning}/9',
+                snapshot.finalizado
+                    ? 'FINAL'
+                    : '${snapshot.mitad} ${snapshot.inning}',
                 style: GoogleFonts.poppins(
                   color: AppColors.muted,
                   fontWeight: FontWeight.w500,
@@ -268,7 +258,7 @@ class _StatsCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Hits: ${snapshot.localHits} - ${snapshot.visitantHits}  ·  Actualización automática',
+            'Outs: ${snapshot.outsCount}/3  ·  Hits: ${snapshot.localHits} - ${snapshot.visitantHits}',
             style: GoogleFonts.poppins(
               color: AppColors.muted,
               fontWeight: FontWeight.w500,

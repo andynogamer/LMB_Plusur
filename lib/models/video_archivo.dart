@@ -1,3 +1,5 @@
+import '../utils/youtube_id.dart';
+
 /// One entry in the local video archive. JSON keys stay Spanish.
 class VideoArchivo {
   const VideoArchivo({
@@ -15,6 +17,13 @@ class VideoArchivo {
 
   /// Canonical club id from `assets/data.json`, or null for a Zona Sur clip.
   final String? equipoId;
+
+  String? get miniaturaUrl {
+    final videoId = youtubeVideoId(url);
+    return videoId == null
+        ? null
+        : 'https://i.ytimg.com/vi/$videoId/hqdefault.jpg';
+  }
 
   factory VideoArchivo.fromJson(Map<String, dynamic> json) {
     return VideoArchivo(

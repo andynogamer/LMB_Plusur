@@ -10,6 +10,7 @@ import '../widgets/app_header.dart';
 import '../widgets/filtros_partido.dart';
 import '../widgets/highlight_video_player.dart';
 import '../widgets/screen_background.dart';
+import '../utils/youtube_id.dart';
 
 /// Video archive. [equipo] filters to that club; null opens the full catalog.
 class HighlightsScreen extends StatefulWidget {
@@ -78,9 +79,8 @@ class _HighlightsScreenState extends State<HighlightsScreen> {
           children: [
             AppHeader(
               title: equipo?.displayName ?? 'ARCHIVO DE VIDEOS',
-              subtitle: equipo == null
-                  ? 'Videos de la Zona Sur'
-                  : 'Videos del club',
+              subtitle:
+                  equipo == null ? 'Videos de la Zona Sur' : 'Videos del club',
             ),
             Expanded(child: _body()),
           ],
@@ -154,6 +154,7 @@ class _HighlightsScreenState extends State<HighlightsScreen> {
                 url: video.url,
                 isActive: true,
                 filtro: _filtro,
+                thumbnailUrl: video.miniaturaUrl,
                 onPlay: () => setState(() => _playingId = video.id),
               ),
               const SizedBox(height: 12),
@@ -161,29 +162,71 @@ class _HighlightsScreenState extends State<HighlightsScreen> {
                 seleccionado: _filtro,
                 onChanged: (filtro) => setState(() => _filtro = filtro),
               ),
+              if (youtubeVideoId(video.url) != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    '* Pixelado sólo está disponible en la vista previa.',
+                    style: GoogleFonts.poppins(
+                      color: AppColors.muted,
+                      fontSize: 11,
+                      height: 1.35,
+                    ),
+                  ),
+                ),
             ] else
-              _poster(video),
+              _posterWithThumbnail(video),
           ],
         );
       },
     );
   }
 
-  Widget _poster(VideoArchivo video) {
+  Widget _posterImage(VideoArchivo video) {
+    final thumbnailUrl = video.miniaturaUrl;
+    if (thumbnailUrl == null) return const _VideoPosterContent();
+    return Image.network(
+      thumbnailUrl,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) => const _VideoPosterContent(),
+      loadingBuilder: (context, child, progress) {
+        if (progress == null) return child;
+        return const _VideoPosterContent();
+      },
+    );
+  }
+
+  Widget _posterWithThumbnail(VideoArchivo video) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(18),
       child: Material(
         color: Colors.black,
         child: InkWell(
           onTap: () => setState(() => _playingId = video.id),
-          child: const AspectRatio(
+          child: AspectRatio(
             aspectRatio: 16 / 9,
-            child: Center(
-              child: Icon(
-                Icons.play_circle_fill,
-                color: AppColors.white,
-                size: 68,
-              ),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                _posterImage(video),
+                const DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.transparent, Color(0xB3000000)],
+                      stops: [0.45, 1],
+                    ),
+                  ),
+                ),
+                const Center(
+                  child: Icon(
+                    Icons.play_circle_fill,
+                    color: AppColors.white,
+                    size: 68,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -221,6 +264,24 @@ class _HighlightsScreenState extends State<HighlightsScreen> {
               ),
             ],
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _VideoPosterContent extends StatelessWidget {
+  const _VideoPosterContent();
+
+  @override
+  Widget build(BuildContext context) {
+    return const ColoredBox(
+      color: Color(0xFF171717),
+      child: Center(
+        child: Icon(
+          Icons.play_circle_fill,
+          color: AppColors.white,
+          size: 68,
         ),
       ),
     );

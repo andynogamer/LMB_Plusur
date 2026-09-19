@@ -24,6 +24,7 @@ controllers.
 | Splash waits on logo precache + Poppins + ~1.1 s brand beat (no 3 s idle) | Perceived load closer to real warm-up (~1–1.5 s typical). |
 | `AppLogo` uses `cacheWidth` / `cacheHeight` from display size × DPR | Avoids decoding the full 1920×1080 bitmap for every logo widget. |
 | Video chrome in `ListenableBuilder`; filter+`VideoPlayer` outside tick rebuilds | Blur/pixelado no longer rebuilt every frame. |
+| YouTube posters use remote `i.ytimg.com` thumbnails and filters run on the Flutter preview before the WebView mounts | Removes the black poster state and makes filter selection visibly verifiable without trying to repaint an Android platform view. |
 | Slightly softer blur sigmas (2.4 / 0.9) | Cheaper compositor path; look still readable. |
 | VFX: **6** balls, **24** sparks, **14** confetti | Keeps baseball flavor under mid-tier Filament + paint budget. |
 | AR camera surface kept outside session/action rebuild tree (`ValueKey`) | Action taps should not tear down the platform view. |

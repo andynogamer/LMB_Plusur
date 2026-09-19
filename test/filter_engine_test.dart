@@ -6,15 +6,17 @@ void main() {
   test('el motor solo expone las familias permitidas', () {
     final nombres = FiltroPartido.values.map((f) => f.name).toSet();
 
-    expect(nombres, containsAll([
-      'desenfoque',
-      'pixelado',
-      'termica',
-      'ajusteColor',
-      'suavizado',
-      'pasteles',
-      'altaSaturacion',
-    ]));
+    expect(
+        nombres,
+        containsAll([
+          'desenfoque',
+          'pixelado',
+          'termica',
+          'ajusteColor',
+          'suavizado',
+          'pasteles',
+          'altaSaturacion',
+        ]));
     expect(
       nombres.any(
         (name) =>
@@ -56,5 +58,20 @@ void main() {
     expect(baja.contains('sepia'), isFalse);
     expect(baja.contains('expos'), isFalse);
     expect(baja.contains('invert'), isFalse);
+  });
+
+  test('expone filtros CSS para el iframe de YouTube', () {
+    expect(
+      FilterEngine.youtubeCss(FiltroPartido.termica),
+      contains('hue-rotate'),
+    );
+    expect(
+      FilterEngine.youtubeCss(FiltroPartido.altaSaturacion),
+      'saturate(1.85)',
+    );
+    expect(
+      FilterEngine.youtubeCss(FiltroPartido.pixelado),
+      'none',
+    );
   });
 }

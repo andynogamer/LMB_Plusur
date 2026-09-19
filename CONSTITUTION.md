@@ -17,7 +17,12 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 | [`docs/ar-architecture.md`](./docs/ar-architecture.md) | The AR technical contract: layers, `ArTracker` seam, state machine, error taxonomy, budgets. |
 | [`docs/ar-marker-guide.md`](./docs/ar-marker-guide.md) | How to author printable markers ARCore can actually track. |
 
-**Version**: 2.4.14 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-19
+**Version**: 2.4.15 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-19
+
+> **v2.4.15 — focused team-menu flow.** The manual team menu is for
+> team-specific content; its AR entry is removed because the user already
+> selected that team. The primary shell retains **Escanear Logo** as the
+> scanner entry, preserving D-11 without duplicating navigation.
 
 > **v2.4.14 — D-25 orientation sign correction.** The local X rotation is
 > `-90°`; the positive sign left the authored model upside down in the
@@ -243,11 +248,12 @@ There are exactly **two ways** into team content:
    stats — **without** requiring a scan.
 
 **Ratified (D-11):** Full marker-anchored AR (3D on image target + in-AR
-action buttons) requires a successful scan. From the manual team menu the user
-MAY tap **“Abrir experiencia AR”**, which launches the scanner (optionally
-hinting which logo to point at). Do not fake a full AR session on the manual
-path without camera recognition, except a clearly labeled **demo/fallback**
-mode for development or devices without tracking.
+action buttons) requires a successful scan. The primary shell's
+**“Escanear Logo”** launches the scanner; the selected-team menu stays focused
+on that team's content and does not duplicate the scanner entry. Do not fake a
+full AR session on the manual path without camera recognition, except a
+clearly labeled **demo/fallback** mode for development or devices without
+tracking.
 
 Both paths MUST reuse the same visual system and, where features overlap, the
 same data (`Equipo`, trivia, video catalog).
@@ -700,7 +706,7 @@ Track fixes via `WORK_ITEMS.md`.
 | D-08 | **No logins**; optional **last trivia score** on device only. | **Ratified 2026-09-04** |
 | D-09 | No hard deadline; ship against **grading checklist** until human says enough. | **Ratified 2026-09-04** |
 | D-10 | Team list includes **client-side name search/filter**. | **Ratified 2026-09-04** |
-| D-11 | Marker AR requires scan; manual path uses **Abrir experiencia AR** → scanner. | **Ratified 2026-09-04** |
+| D-11 | Marker AR requires scan; the primary shell uses **Escanear Logo** → scanner. The selected-team menu does not duplicate that entry. | **Ratified 2026-09-04; amended 2026-09-19** |
 | D-12 | Detection = **ARCore/ARKit Augmented Images** via `ar_flutter_plugin_plus`, **exactly pinned**, reachable only through the `ArTracker` interface. One production detector. Resolves R-01. | **Ratified 2026-09-07** |
 | D-13 | Tracking targets are **designed marker cards**, not club logos. `arcoreimg eval-img` **≥ 75** is a merge gate; ≥ 15 cm matte print. | **Ratified 2026-09-07** |
 | D-14 | Marker identity is a **deterministic exact lookup** of the tracker's reference-image name. Similarity scores and tuned thresholds are forbidden. | **Ratified 2026-09-07** |

@@ -75,6 +75,25 @@ abstract final class FilterEngine {
         ),
     };
   }
+
+  /// CSS equivalent used inside the YouTube iframe WebView.
+  ///
+  /// Flutter compositing cannot filter a platform view, so YouTube playback
+  /// needs the filter applied to the iframe itself.
+  static String youtubeCss(FiltroPartido filtro) {
+    return switch (filtro) {
+      FiltroPartido.ninguno => 'none',
+      FiltroPartido.desenfoque => 'blur(2.4px)',
+      FiltroPartido.pixelado => 'none',
+      FiltroPartido.termica =>
+        'saturate(2.4) contrast(1.25) hue-rotate(145deg)',
+      FiltroPartido.ajusteColor =>
+        'brightness(1.08) saturate(1.2) contrast(1.08)',
+      FiltroPartido.suavizado => 'blur(0.9px)',
+      FiltroPartido.pasteles => 'brightness(1.18) saturate(0.72) contrast(0.9)',
+      FiltroPartido.altaSaturacion => 'saturate(1.85)',
+    };
+  }
 }
 
 /// Nearest-neighbor downsample so the preview reads as blocks, not a tint.
@@ -112,32 +131,96 @@ class _Pixelado extends StatelessWidget {
 
 // Heat-camera cast: red/amber highlights, cool blue lift. Not a gray map.
 const List<double> _termica = <double>[
-  1.55, 0.25, 0.00, 0, 8,
-  0.15, 0.45, 0.05, 0, 0,
-  0.00, 0.10, 0.70, 0, 28,
-  0, 0, 0, 1, 0,
+  1.55,
+  0.25,
+  0.00,
+  0,
+  8,
+  0.15,
+  0.45,
+  0.05,
+  0,
+  0,
+  0.00,
+  0.10,
+  0.70,
+  0,
+  28,
+  0,
+  0,
+  0,
+  1,
+  0,
 ];
 
 // Stadium-light warmth. Keeps chroma; not a brown wash.
 const List<double> _luzEstadio = <double>[
-  1.18, 0.06, 0.00, 0, 10,
-  0.02, 1.02, 0.00, 0, 0,
-  0.00, 0.00, 0.72, 0, 0,
-  0, 0, 0, 1, 0,
+  1.18,
+  0.06,
+  0.00,
+  0,
+  10,
+  0.02,
+  1.02,
+  0.00,
+  0,
+  0,
+  0.00,
+  0.00,
+  0.72,
+  0,
+  0,
+  0,
+  0,
+  0,
+  1,
+  0,
 ];
 
 // Lifted, washed color. Saturation stays above a gray map.
 const List<double> _pasteles = <double>[
-  0.70, 0.10, 0.06, 0, 42,
-  0.06, 0.72, 0.08, 0, 46,
-  0.08, 0.08, 0.68, 0, 50,
-  0, 0, 0, 1, 0,
+  0.70,
+  0.10,
+  0.06,
+  0,
+  42,
+  0.06,
+  0.72,
+  0.08,
+  0,
+  46,
+  0.08,
+  0.08,
+  0.68,
+  0,
+  50,
+  0,
+  0,
+  0,
+  1,
+  0,
 ];
 
 // Standard saturation matrix at 1.85. A factor of 0 would be gray — do not use it.
 const List<double> _altaSaturacion = <double>[
-  1.6695, -0.6080, -0.0614, 0, 0,
-  -0.1805, 1.2420, -0.0614, 0, 0,
-  -0.1805, -0.6080, 1.7886, 0, 0,
-  0, 0, 0, 1, 0,
+  1.6695,
+  -0.6080,
+  -0.0614,
+  0,
+  0,
+  -0.1805,
+  1.2420,
+  -0.0614,
+  0,
+  0,
+  -0.1805,
+  -0.6080,
+  1.7886,
+  0,
+  0,
+  0,
+  0,
+  0,
+  1,
+  0,
 ];
