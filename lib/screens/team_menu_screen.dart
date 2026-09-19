@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../models/equipo_model.dart';
 import '../routes/app_routes.dart';
+import '../services/stats_simulator.dart';
 import '../services/trivia_score_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_header.dart';
@@ -24,13 +25,28 @@ class TeamMenuScreen extends StatefulWidget {
 class _TeamMenuScreenState extends State<TeamMenuScreen> {
   int? _ultimoPuntaje;
   bool _cargandoPuntaje = true;
+  late final StatsSimulator _stats;
 
   Equipo get equipo => widget.equipo;
 
   @override
   void initState() {
     super.initState();
+    _stats = StatsSimulator(teamId: widget.equipo.id)
+      ..addListener(_onStatsChanged);
     _cargarUltimoPuntaje();
+  }
+
+  void _onStatsChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _stats
+      ..removeListener(_onStatsChanged)
+      ..dispose();
+    super.dispose();
   }
 
   Future<void> _cargarUltimoPuntaje() async {
@@ -107,6 +123,8 @@ class _TeamMenuScreenState extends State<TeamMenuScreen> {
                     ),
                   ),
                   const SizedBox(height: 18),
+                  _StatsCard(equipo: equipo, snapshot: _stats.snapshot),
+                  const SizedBox(height: 12),
                   FeatureCard(
                     title: 'Abrir experiencia AR',
                     subtitle: 'Apunta la cámara al logo de este equipo.',
@@ -154,6 +172,110 @@ class _TeamMenuScreenState extends State<TeamMenuScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _StatsCard extends StatelessWidget {
+  const _StatsCard({
+    required this.equipo,
+    required this.snapshot,
+  });
+
+  final Equipo equipo;
+  final StatsSnapshot snapshot;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const Key('simulated-stats'),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.navyCard.withValues(alpha: 0.82),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.button.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'PARTIDO SIMULADO',
+                style: GoogleFonts.poppins(
+                  color: AppColors.button,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 12,
+                  letterSpacing: 0.8,
+                ),
+              ),
+              Text(
+                'Entrada ${snapshot.inning}/9',
+                style: GoogleFonts.poppins(
+                  color: AppColors.muted,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  equipo.nombre,
+                  style: GoogleFonts.poppins(
+                    color: AppColors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+              Text(
+                '${snapshot.localScore}',
+                style: GoogleFonts.poppins(
+                  color: AppColors.white,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 24,
+                ),
+              ),
+            ],
+          ),
+          const Divider(color: AppColors.muted),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Visitante',
+                  style: GoogleFonts.poppins(
+                    color: AppColors.muted,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+              Text(
+                '${snapshot.visitantScore}',
+                style: GoogleFonts.poppins(
+                  color: AppColors.muted,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 22,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Hits: ${snapshot.localHits} - ${snapshot.visitantHits}  ·  Actualización automática',
+            style: GoogleFonts.poppins(
+              color: AppColors.muted,
+              fontWeight: FontWeight.w500,
+              fontSize: 11,
+            ),
+          ),
+        ],
       ),
     );
   }

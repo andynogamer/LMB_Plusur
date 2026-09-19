@@ -12,10 +12,14 @@ class ArFailedPanel extends StatelessWidget {
     super.key,
     required this.failure,
     required this.onRetry,
+    required this.onOpenSettings,
+    required this.onInstall,
   });
 
   final ArFailed failure;
   final VoidCallback onRetry;
+  final VoidCallback onOpenSettings;
+  final VoidCallback onInstall;
 
   static const manualPathLabel = 'Elegir equipo manualmente';
 
@@ -68,6 +72,14 @@ class ArFailedPanel extends StatelessWidget {
   void _onAction(BuildContext context, String label) {
     if (label == 'Reintentar') {
       onRetry();
+      return;
+    }
+    if (label == 'Abrir ajustes') {
+      onOpenSettings();
+      return;
+    }
+    if (label == 'Instalar') {
+      onInstall();
       return;
     }
     Navigator.of(context).pushNamed(AppRoutes.teams);
