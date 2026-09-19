@@ -53,6 +53,7 @@
 | DEBT-01 | 🐛 | 🟡 P2 | Remove parallel English domain (`Team`, `TriviaQuestion`) | ☑ | Article IV |
 | BUG-02 | 🐛 | 🟠 P1 | ArFailed “Abrir ajustes” / “Instalar” go to teams | ☑ | Failure UX |
 | US-18 | 📗 | 🟠 P1 | Select stadium or player model after AR lock | ☑ | AR depth |
+| US-19 | 📗 | 🟠 P1 | Lay AR model parallel to scanned logo | ☑ | AR depth |
 | ~~US-05…US-08~~ | — | — | ~~Old monolithic AR items~~ | ⊘ | Replaced by AR-01…AR-07 |
 | ~~BUG-01~~ | — | — | ~~AR mock always Guerreros~~ | ⊘ | Deleted with the mock in AR-03 |
 
@@ -916,6 +917,24 @@ Criterios de aceptación:
 - Información is disabled while Trivia AR is active.
 - Switching does not stop or recreate the AR session.
 - The selected node remains pose-anchored and missing assets fail gracefully.
+- flutter analyze and AR tests remain green.
+```
+
+## US-19 · 📗 · 🟠 P1 · Lay AR model parallel to scanned logo · ☑ Hecho
+
+**Prompt**
+```
+Contexto: The app scans printed team logos. The current upright GLBs appear
+perpendicular to the logo plane, which is less natural for this experience.
+
+Tarea: Apply a local 90-degree orientation so club models lie parallel to the
+tracked image plane. Keep the model pose anchored to ARCore and rotate
+Información around the logo normal.
+
+Criterios de aceptación:
+- The authored Y-up model is laid onto the marker image plane.
+- Tracking updates continue to move the node with the marker pose.
+- Información rotates around the marker normal, not the old world-up axis.
 - flutter analyze and AR tests remain green.
 ```
 Contexto: Article IV — Spanish domain, English engineering. Known debt #9.

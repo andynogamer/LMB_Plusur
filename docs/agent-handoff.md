@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-09-19 · by: US-18 AR model choice
+**Last updated:** 2026-09-19 · by: US-19 AR model plane orientation
 
 ---
 
@@ -175,6 +175,9 @@ Measured later, four of them were. **Never copy code from that branch.**
   The choices are compact stadium/baseball icon controls outside the main card.
   **Información** is disabled while **Trivia AR** is active to keep the trivia
   prompt within the available chrome height.
+- **US-19 / D-25:** club GLBs are authored Y-up, so the tracker applies a local
+  90° X rotation to place them parallel to the scanned logo. Información now
+  rotates around the logo normal.
 
 Do not mix BUG-02 with US-09/US-10.
 
@@ -315,6 +318,7 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-09-19 | **US-19 / D-25.** Oriented the authored club GLBs parallel to the scanned logo plane and changed Información's presentation spin to the marker normal. Added matrix coverage; analyze and the full 49-test suite pass. |
 | 2026-09-19 | **US-18 UX refinement.** Moved stadium/player selection to compact icon controls outside the main card and disabled Información in Trivia AR; added regression coverage for both overflow paths. |
 | 2026-09-19 | **US-18 / D-24.** Added locked-session stadium/player model selection. Flutter chooses the catalog GLB; the tracker replaces the anchored node in place. Focused analyze and 10 AR tests pass. |
 | 2026-09-19 | **DEBT-01.** Removed the unused English `Team` / `TriviaQuestion` models and `MockData` cluster. No production imports or behavior changed; `flutter analyze` and the focused regression suite pass. Next: human/device acceptance gates. |

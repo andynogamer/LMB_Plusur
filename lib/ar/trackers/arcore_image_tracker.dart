@@ -15,6 +15,24 @@ import 'package:vector_math/vector_math_64.dart' show Vector3;
 
 import '../ar_tracker.dart';
 
+/// Composes the authored model orientation onto ARCore's image pose.
+///
+/// Club GLBs are authored upright (Y-up), while a logo marker is a horizontal
+/// image plane. Laying the model onto that plane keeps the content parallel to
+/// the scanned logo. Presentation yaw then rotates around the logo normal.
+Matrix4 modelPoseForImage(
+  Matrix4 imagePose, {
+  double presentationYaw = 0,
+}) {
+  final pose = Matrix4.fromFloat64List(imagePose.storage);
+  pose.translateByDouble(0, 0.01, 0, 1);
+  pose.rotateX(math.pi / 2);
+  if (presentationYaw != 0) {
+    pose.rotateZ(presentationYaw);
+  }
+  return pose;
+}
+
 /// Same name must arrive twice inside 2 s before [ArLocked] (controller).
 /// One-shot emission (`continuousImageTracking: false`) never confirms.
 ///
@@ -359,12 +377,10 @@ class ArCoreImageTracker implements ArTracker {
   /// [_presentationYaw] is the información action's single spin. It is
   /// applied in local space after the lift so tracking updates keep it.
   Matrix4 _anchoredPose(Matrix4 imagePose) {
-    final pose = Matrix4.fromFloat64List(imagePose.storage);
-    pose.translateByDouble(0, 0.01, 0, 1);
-    if (_presentationYaw != 0) {
-      pose.rotateY(_presentationYaw);
-    }
-    return pose;
+    return modelPoseForImage(
+      imagePose,
+      presentationYaw: _presentationYaw,
+    );
   }
 
   @override
