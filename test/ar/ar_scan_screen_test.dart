@@ -318,6 +318,47 @@ void main() {
     expect(find.text(info), findsOneWidget);
   });
 
+  testWidgets('permite cambiar el modelo sin salir de la sesión AR', (
+    tester,
+  ) async {
+    final tracker = FakeArTracker();
+    await pumpScan(tester, tracker: tracker);
+    await lock(tracker, leones);
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byKey(const Key('ar-model-selector')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('ar-model-player')));
+    await tester.pump();
+    await tester.pump();
+
+    expect(
+      tracker.attachedModels.last.glbAsset,
+      'assets/models/leones_yucatan/jugador.glb',
+    );
+    expect(find.byKey(const Key('ar-locked')), findsOneWidget);
+    expect(find.byKey(const Key('ar-model-selector')), findsOneWidget);
+  });
+
+  testWidgets('deshabilita información mientras la trivia está activa', (
+    tester,
+  ) async {
+    final tracker = FakeArTracker();
+    await pumpScan(tester, tracker: tracker);
+    await lock(tracker, leones);
+    await tester.pump();
+    await tester.pump();
+
+    await tester.tap(find.text('TRIVIA AR'));
+    await tester.pump();
+
+    final infoButton = tester.widget<ElevatedButton>(
+      find.byKey(const Key('ar-action-info')),
+    );
+    expect(infoButton.onPressed, isNull);
+    expect(find.byKey(const Key('ar-trivia')), findsOneWidget);
+  });
+
   testWidgets('celebracion pide el clip y reposo vuelve a idle',
       (tester) async {
     final player = _marcador(

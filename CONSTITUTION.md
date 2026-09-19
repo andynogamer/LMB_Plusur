@@ -17,7 +17,12 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 | [`docs/ar-architecture.md`](./docs/ar-architecture.md) | The AR technical contract: layers, `ArTracker` seam, state machine, error taxonomy, budgets. |
 | [`docs/ar-marker-guide.md`](./docs/ar-marker-guide.md) | How to author printable markers ARCore can actually track. |
 
-**Version**: 2.4.11 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-19
+**Version**: 2.4.12 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-19
+
+> **v2.4.12 — D-24 model choice after AR lock.** Once a marker is locked, the
+> Flutter chrome may choose the club's D-22 `estadio.glb` or `jugador.glb`.
+> The tracker replaces the anchored scene-graph node without restarting the
+> session; the original marker model remains the default.
 
 > **v2.4.11 — DEBT-01 English domain cleanup.** The unused `Team`,
 > `TriviaQuestion`, and `MockData` legacy cluster was removed. Production
@@ -538,6 +543,7 @@ Splash → Main
 | AR controls | Code (AR-07); device not checked | ≥2 action types on `ArLocked` only: gesto (`idle`/`gesto`) and información (`infoTexto` + TTS + one 360°). |
 | Simulated live stats | Planned | Local mock “tiempo real”. |
 | Multiple AR modes | Planned | e.g. galería, trivia AR, video inmersivo. |
+| AR model choice | Implemented (US-18) | On `ArLocked` / `ArLost`, choose the club's stadium or player GLB; tracker replacement preserves the session and pose anchor. |
 | Team search | Partial → required | Client-side name filter on team list. |
 | User feedback | Partial | Sounds + visual state + short messages. |
 
@@ -700,6 +706,7 @@ Track fixes via `WORK_ITEMS.md`.
 | D-22 | **Full-project catalog** (branch `full-project`): every club gets `estadio.glb` (static) and `jugador.glb` (clips `idle` + `gesto` + `celebracion`). Same meshes, color and crest differ. **Scan-set sentence amended by D-23.** Shared `efecto_jonron` GLB is the in-scene VFX (US-13), not a club model. Do not add unmeasured logos, and do not write a matcher. | **Amended 2026-09-09** |
 | ~~D-23 (cards)~~ | ~~Six untrackable logos get generated marker cards.~~ **Reversed the same day.** The scan target is the club logo, not a substitute card. | ~~Ratified 2026-09-08~~ |
 | D-23 | **Scan set = logos that score ≥ 75, not 90, and not substitute cards.** Active logos: Leones 100, Olmecas 100, Piratas 100, Bravos 90, Tigres raw 75, Diablos flame 80, Guerreros shield raw 90, Conspiradores wordmark raw 100, Águila crest raw 100, Pericos wordmark raw 100. Do not normalize Tigres, the Guerreros shield, the Conspiradores wordmark, the Águila crest, or the Pericos wordmark. The old 50-score files and the first Conspiradores, Águila, and Pericos files stay out. The Águila wordmark also scored 100 raw but was not shipped (it carries a +N watermark). The other Pericos candidates were not scored. No matcher. | **Amended 2026-09-08** |
+| D-24 | After an AR marker locks, fans may choose the club's D-22 stadium or player GLB. Flutter owns the choice; the tracker replaces the anchored node in place without restarting the session. The marker's original model remains the default. | **Ratified 2026-09-19** |
 
 Open residual (non-blocking for backlog writing):
 

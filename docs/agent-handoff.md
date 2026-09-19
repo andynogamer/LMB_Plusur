@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-09-19 · by: US-10 multiple AR modes
+**Last updated:** 2026-09-19 · by: US-18 AR model choice
 
 ---
 
@@ -169,6 +169,12 @@ Measured later, four of them were. **Never copy code from that branch.**
 - Remaining cleanup is complete; Historia still uses a
   generic `ImagePlaceholder` (no club photo). Constitution “Feature contracts” table
   is stale (videos still say Planned; markers still say 5 logos).
+- **US-18 / D-24:** after a lock, the AR chrome offers **Estadio** or
+  **Jugador** from the club's D-22 catalog. The tracker replaces the anchored
+  node without restarting the session; the marker model remains the default.
+  The choices are compact stadium/baseball icon controls outside the main card.
+  **Información** is disabled while **Trivia AR** is active to keep the trivia
+  prompt within the available chrome height.
 
 Do not mix BUG-02 with US-09/US-10.
 
@@ -309,6 +315,8 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-09-19 | **US-18 UX refinement.** Moved stadium/player selection to compact icon controls outside the main card and disabled Información in Trivia AR; added regression coverage for both overflow paths. |
+| 2026-09-19 | **US-18 / D-24.** Added locked-session stadium/player model selection. Flutter chooses the catalog GLB; the tracker replaces the anchored node in place. Focused analyze and 10 AR tests pass. |
 | 2026-09-19 | **DEBT-01.** Removed the unused English `Team` / `TriviaQuestion` models and `MockData` cluster. No production imports or behavior changed; `flutter analyze` and the focused regression suite pass. Next: human/device acceptance gates. |
 | 2026-09-19 | **US-10.** Added Galería AR / Trivia AR mode switching inside the locked AR chrome. Trivia reuses the scanned marker’s linked team question data, gives Spanish answer feedback, and keeps the existing model/action session intact. Added focused mode coverage; targeted analyze and 9 AR tests pass. Next: DEBT-01. |
 | 2026-09-19 | **US-09.** Added local `StatsSimulator` timer service and a themed Spanish simulated scoreboard to the team menu. Scores, inning, and hits update automatically without network calls or tap spam. Added service tests; targeted analyze and tests pass. Next: US-10. |
