@@ -5,6 +5,7 @@ class Equipo {
     required this.id,
     required this.nombre,
     required this.historia,
+    this.historiaImagenUrl,
     required this.fundacion,
     required this.trivias,
   });
@@ -12,6 +13,7 @@ class Equipo {
   final String id;
   final String nombre;
   final String historia;
+  final String? historiaImagenUrl;
   final int fundacion;
   final List<Trivia> trivias;
 
@@ -22,6 +24,7 @@ class Equipo {
       id: json['id'] as String,
       nombre: json['nombre'] as String,
       historia: json['historia'] as String,
+      historiaImagenUrl: json['historiaImagenUrl'] as String?,
       fundacion: json['fundacion'] as int,
       trivias: (json['trivias'] as List<dynamic>)
           .map((item) => Trivia.fromJson(item as Map<String, dynamic>))

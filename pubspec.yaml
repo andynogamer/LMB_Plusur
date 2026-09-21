@@ -1,7 +1,7 @@
 ﻿name: lmb_plusur
 description: AplicaciÃ³n mÃ³vil LMB Plusur para la zona sur de la Liga Mexicana de BÃ©isbol.
 publish_to: "none"
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: ">=3.3.0 <4.0.0"

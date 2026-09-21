@@ -54,6 +54,7 @@
 | BUG-02 | 🐛 | 🟠 P1 | ArFailed “Abrir ajustes” / “Instalar” go to teams | ☑ | Failure UX |
 | BUG-03 | 🐛 | 🟠 P1 | Keep AR information open until the user closes it | ☑ | AR UX |
 | BUG-04 | 🐛 | 🟠 P1 | Restore video thumbnails and visible YouTube filter previews | ☑ | Videos / filters |
+| BUG-05 | 🐛 | 🟡 P2 | Show supplied club photos in Historia | ☑ | Historia |
 | US-18 | 📗 | 🟠 P1 | Select stadium or player model after AR lock | ☑ | AR depth |
 | US-19 | 📗 | 🟠 P1 | Lay AR model parallel to scanned logo | ☑ | AR depth |
 | ~~US-05…US-08~~ | — | — | ~~Old monolithic AR items~~ | ⊘ | Replaced by AR-01…AR-07 |
@@ -77,6 +78,12 @@ already ships); record explanatory demo video (10pt).
 ---
 
 # 📗 USER STORIES
+
+## BUG-05 · 🟡 P2 · Show supplied club photos in Historia · ☑ Hecho
+
+The Historia view now reads `historiaImagenUrl` from `assets/data.json` for all
+ten Zona Sur clubs. Remote image failures retain the existing baseball
+placeholder instead of leaving the card empty.
 
 ## US-01 · 🟠 P1 · Team list name search (D-10) · ☑ Hecho
 

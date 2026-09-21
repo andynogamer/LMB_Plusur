@@ -3,6 +3,7 @@
     "id": "diablos_rojos",
     "nombre": "Diablos Rojos del México",
     "historia": "Los Diablos Rojos del México nacieron en 1940 y se convirtieron en la franquicia más ganadora de la Liga Mexicana de Béisbol. Durante décadas tuvieron su casa en el Parque del Seguro Social y, desde 2019, juegan en el Estadio Alfredo Harp Helú, en la Ciudad de México. Su afición, conocida por el ambiente de «la casa del terror», acompaña a un club que ha marcado la historia del béisbol profesional mexicano con múltiples campeonatos de la Serie del Rey.",
+    "historiaImagenUrl": "https://imagenes.eleconomista.com.mx/files/webp_756_529/uploads/2019/03/25/66e8aa3b9df80.jpeg",
     "fundacion": 1940,
     "trivias": [
       {
@@ -96,6 +97,7 @@
     "id": "bravos_leon",
     "nombre": "Bravos de León",
     "historia": "Los Bravos de León representan a la ciudad de León, Guanajuato, y se fundaron en 1979. Juegan de local en el Estadio Domingo Santana y han formado parte de distintas etapas de la Liga Mexicana de Béisbol, con salidas y regresos a la circuito. En el reacomodo reciente de la LMB quedaron integrados a la Zona Sur, donde mantienen una afición leonesa muy identificada con el béisbol de verano.",
+    "historiaImagenUrl": "https://i.ytimg.com/vi/t_MasBVuyTk/maxresdefault.jpg",
     "fundacion": 1979,
     "trivias": [
       {
@@ -179,6 +181,7 @@
     "id": "conspiradores_queretaro",
     "nombre": "Conspiradores de Querétaro",
     "historia": "Los Conspiradores de Querétaro debutaron en la Liga Mexicana de Béisbol en 2024 como equipo de expansión. Su nombre evoca la Conspiración de Querétaro de 1810, episodio clave en el inicio de la Independencia de México. El club representa al estado de Querétaro en la Zona Sur y busca construir una identidad propia en una plaza que recibió de nuevo el béisbol de la LMB con una afición creciente.",
+    "historiaImagenUrl": "https://iphonegr.reforma.com/libre/online07/imagetransformer2/ImageTransformer.aspx?img=https://img.gruporeforma.com/imagenes/960x640/6/985/5984398.jpg&imagencompleta=1",
     "fundacion": 2024,
     "trivias": [
       {
@@ -267,6 +270,7 @@
     "id": "aguila_veracruz",
     "nombre": "El Águila de Veracruz",
     "historia": "El Águila de Veracruz es uno de los clubes más antiguos del béisbol mexicano: su origen se sitúa en 1903, en el puerto de Veracruz. A lo largo del siglo XX se consolidó como un equipo histórico de la Liga Mexicana de Béisbol, con varios campeonatos y una afición jarocha muy leal. Hoy juega de local en el Estadio Universitario Beto Ávila y sigue siendo un símbolo deportivo del puerto.",
+    "historiaImagenUrl": "https://www.observadorveracruzano.com/wp-content/uploads/2021/07/19-jul-2021-estadio.jpg",
     "fundacion": 1903,
     "trivias": [
       {
@@ -350,6 +354,7 @@
     "id": "guerreros_oaxaca",
     "nombre": "Guerreros de Oaxaca",
     "historia": "Los Guerreros de Oaxaca fueron fundados en 1996 por el empresario Alfredo Harp Helú, con la idea de devolver el béisbol profesional a Oaxaca de Juárez. El equipo juega en el Estadio Eduardo Vasconcelos y, apenas en 1998, conquistó su primer título de la Liga Mexicana de Béisbol. Desde entonces se han convertido en un referente cultural y deportivo del estado, con una afición que llena la casa de los Guerreros en la Zona Sur.",
+    "historiaImagenUrl": "https://img.olympics.com/images/image/private/t_s_pog_staticContent_hero_xl_2x/f_auto/primary/wkyym8aejoec91sr45hw",
     "fundacion": 1996,
     "trivias": [
       {
@@ -443,6 +448,7 @@
     "id": "leones_yucatan",
     "nombre": "Leones de Yucatán",
     "historia": "Los Leones de Yucatán se fundaron en 1954 y son uno de los clubes más emblemáticos del sureste mexicano. Juegan en Mérida, en el Parque Kukulcán Alamo, y han ganado varios campeonatos de la LMB, entre ellos los de 1957, 1984, 2006, 2018 y 2022. Su afición, de las más ruidosas de la liga, convierte cada temporada en una fiesta de béisbol en la península de Yucatán.",
+    "historiaImagenUrl": "https://www.leones.mx/wp-content/uploads/2019/12/DSC_5684-scaled-1.jpg",
     "fundacion": 1954,
     "trivias": [
       {
@@ -521,6 +527,7 @@
     "id": "olmecas_tabasco",
     "nombre": "Olmecas de Tabasco",
     "historia": "La franquicia de Tabasco nació en 1975 y, tras distintas denominaciones, se consolidó como los Olmecas de Tabasco, en homenaje a la civilización olmeca del Golfo de México. El equipo tiene su casa en Villahermosa, en el Estadio Centenario 27 de Febrero, y representa al estado en la Zona Sur de la LMB. Su historia está ligada a la pasión beisbolera de Tabasco y a la búsqueda constante de un título para la afición choca.",
+    "historiaImagenUrl": "https://cdn2.mediotiempo.com/uploads/media/2023/03/27/el-estadio-centenario-estuvo-casi.jpg",
     "fundacion": 1975,
     "trivias": [
       {
@@ -604,6 +611,7 @@
     "id": "pericos_puebla",
     "nombre": "Pericos de Puebla",
     "historia": "Los Pericos de Puebla se fundaron en 1938 y son uno de los equipos clásicos de la Liga Mexicana de Béisbol. Visten de verde, en alusión al perico, y juegan en el Estadio de Béisbol Hermanos Serdán. A lo largo de su historia han conquistado varios campeonatos —entre ellos 1963, 1986 y 2016— y mantienen una de las aficiones más fieles del centro-sur del país.",
+    "historiaImagenUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWz1SWPvmMV-bhD5fUYCnEPwbf8DgrAUdynYDl3gqqIg&s=10",
     "fundacion": 1938,
     "trivias": [
       {
@@ -687,6 +695,7 @@
     "id": "piratas_campeche",
     "nombre": "Piratas de Campeche",
     "historia": "Los Piratas de Campeche surgieron en 1980 y toman su nombre de la historia corsaria del puerto amurallado de Campeche. Juegan de local en el Estadio Nelson Barrera Romellón y han sido campeones de la Liga Mexicana de Béisbol en 1983 y 2004. El club es un orgullo estatal y uno de los representantes tradicionales de la península en la Zona Sur.",
+    "historiaImagenUrl": "https://cdn2.mediotiempo.com/uploads/media/2019/03/28/conoce-piratas-campeche-ganado-foto.jpg",
     "fundacion": 1980,
     "trivias": [
       {
@@ -780,6 +789,7 @@
     "id": "tigres_quintana_roo",
     "nombre": "Tigres de Quintana Roo",
     "historia": "La franquicia de los Tigres nació en 1955 en la Ciudad de México, como los Tigres Capitalinos, y se mudó a Cancún en 2007 para convertirse en los Tigres de Quintana Roo. Juegan en el Estadio Beto Ávila y son uno de los clubes más ganadores de la LMB, con una tradición de campeonatos que recorre sus etapas en la capital y en el Caribe mexicano. Su identidad felina y su historia itinerante los hacen únicos en la Zona Sur.",
+    "historiaImagenUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJOrerEq8Pcot-q42L8rLvW3mgwPMOQuH6d4OpHXYf9dUHhMs9akVcT4E&s=10",
     "fundacion": 1955,
     "trivias": [
       {

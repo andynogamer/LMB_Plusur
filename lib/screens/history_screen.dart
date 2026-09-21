@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../models/equipo_model.dart';
@@ -8,10 +9,7 @@ import '../widgets/image_placeholder.dart';
 import '../widgets/screen_background.dart';
 
 class HistoryScreen extends StatelessWidget {
-  const HistoryScreen({
-    super.key,
-    required this.equipo,
-  });
+  const HistoryScreen({super.key, required this.equipo});
 
   final Equipo equipo;
 
@@ -21,20 +19,14 @@ class HistoryScreen extends StatelessWidget {
       body: ScreenBackground(
         child: Column(
           children: [
-            AppHeader(
-              title: equipo.displayName,
-              subtitle: 'Historia del club',
-            ),
+            AppHeader(title: equipo.displayName, subtitle: 'Historia del club'),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
                 children: [
                   Stack(
                     children: [
-                      const ImagePlaceholder(
-                        height: 220,
-                        icon: Icons.sports_baseball,
-                      ),
+                      _HistoriaImage(url: equipo.historiaImagenUrl),
                       Positioned(
                         left: 16,
                         bottom: 16,
@@ -86,6 +78,28 @@ class HistoryScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _HistoriaImage extends StatelessWidget {
+  const _HistoriaImage({required this.url});
+
+  final String? url;
+
+  @override
+  Widget build(BuildContext context) {
+    const fallback = ImagePlaceholder(height: 220, icon: Icons.sports_baseball);
+    final imageUrl = url;
+    if (imageUrl == null || imageUrl.isEmpty) return fallback;
+
+    return CachedNetworkImage(
+      imageUrl: imageUrl,
+      height: 220,
+      width: double.infinity,
+      fit: BoxFit.cover,
+      placeholder: (_, __) => fallback,
+      errorWidget: (_, __, ___) => fallback,
     );
   }
 }
