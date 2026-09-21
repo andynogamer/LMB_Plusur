@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-09-19 · by: Android launcher icon and APK packaging
+**Last updated:** 2026-09-21 · by: Historia club photos
 
 ---
 
@@ -174,9 +174,10 @@ Measured later, four of them were. **Never copy code from that branch.**
   team list. **Fixed 2026-09-19:** settings now call
   `permission_handler`/`openAppSettings()`, installation opens the ARCore
   Google Play URL, and only the manual action navigates to teams.
-- Remaining cleanup is complete; Historia still uses a
-  generic `ImagePlaceholder` (no club photo). Constitution “Feature contracts” table
-  is stale (videos still say Planned; markers still say 5 logos).
+- **BUG-05 fixed 2026-09-21:** Historia reads `historiaImagenUrl` for all ten
+  clubs from `assets/data.json` and uses the existing baseball placeholder if a
+  remote image fails. Constitution “Feature contracts” table is stale (videos
+  still say Planned; markers still say 5 logos).
 - **US-18 / D-24:** after a lock, the AR chrome offers **Estadio** or
   **Jugador** from the club's D-22 catalog. The tracker replaces the anchored
   node without restarting the session; the marker model remains the default.
@@ -344,6 +345,8 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-09-21 | **BUG-05.** Added the ten supplied club-history image URLs to `assets/data.json`, mapped `historiaImagenUrl` into `Equipo`, and replaced Historia's generic card with a cached network image plus the existing safe fallback. Added data coverage tests. |
+| 2026-09-21 | **Release 1.0.1+2.** Bumped the Android app version and rebuilt the release APK after adding Historia images. |
 | 2026-09-19 | **US-15 packaging refinement.** Generated Android launcher icons from the authored LMB logo using a centered square crop across mdpi, hdpi, xhdpi, xxhdpi and xxxhdpi. Release APK remains on the existing debug-signing class-demo path. |
 | 2026-09-19 | **US-09 / US-02 refinement.** Replaced the random/infinite stats counter with a deterministic plate-appearance simulator: three outs per half-inning, runners, hits, runs and final-game logic. Removed the redundant AR entry from the already-selected team menu; the main shell remains the scanner entry. `flutter analyze` and focused tests pass. |
 | 2026-09-19 | **BUG-04 follow-up.** Fixed the YouTube filter race: the first CSS application could run before the `YoutubePlayer` and its iframe existed, leaving the pressed filter chip out of sync with playback. The player now applies CSS after the platform view mounts, retries until the iframe is present, and reapplies it when the selected filter changes. Analyze and the full 52-test suite pass. |

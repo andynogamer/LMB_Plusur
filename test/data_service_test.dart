@@ -15,6 +15,14 @@ void main() {
       equipos.firstWhere((e) => e.id == 'guerreros_oaxaca').trivias,
       isNotEmpty,
     );
+    expect(
+      equipos.every(
+        (e) =>
+            e.historiaImagenUrl != null &&
+            e.historiaImagenUrl!.startsWith('https://'),
+      ),
+      isTrue,
+    );
   });
 
   test('Equipo.fromJson mapea campos españoles', () {
@@ -22,6 +30,7 @@ void main() {
       'id': 'demo',
       'nombre': 'Demo FC',
       'historia': 'Historia de prueba',
+      'historiaImagenUrl': 'https://example.com/historia.jpg',
       'fundacion': 2000,
       'trivias': [
         {
@@ -34,6 +43,7 @@ void main() {
     });
 
     expect(equipo.id, 'demo');
+    expect(equipo.historiaImagenUrl, 'https://example.com/historia.jpg');
     expect(equipo.fundacion, 2000);
     expect(equipo.trivias.single.respuestaCorrecta, 0);
   });
