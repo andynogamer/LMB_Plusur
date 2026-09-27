@@ -1,3 +1,5 @@
+import '../../../ar/ar_tracker.dart';
+
 /// Pressed-state and overlay notes for AR chrome.
 ///
 /// Held in a [ValueNotifier] so action taps do not [State.setState] the
@@ -6,8 +8,8 @@ class ArChromeSnapshot {
   const ArChromeSnapshot({
     this.gestoPressed = false,
     this.infoPressed = false,
-    this.efectoPressed = false,
-    this.celebracionVfx = false,
+    this.animationPaused = false,
+    this.activeEffect,
     this.actionNote,
     this.modelNote,
   });
@@ -16,26 +18,29 @@ class ArChromeSnapshot {
 
   final bool gestoPressed;
   final bool infoPressed;
-  final bool efectoPressed;
-  final bool celebracionVfx;
+  final bool animationPaused;
+  final ArParticleEffect? activeEffect;
   final String? actionNote;
   final String? modelNote;
 
   ArChromeSnapshot copyWith({
     bool? gestoPressed,
     bool? infoPressed,
-    bool? efectoPressed,
-    bool? celebracionVfx,
+    bool? animationPaused,
+    Object? activeEffect = _keep,
     Object? actionNote = _keep,
     Object? modelNote = _keep,
   }) {
     return ArChromeSnapshot(
       gestoPressed: gestoPressed ?? this.gestoPressed,
       infoPressed: infoPressed ?? this.infoPressed,
-      efectoPressed: efectoPressed ?? this.efectoPressed,
-      celebracionVfx: celebracionVfx ?? this.celebracionVfx,
-      actionNote:
-          identical(actionNote, _keep) ? this.actionNote : actionNote as String?,
+      animationPaused: animationPaused ?? this.animationPaused,
+      activeEffect: identical(activeEffect, _keep)
+          ? this.activeEffect
+          : activeEffect as ArParticleEffect?,
+      actionNote: identical(actionNote, _keep)
+          ? this.actionNote
+          : actionNote as String?,
       modelNote:
           identical(modelNote, _keep) ? this.modelNote : modelNote as String?,
     );

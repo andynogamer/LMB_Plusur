@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:vector_math/vector_math_64.dart';
 
 /// A reference image registered in the tracking database.
@@ -46,6 +48,34 @@ enum ArTrackerFailure {
   unknown,
 }
 
+enum ArParticleEffect {
+  jonron,
+  chispas,
+  confeti,
+  polvoDelDiamante;
+
+  String get asset => switch (this) {
+        jonron => 'assets/models/efecto_jonron/modelo.glb',
+        chispas => 'assets/models/efecto_chispas/modelo.glb',
+        confeti => 'assets/models/efecto_confeti/modelo.glb',
+        polvoDelDiamante => 'assets/models/efecto_polvo_diamante/modelo.glb',
+      };
+}
+
+enum ArPhotoCaptureFailure {
+  unsupportedPlatform,
+  unsupportedAndroidVersion,
+  permissionDenied,
+  captureFailed,
+  saveFailed,
+}
+
+class ArPhotoCaptureException implements Exception {
+  const ArPhotoCaptureException(this.failure);
+
+  final ArPhotoCaptureFailure failure;
+}
+
 class ArTrackerException implements Exception {
   const ArTrackerException(this.failure, [this.cause]);
 
@@ -57,6 +87,9 @@ class ArTrackerException implements Exception {
 }
 
 abstract interface class ArTracker {
+  /// Whether this tracker supports whole-window captures to the phone gallery.
+  bool get supportsPhotoCapture;
+
   /// Whether this device can run the tracker at all. Cheap; no session start.
   Future<bool> isSupported();
 
@@ -84,20 +117,31 @@ abstract interface class ArTracker {
     bool loop = false,
   });
 
+  /// Pauses or resumes the current clip without changing its frame.
+  Future<bool> setClipPaused({
+    required String trackerName,
+    required bool paused,
+  });
+
   /// Places a short-lived baseball VFX on the locked marker pose.
-  /// Spawns several ball nodes. Call [updateEffect] each frame, then
-  /// [clearEffect]. One effect at a time. Must not drop the session.
+  /// Spawns up to six preset particle nodes. One effect at a time.
   Future<bool> attachEffect({
     required String trackerName,
     required String glbAsset,
+    required ArParticleEffect effect,
   });
 
   /// Drives the active effect. [progress] is 0..1 — balls drift randomly
-  /// then shrink away near the end. No-op if nothing is attached.
+  /// according to the selected preset, then shrink away. No-op if none.
   void updateEffect(double progress);
 
   /// Removes every active effect node.
   Future<void> clearEffect();
+
+  /// Saves a capture of the live AR scene plus [overlayPng] to Pictures.
+  /// The platform combines the Flutter chrome with its native scene snapshot.
+  /// Unsupported devices/platforms and capture failures are typed errors.
+  Future<void> capturePhoto({required Uint8List overlayPng});
 
   /// Extra yaw (radians) composed onto the tracked pose. Used by the
   /// información action's single 360° turn. Zero means the pose alone.

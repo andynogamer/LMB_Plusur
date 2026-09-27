@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lmb_plusur/ar/ar_tracker.dart';
@@ -58,6 +60,7 @@ void main() {
     Equipo? hint,
     Marcador? marcador,
     MarkerRegistry? registryOverride,
+    Future<Uint8List> Function()? overlaySnapshotForTesting,
   }) async {
     final target = marcador ?? leones;
     await tester.pumpWidget(
@@ -73,6 +76,7 @@ void main() {
                   ? registry
                   : MarkerRegistry.fromMarcadores([target])),
           marcadores: [target],
+          overlaySnapshotForTesting: overlaySnapshotForTesting,
         ),
       ),
     );
@@ -98,8 +102,9 @@ void main() {
     );
   }
 
-  testWidgets('el contenido del marcador solo aparece en ArLocked',
-      (tester) async {
+  testWidgets('el contenido del marcador solo aparece en ArLocked', (
+    tester,
+  ) async {
     final tracker = FakeArTracker();
     await pumpScan(tester, tracker: tracker);
 
@@ -196,12 +201,17 @@ void main() {
       final tracker = FakeArTracker(startFailure: ArTrackerException(failure));
       await pumpScan(tester, tracker: tracker);
 
-      expect(find.byKey(const Key('ar-failed')), findsOneWidget,
-          reason: failure.name);
+      expect(
+        find.byKey(const Key('ar-failed')),
+        findsOneWidget,
+        reason: failure.name,
+      );
       expect(find.text(expected[failure]!.$1), findsOneWidget);
       expect(find.text(expected[failure]!.$2), findsOneWidget);
-      expect(find.text(ArFailedPanel.manualPathLabel.toUpperCase()),
-          findsOneWidget);
+      expect(
+        find.text(ArFailedPanel.manualPathLabel.toUpperCase()),
+        findsOneWidget,
+      );
       expect(find.byKey(const Key('ar-marker-content')), findsNothing);
     }
 
@@ -269,7 +279,7 @@ void main() {
     expect(find.byKey(const Key('ar-actions')), findsNothing);
     expect(find.byKey(const Key('ar-action-gesto')), findsNothing);
     expect(find.byKey(const Key('ar-action-info')), findsNothing);
-    expect(find.byKey(const Key('ar-action-efecto')), findsNothing);
+    expect(find.byKey(const Key('ar-effect-jonron')), findsNothing);
 
     tracker.emit(
       ArDetection(
@@ -289,7 +299,11 @@ void main() {
     expect(find.byKey(const Key('ar-actions')), findsOneWidget);
     expect(find.byKey(const Key('ar-action-gesto')), findsNothing);
     expect(find.byKey(const Key('ar-action-info')), findsOneWidget);
-    expect(find.byKey(const Key('ar-action-efecto')), findsOneWidget);
+    expect(find.byKey(const Key('ar-effect-jonron')), findsOneWidget);
+    expect(find.byKey(const Key('ar-action-photo')), findsNothing);
+    expect(find.byKey(const Key('ar-effect-chispas')), findsOneWidget);
+    expect(find.byKey(const Key('ar-effect-confeti')), findsOneWidget);
+    expect(find.byKey(const Key('ar-effect-polvoDelDiamante')), findsOneWidget);
     expect(find.text(info), findsNothing);
     expect(find.text('SALIR'), findsNothing);
 
@@ -332,6 +346,7 @@ void main() {
     await tester.pump();
 
     expect(find.byKey(const Key('ar-model-selector')), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const Key('ar-model-player')));
     await tester.tap(find.byKey(const Key('ar-model-player')));
     await tester.pump();
     await tester.pump();
@@ -340,11 +355,9 @@ void main() {
       tracker.attachedModels.last.glbAsset,
       'assets/models/leones_yucatan/jugador.glb',
     );
-    expect(
-      tracker.playedClips.last.clipName,
-      kClipIdle,
-    );
+    expect(tracker.playedClips.last.clipName, kClipIdle);
     expect(find.byKey(const Key('ar-action-gesto')), findsOneWidget);
+    expect(find.byKey(const Key('ar-action-animation-pause')), findsOneWidget);
     expect(find.byKey(const Key('ar-locked')), findsOneWidget);
     expect(find.byKey(const Key('ar-model-selector')), findsOneWidget);
   });
@@ -368,8 +381,9 @@ void main() {
     expect(find.byKey(const Key('ar-trivia')), findsOneWidget);
   });
 
-  testWidgets('celebracion pide el clip y reposo vuelve a idle',
-      (tester) async {
+  testWidgets('celebracion pide el clip y reposo vuelve a idle', (
+    tester,
+  ) async {
     final player = _marcador(
       id: 'marcador_jugador_olmecas',
       titulo: 'El legado olmeca',
@@ -388,9 +402,7 @@ void main() {
 
     expect(
       tracker.playedClips,
-      contains(
-        (trackerName: player.id, clipName: kClipIdle, loop: true),
-      ),
+      contains((trackerName: player.id, clipName: kClipIdle, loop: true)),
     );
     expect(find.byKey(const Key('ar-action-gesto')), findsOneWidget);
 
@@ -399,28 +411,39 @@ void main() {
     await tester.pump();
 
     expect(find.text('REPOSO'), findsOneWidget);
-    expect(
-      tracker.playedClips.last,
-      (trackerName: player.id, clipName: kClipCelebracion, loop: false),
-    );
-    expect(tracker.attachedEffects, isNotEmpty);
-    expect(tracker.attachedEffects.last.glbAsset, kEfectoJonronAsset);
-    expect(find.byKey(const Key('ar-vfx-banner')), findsOneWidget);
+    expect(tracker.playedClips.last, (
+      trackerName: player.id,
+      clipName: kClipCelebracion,
+      loop: false,
+    ));
+    expect(tracker.attachedEffects, isEmpty);
+
+    await tester.tap(find.byKey(const Key('ar-action-animation-pause')));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('REANUDAR ANIMACIÓN'), findsOneWidget);
+    expect(tracker.clipPauseChanges.last.paused, isTrue);
+    await tester.tap(find.byKey(const Key('ar-action-animation-pause')));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('PAUSAR ANIMACIÓN'), findsOneWidget);
+    expect(tracker.clipPauseChanges.last.paused, isFalse);
 
     await tester.tap(find.byKey(const Key('ar-action-gesto')));
     await tester.pump();
     await tester.pump();
 
     expect(find.text('CELEBRACIÓN'), findsOneWidget);
-    expect(
-      tracker.playedClips.last,
-      (trackerName: player.id, clipName: kClipIdle, loop: true),
-    );
-    expect(tracker.clearEffectCount, greaterThan(0));
+    expect(tracker.playedClips.last, (
+      trackerName: player.id,
+      clipName: kClipIdle,
+      loop: true,
+    ));
   });
 
-  testWidgets('efecto jonrón coloca el GLB 3D sin soltar la sesión',
-      (tester) async {
+  testWidgets('los cuatro efectos son independientes de la animación', (
+    tester,
+  ) async {
     final tracker = FakeArTracker();
     await pumpScan(tester, tracker: tracker);
 
@@ -428,26 +451,99 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    expect(find.byKey(const Key('ar-action-efecto')), findsOneWidget);
+    expect(find.byKey(const Key('ar-effect-jonron')), findsOneWidget);
+    expect(find.byKey(const Key('ar-effect-chispas')), findsOneWidget);
+    expect(find.byKey(const Key('ar-effect-confeti')), findsOneWidget);
+    expect(find.byKey(const Key('ar-effect-polvoDelDiamante')), findsOneWidget);
     expect(tracker.attachedEffects, isEmpty);
+    final clearedBeforeEffects = tracker.clearEffectCount;
 
-    await tester.tap(find.byKey(const Key('ar-action-efecto')));
+    for (final effect in ArParticleEffect.values) {
+      await tester.tap(find.byKey(Key('ar-effect-${effect.name}')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(tracker.attachedEffects.last.effect, effect);
+      expect(tracker.attachedEffects.last.glbAsset, effect.asset);
+      expect(tracker.playedClips, isEmpty);
+      expect(find.byKey(const Key('ar-locked')), findsOneWidget);
+    }
+    expect(
+      tracker.clearEffectCount,
+      greaterThanOrEqualTo(
+        clearedBeforeEffects + ArParticleEffect.values.length - 1,
+      ),
+    );
+
+    await tester.pump(const Duration(seconds: 3));
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 200));
-
-    expect(find.text('QUITAR EFECTO'), findsOneWidget);
-    expect(tracker.attachedEffects, isNotEmpty);
-    expect(tracker.attachedEffects.last.glbAsset, kEfectoJonronAsset);
-    expect(tracker.effectProgress, greaterThan(0));
-    expect(find.byKey(const Key('ar-vfx-banner')), findsOneWidget);
+    expect(
+      tracker.clearEffectCount,
+      greaterThanOrEqualTo(
+          clearedBeforeEffects + ArParticleEffect.values.length),
+    );
     expect(find.byKey(const Key('ar-locked')), findsOneWidget);
+  });
 
-    await tester.tap(find.byKey(const Key('ar-action-efecto')));
+  testWidgets('la foto solo se ofrece tras lock y confirma el guardado', (
+    tester,
+  ) async {
+    final tracker = FakeArTracker(supportsPhotoCapture: true);
+    await pumpScan(
+      tester,
+      tracker: tracker,
+      overlaySnapshotForTesting: () async => Uint8List.fromList(
+        [137, 80, 78, 71, 13, 10, 26, 10],
+      ),
+    );
+
+    expect(find.byKey(const Key('ar-action-photo')), findsNothing);
+    await lock(tracker, leones);
     await tester.pump();
     await tester.pump();
 
-    expect(find.text('EFECTO JONRÓN'), findsOneWidget);
-    expect(tracker.clearEffectCount, greaterThan(0));
+    expect(find.byKey(const Key('ar-action-photo')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('ar-action-photo')));
+    await tester.pump();
+    await tester.pump();
+
+    expect(tracker.capturePhotoCount, 1);
+    expect(tracker.capturedPhotoOverlays, hasLength(1));
+    expect(
+      tracker.capturedPhotoOverlays.single.take(8),
+      [137, 80, 78, 71, 13, 10, 26, 10],
+    );
+    expect(find.text('Foto guardada en la galería.'), findsOneWidget);
+    expect(find.byKey(const Key('ar-locked')), findsOneWidget);
+  });
+
+  testWidgets('el fallo de captura da feedback sin perder la sesión', (
+    tester,
+  ) async {
+    final tracker = FakeArTracker(
+      supportsPhotoCapture: true,
+      photoCaptureFailure: const ArPhotoCaptureException(
+        ArPhotoCaptureFailure.permissionDenied,
+      ),
+    );
+    await pumpScan(
+      tester,
+      tracker: tracker,
+      overlaySnapshotForTesting: () async => Uint8List.fromList(
+        [137, 80, 78, 71, 13, 10, 26, 10],
+      ),
+    );
+    await lock(tracker, leones);
+    await tester.pump();
+    await tester.pump();
+
+    await tester.tap(find.byKey(const Key('ar-action-photo')));
+    await tester.pump();
+    await tester.pump();
+
+    expect(
+      find.text('Sin permiso no podemos guardar la foto.'),
+      findsOneWidget,
+    );
     expect(find.byKey(const Key('ar-locked')), findsOneWidget);
   });
 }

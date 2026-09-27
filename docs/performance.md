@@ -10,7 +10,7 @@ and asset inventory (2026-09-09). Device frame timings still human-open.
 | Splash → main | Fixed **3 s** timer + full-res decode of `LMB_plusur.png` (1920×1080) into a 176 px circle. Poppins fetched on first paint via `google_fonts`. |
 | Video + filter | `VideoPlayerController.addListener` → `setState` every tick rebuilt the **whole** stack, including `FilterEngine.aplicar` (blur / pixelado). Classic jank with desenfoque. |
 | AR enter | Compiles **all** scored logos into the image DB (~2.3 MB markers). Águila ~795 KB, Diablos ~697 KB dominate. |
-| AR VFX | 10 Filament baseball nodes + 36 sparks + 22 confetti; chrome `setState` rebuilt the camera `PlatformView` sibling. |
+| AR VFX | One baseball burst plus screen-space particles; chrome `setState` rebuilt the camera `PlatformView` sibling. |
 | JSON | `DataService` re-read `data.json` / `videos.json` / `ar_markers.json` on every screen open. |
 
 Already fine before this pass: lazy video mount (one player), lazy GLB attach
@@ -26,7 +26,7 @@ controllers.
 | Video chrome in `ListenableBuilder`; filter+`VideoPlayer` outside tick rebuilds | Blur/pixelado no longer rebuilt every frame. |
 | YouTube posters use remote `i.ytimg.com` thumbnails and filters run on the Flutter preview before the WebView mounts | Removes the black poster state and makes filter selection visibly verifiable without trying to repaint an Android platform view. |
 | Slightly softer blur sigmas (2.4 / 0.9) | Cheaper compositor path; look still readable. |
-| VFX: **6** balls, **24** sparks, **14** confetti | Keeps baseball flavor under mid-tier Filament + paint budget. |
+| VFX: four independent particle meshes; at most **6** scene-graph nodes for one selected effect | Preserves the one-effect limit and keeps the Filament budget bounded. |
 | AR camera surface kept outside session/action rebuild tree (`ValueKey`) | Action taps should not tear down the platform view. |
 | `DataService` memoizes equipos / videos / marcadores | Repeat navigations skip JSON parse. |
 
@@ -42,16 +42,18 @@ controllers.
 ## Dispose checklist (verified in code)
 
 - Splash: `AnimationController` disposed; no dangling Timer.
-- AR: `_spin`, `_efectoDrive`, `_uiState`, session subscription, tracker
-  `clearEffect` / `dispose`.
+- AR: `_spin`, `_efectoDrive`, `_celebrationProgress`, `_uiState`, session
+  subscription, tracker `clearEffect` / `dispose`; Android capture writes via
+  PixelCopy + MediaStore and does not retain a bitmap after saving.
 - Video: listener removed; `VideoPlayerController.dispose` on leave /
   widget dispose. Switching `_playingId` unmounts the previous player.
 
 ## Human follow-up (optional for the 15pt story)
 
 1. Cold start: splash → main on physical Android; note wall time.
-2. AR: enter scanner, lock one logo, toggle Celebración / Efecto a few times —
-   session must stay up (also AR-07 device gate).
+2. AR on Android 8+: lock a logo, pause/resume idle and celebration, save a
+   photo and verify it in `Pictures/LMB Plusur`, then trigger each of the four
+   particle presets separately. The session must stay up (US-20 device gate).
 3. Archivo: play a clip, apply desenfoque then térmica — UI should stay smooth
    enough for demo.
 

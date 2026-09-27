@@ -12,8 +12,11 @@ to rest), and `celebracion` (arms up / bat overhead, return). Regenerate from th
 below are the upgrade path if replacing those files with authored art.
 Do not add scan targets to “cover” clubs.
 
-`assets/models/efecto_jonron/modelo.glb` is the shared in-scene VFX burst
-(US-13). Regenerate with `--efecto-only`. It is not a club model.
+`assets/models/efecto_jonron/modelo.glb` is the Jonrón particle mesh;
+`efecto_chispas`, `efecto_confeti`, and `efecto_polvo_diamante` are the other
+US-20 scene-graph particle meshes. Regenerate them with
+`python tools/write_lowpoly_glbs.py --particles-only` (or regenerate the
+baseball with `--efecto-only`). They are not club models or animation clips.
 
 This is not automatically 10 scan targets. The camera locks only logos that
 score ≥ 75 (see `docs/ar-marker-guide.md` §7). Clubs without a passing logo

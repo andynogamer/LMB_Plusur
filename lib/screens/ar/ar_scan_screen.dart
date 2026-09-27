@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -19,7 +22,6 @@ import '../../services/feedback_service.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_logo.dart';
 import 'widgets/ar_action_bar.dart';
-import 'widgets/ar_baseball_vfx.dart';
 import 'widgets/ar_chrome_snapshot.dart';
 import 'widgets/ar_demo_badge.dart';
 import 'widgets/ar_failed_panel.dart';
@@ -41,6 +43,7 @@ class ArScanScreen extends StatefulWidget {
     this.registry,
     this.marcadores,
     this.isDemo = true,
+    @visibleForTesting this.overlaySnapshotForTesting,
   });
 
   /// Equipo sugerido al llegar desde el menú del club (D-11).
@@ -54,6 +57,9 @@ class ArScanScreen extends StatefulWidget {
 
   /// Labels the session as demo. Required while the fake tracker is the engine.
   final bool isDemo;
+
+  @visibleForTesting
+  final Future<Uint8List> Function()? overlaySnapshotForTesting;
 
   @override
   State<ArScanScreen> createState() => _ArScanScreenState();
@@ -70,17 +76,19 @@ class _ArScanScreenState extends State<ArScanScreen>
   ArCoreImageTracker? _cameraTracker;
   bool _liveIsDemo = false;
   ArTracker? _liveTracker;
-  Timer? _gestoTimer;
+  final GlobalKey _photoOverlayKey = GlobalKey();
   late final AnimationController _spin;
   late final AnimationController _efectoDrive;
-  final ValueNotifier<ArSessionState> _uiState =
-      ValueNotifier<ArSessionState>(const ArPreparing());
+  late final AnimationController _celebrationProgress;
+  final ValueNotifier<ArSessionState> _uiState = ValueNotifier<ArSessionState>(
+    const ArPreparing(),
+  );
   final ValueNotifier<ArChromeSnapshot> _chromeActions =
       ValueNotifier<ArChromeSnapshot>(ArChromeSnapshot.empty);
 
-  bool _efectoLooping = false;
-  final ValueNotifier<ArExperienceMode> _mode =
-      ValueNotifier<ArExperienceMode>(ArExperienceMode.gallery);
+  final ValueNotifier<ArExperienceMode> _mode = ValueNotifier<ArExperienceMode>(
+    ArExperienceMode.gallery,
+  );
   final ValueNotifier<ArModelChoice> _modelChoice =
       ValueNotifier<ArModelChoice>(ArModelChoice.defaultModel);
 
@@ -114,7 +122,7 @@ class _ArScanScreenState extends State<ArScanScreen>
       });
     _efectoDrive = AnimationController(
       vsync: this,
-      duration: ArBaseballVfx.duration,
+      duration: const Duration(milliseconds: 2800),
     )
       ..addListener(() {
         _liveTracker?.updateEffect(_efectoDrive.value);
@@ -122,6 +130,12 @@ class _ArScanScreenState extends State<ArScanScreen>
       ..addStatusListener((status) {
         unawaited(_onEfectoDriveStatus(status));
       });
+    _celebrationProgress =
+        AnimationController(vsync: this, duration: kCelebracionClipLength)
+          ..addStatusListener((status) {
+            if (status != AnimationStatus.completed || !mounted) return;
+            _patchChrome(_chrome.copyWith(gestoPressed: false));
+          });
     unawaited(_openSession());
   }
 
@@ -223,12 +237,7 @@ class _ArScanScreenState extends State<ArScanScreen>
         ? choice.tracker as ArCoreImageTracker
         : null;
     if (mounted) setState(() {});
-    await _bind(
-      choice.tracker,
-      registry,
-      marcadores,
-      isDemo: choice.isDemo,
-    );
+    await _bind(choice.tracker, registry, marcadores, isDemo: choice.isDemo);
   }
 
   Future<void> _bind(
@@ -271,10 +280,7 @@ class _ArScanScreenState extends State<ArScanScreen>
 
   Future<void> _attachLockedModel(ArTracker tracker, ArLocked locked) async {
     final asset = _assetForModel(locked.marcador, _modelChoice.value);
-    await tracker.attachModel(
-      trackerName: locked.marcador.id,
-      glbAsset: asset,
-    );
+    await tracker.attachModel(trackerName: locked.marcador.id, glbAsset: asset);
     if (!mounted) return;
     final note = tracker is ArCoreImageTracker
         ? modelFallbackCopy(tracker.modelAttach)
@@ -307,12 +313,12 @@ class _ArScanScreenState extends State<ArScanScreen>
     };
   }
 
-  Future<void> _changeModel(
-    Marcador marcador,
-    ArModelChoice choice,
-  ) async {
+  Future<void> _changeModel(Marcador marcador, ArModelChoice choice) async {
     final tracker = _liveTracker;
     if (tracker == null) return;
+    _celebrationProgress
+      ..stop()
+      ..reset();
     _modelChoice.value = choice;
     await _attachLockedModel(
       tracker,
@@ -321,6 +327,8 @@ class _ArScanScreenState extends State<ArScanScreen>
     if (!mounted) return;
     _patchChrome(
       _chrome.copyWith(
+        gestoPressed: false,
+        animationPaused: false,
         actionNote: choice == ArModelChoice.stadium
             ? 'Modelo estadio seleccionado.'
             : 'Modelo jugador seleccionado.',
@@ -329,13 +337,17 @@ class _ArScanScreenState extends State<ArScanScreen>
   }
 
   Future<void> _releaseActions() async {
-    _gestoTimer?.cancel();
-    _gestoTimer = null;
+    _celebrationProgress
+      ..stop()
+      ..reset();
     _efectoDrive.stop();
     _efectoDrive.value = 0;
-    _efectoLooping = false;
     if (_spin.isAnimating) {
       _spin.stop();
+    }
+    final marker = _activeMarcador(_uiState.value);
+    if (marker != null) {
+      await _liveTracker?.setClipPaused(trackerName: marker.id, paused: false);
     }
     _liveTracker?.setPresentationYaw(0);
     await _liveTracker?.clearEffect();
@@ -345,8 +357,7 @@ class _ArScanScreenState extends State<ArScanScreen>
     _patchChrome(ArChromeSnapshot.empty);
   }
 
-  void _startEfectoDrive({required bool loop}) {
-    _efectoLooping = loop;
+  void _startEfectoDrive() {
     _efectoDrive
       ..stop()
       ..forward(from: 0);
@@ -354,32 +365,13 @@ class _ArScanScreenState extends State<ArScanScreen>
 
   Future<void> _onEfectoDriveStatus(AnimationStatus status) async {
     if (status != AnimationStatus.completed || !mounted) return;
-    if (_efectoLooping && _chrome.efectoPressed) {
-      await _restartEfectoLoop();
-      return;
-    }
-    if (!_efectoLooping) {
-      await _finishOneshotEfecto();
-    }
-  }
-
-  Future<void> _restartEfectoLoop() async {
-    final tracker = _liveTracker;
-    final marcador = _activeMarcador(_uiState.value);
-    if (tracker == null || marcador == null || !_chrome.efectoPressed) return;
-    await tracker.clearEffect();
-    final placed = await tracker.attachEffect(
-      trackerName: marcador.id,
-      glbAsset: kEfectoJonronAsset,
-    );
-    if (!mounted || !placed || !_chrome.efectoPressed) return;
-    _efectoDrive.forward(from: 0);
+    await _finishOneshotEfecto();
   }
 
   Future<void> _finishOneshotEfecto() async {
     await _liveTracker?.clearEffect();
     if (!mounted) return;
-    _patchChrome(_chrome.copyWith(gestoPressed: false, celebracionVfx: false));
+    _patchChrome(_chrome.copyWith(activeEffect: null));
   }
 
   Future<void> _onGesto(Marcador marcador) async {
@@ -392,10 +384,9 @@ class _ArScanScreenState extends State<ArScanScreen>
       return;
     }
     if (_chrome.gestoPressed) {
-      _gestoTimer?.cancel();
-      _gestoTimer = null;
-      _efectoDrive.stop();
-      await tracker.clearEffect();
+      _celebrationProgress
+        ..stop()
+        ..reset();
       await tracker.playClip(
         trackerName: marcador.id,
         clipName: kClipIdle,
@@ -403,7 +394,8 @@ class _ArScanScreenState extends State<ArScanScreen>
       );
       if (!mounted) return;
       _patchChrome(
-          _chrome.copyWith(gestoPressed: false, celebracionVfx: false));
+        _chrome.copyWith(gestoPressed: false, animationPaused: false),
+      );
       return;
     }
 
@@ -419,28 +411,15 @@ class _ArScanScreenState extends State<ArScanScreen>
       return;
     }
     await FeedbackService.instance.success();
-    final placed = await tracker.attachEffect(
-      trackerName: marcador.id,
-      glbAsset: kEfectoJonronAsset,
-    );
     if (!mounted) return;
     _patchChrome(
       _chrome.copyWith(
         gestoPressed: true,
-        celebracionVfx: placed,
-        efectoPressed: false,
+        animationPaused: false,
         actionNote: null,
       ),
     );
-    if (placed) {
-      _startEfectoDrive(loop: false);
-    } else {
-      _gestoTimer?.cancel();
-      _gestoTimer = Timer(kCelebracionClipLength, () {
-        if (!mounted) return;
-        _patchChrome(_chrome.copyWith(gestoPressed: false));
-      });
-    }
+    _celebrationProgress.forward(from: 0);
   }
 
   bool _modelSupportsClip(Marcador marcador, String clipName) {
@@ -451,29 +430,25 @@ class _ArScanScreenState extends State<ArScanScreen>
     };
   }
 
-  Future<void> _onEfecto() async {
+  Future<void> _onEffectSelected(ArParticleEffect effect) async {
     final tracker = _liveTracker;
     final marcador = _activeMarcador(_uiState.value);
     if (tracker == null || marcador == null) return;
     await FeedbackService.instance.tap();
     if (!mounted) return;
-    if (_chrome.efectoPressed) {
+    if (_chrome.activeEffect == effect) {
       _efectoDrive.stop();
-      _efectoLooping = false;
       await tracker.clearEffect();
       if (!mounted) return;
-      _patchChrome(
-        _chrome.copyWith(
-          efectoPressed: false,
-          celebracionVfx: false,
-          actionNote: null,
-        ),
-      );
+      _patchChrome(_chrome.copyWith(activeEffect: null, actionNote: null));
       return;
     }
+    _efectoDrive.stop();
+    await tracker.clearEffect();
     final placed = await tracker.attachEffect(
       trackerName: marcador.id,
-      glbAsset: kEfectoJonronAsset,
+      glbAsset: effect.asset,
+      effect: effect,
     );
     if (!mounted) return;
     if (!placed) {
@@ -483,15 +458,115 @@ class _ArScanScreenState extends State<ArScanScreen>
       );
       return;
     }
+    _patchChrome(_chrome.copyWith(activeEffect: effect, actionNote: null));
+    _startEfectoDrive();
+  }
+
+  Future<void> _onToggleAnimationPause(Marcador marcador) async {
+    final tracker = _liveTracker;
+    if (tracker == null) return;
+    final paused = !_chrome.animationPaused;
+    final changed = await tracker.setClipPaused(
+      trackerName: marcador.id,
+      paused: paused,
+    );
+    if (!mounted) return;
+    if (!changed) {
+      await FeedbackService.instance.error();
+      _patchChrome(
+        _chrome.copyWith(actionNote: 'No pudimos controlar esta animación.'),
+      );
+      return;
+    }
+    if (_chrome.gestoPressed) {
+      if (paused) {
+        _celebrationProgress.stop();
+      } else {
+        _celebrationProgress.forward();
+      }
+    }
+    await FeedbackService.instance.tap();
+    if (!mounted) return;
     _patchChrome(
       _chrome.copyWith(
-        efectoPressed: true,
-        celebracionVfx: true,
-        gestoPressed: false,
-        actionNote: null,
+        animationPaused: paused,
+        actionNote: paused ? 'Animación pausada.' : 'Animación reanudada.',
       ),
     );
-    _startEfectoDrive(loop: true);
+  }
+
+  Future<void> _onCapturePhoto() async {
+    final tracker = _liveTracker;
+    if (tracker == null || _activeMarcador(_uiState.value) == null) return;
+    try {
+      final overlayPng = await _captureOverlayPng();
+      await tracker.capturePhoto(overlayPng: overlayPng);
+      await FeedbackService.instance.success();
+      if (!mounted) return;
+      _patchChrome(
+        _chrome.copyWith(actionNote: 'Foto guardada en la galería.'),
+      );
+    } on ArPhotoCaptureException catch (error) {
+      await FeedbackService.instance.error();
+      if (!mounted) return;
+      final message = switch (error.failure) {
+        ArPhotoCaptureFailure.unsupportedPlatform =>
+          'La captura AR de fotos está disponible solo en Android.',
+        ArPhotoCaptureFailure.unsupportedAndroidVersion =>
+          'Guardar fotos AR requiere Android 8 o posterior.',
+        ArPhotoCaptureFailure.permissionDenied =>
+          'Sin permiso no podemos guardar la foto.',
+        ArPhotoCaptureFailure.captureFailed =>
+          'No pudimos capturar la vista AR.',
+        ArPhotoCaptureFailure.saveFailed =>
+          'No pudimos guardar la foto en la galería.',
+      };
+      _patchChrome(_chrome.copyWith(actionNote: message));
+    } on Object catch (error, stackTrace) {
+      FlutterError.reportError(
+        FlutterErrorDetails(
+          exception: error,
+          stack: stackTrace,
+          library: 'AR photo capture',
+        ),
+      );
+      await FeedbackService.instance.error();
+      if (!mounted) return;
+      _patchChrome(
+        _chrome.copyWith(actionNote: 'No pudimos capturar la vista AR.'),
+      );
+    }
+  }
+
+  Future<Uint8List> _captureOverlayPng() async {
+    final testSnapshot = widget.overlaySnapshotForTesting;
+    if (testSnapshot != null) return testSnapshot();
+
+    final renderObject = _photoOverlayKey.currentContext?.findRenderObject();
+    if (renderObject is! RenderRepaintBoundary) {
+      throw const ArPhotoCaptureException(
+        ArPhotoCaptureFailure.captureFailed,
+      );
+    }
+    final image = await renderObject.toImage(
+      pixelRatio: View.of(context).devicePixelRatio,
+    );
+    try {
+      final overlayPng = await image.toByteData(
+        format: ui.ImageByteFormat.png,
+      );
+      if (overlayPng == null || overlayPng.lengthInBytes == 0) {
+        throw const ArPhotoCaptureException(
+          ArPhotoCaptureFailure.captureFailed,
+        );
+      }
+      return overlayPng.buffer.asUint8List(
+        overlayPng.offsetInBytes,
+        overlayPng.lengthInBytes,
+      );
+    } finally {
+      image.dispose();
+    }
   }
 
   Future<void> _onInfo(Marcador marcador) async {
@@ -556,8 +631,8 @@ class _ArScanScreenState extends State<ArScanScreen>
 
   @override
   void dispose() {
-    _gestoTimer?.cancel();
     _efectoDrive.dispose();
+    _celebrationProgress.dispose();
     _spin.dispose();
     unawaited(ArSpeechService.instance.stop());
     _states?.cancel();
@@ -587,13 +662,16 @@ class _ArScanScreenState extends State<ArScanScreen>
           ValueListenableBuilder<ArSessionState>(
             valueListenable: _uiState,
             builder: (context, state, _) {
-              return ValueListenableBuilder<ArChromeSnapshot>(
-                valueListenable: _chromeActions,
-                builder: (context, actions, _) => _overlay(
-                  context,
-                  state,
-                  actions,
-                  hasCamera: camera != null,
+              return RepaintBoundary(
+                key: _photoOverlayKey,
+                child: ValueListenableBuilder<ArChromeSnapshot>(
+                  valueListenable: _chromeActions,
+                  builder: (context, actions, _) => _overlay(
+                    context,
+                    state,
+                    actions,
+                    hasCamera: camera != null,
+                  ),
                 ),
               );
             },
@@ -612,8 +690,7 @@ class _ArScanScreenState extends State<ArScanScreen>
     final showDemoBadge = _liveIsDemo || (state is ArLocked && state.isDemo);
     final failed = state is ArFailed ? state : null;
     final marcador = _activeMarcador(state);
-    final showVfx =
-        marcador != null && (actions.efectoPressed || actions.celebracionVfx);
+    final showPhotoCapture = _liveTracker?.supportsPhotoCapture ?? false;
     final showViewfinder = state is ArSearching || state is ArCandidate;
     final modelSelector = marcador == null
         ? null
@@ -628,17 +705,6 @@ class _ArScanScreenState extends State<ArScanScreen>
     return Stack(
       fit: StackFit.expand,
       children: [
-        if (showVfx)
-          Positioned.fill(
-            child: ArBaseballVfx(
-              active: true,
-              oneshot: actions.celebracionVfx && !actions.efectoPressed,
-              onFinished: () {
-                if (!mounted) return;
-                _patchChrome(_chrome.copyWith(celebracionVfx: false));
-              },
-            ),
-          ),
         DecoratedBox(
           decoration: hasCamera
               ? const BoxDecoration()
@@ -659,8 +725,9 @@ class _ArScanScreenState extends State<ArScanScreen>
                       IconButton(
                         onPressed: () => Navigator.of(context).maybePop(),
                         style: IconButton.styleFrom(
-                          backgroundColor:
-                              AppColors.navy.withValues(alpha: 0.55),
+                          backgroundColor: AppColors.navy.withValues(
+                            alpha: 0.55,
+                          ),
                         ),
                         icon: const Icon(
                           Icons.arrow_back_rounded,
@@ -736,20 +803,43 @@ class _ArScanScreenState extends State<ArScanScreen>
                                                 marcador,
                                                 kClipCelebracion,
                                               ),
+                                              showAnimationControl:
+                                                  _selectedModelHasAnimations(
+                                                marcador,
+                                              ),
+                                              showPhotoCapture:
+                                                  showPhotoCapture,
                                               gestoPressed:
                                                   actions.gestoPressed,
                                               infoPressed: actions.infoPressed,
-                                              efectoPressed:
-                                                  actions.efectoPressed,
+                                              animationPaused:
+                                                  actions.animationPaused,
+                                              activeEffect:
+                                                  actions.activeEffect,
                                               infoEnabled: mode ==
                                                   ArExperienceMode.gallery,
                                               note: actions.actionNote,
-                                              onGesto: () =>
-                                                  unawaited(_onGesto(marcador)),
-                                              onInfo: () =>
-                                                  unawaited(_onInfo(marcador)),
-                                              onEfecto: () =>
-                                                  unawaited(_onEfecto()),
+                                              onGesto: () => unawaited(
+                                                _onGesto(marcador),
+                                              ),
+                                              onInfo: () => unawaited(
+                                                _onInfo(marcador),
+                                              ),
+                                              onToggleAnimationPause: () =>
+                                                  unawaited(
+                                                _onToggleAnimationPause(
+                                                  marcador,
+                                                ),
+                                              ),
+                                              onCapturePhoto: () => unawaited(
+                                                _onCapturePhoto(),
+                                              ),
+                                              onEffectSelected: (effect) =>
+                                                  unawaited(
+                                                _onEffectSelected(
+                                                  effect,
+                                                ),
+                                              ),
                                             ),
                                           ),
                                     modePanel: marcador == null

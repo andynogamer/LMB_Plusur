@@ -20,10 +20,7 @@ import '../ar_tracker.dart';
 /// Club GLBs are authored upright (Y-up), while a logo marker is a horizontal
 /// image plane. Laying the model onto that plane keeps the content parallel to
 /// the scanned logo. Presentation yaw then rotates around the logo normal.
-Matrix4 modelPoseForImage(
-  Matrix4 imagePose, {
-  double presentationYaw = 0,
-}) {
+Matrix4 modelPoseForImage(Matrix4 imagePose, {double presentationYaw = 0}) {
   final pose = Matrix4.fromFloat64List(imagePose.storage);
   pose.translateByDouble(0, 0.01, 0, 1);
   pose.rotateX(-math.pi / 2);
@@ -60,10 +57,7 @@ String referenceImageStem(String assetPath) {
 
 /// Plugin 1.1.3 only reports `TrackingMethod.FULL_TRACKING`. A paused or
 /// stopped image is never fully tracked — do not place content on it.
-bool imageIsFullyTracked({
-  String? trackingMethod,
-  String? trackingState,
-}) {
+bool imageIsFullyTracked({String? trackingMethod, String? trackingState}) {
   if (trackingState == 'PAUSED' || trackingState == 'STOPPED') return false;
   if (trackingMethod == 'LAST_KNOWN_POSE') return false;
   return trackingMethod == 'FULL_TRACKING';
@@ -124,6 +118,7 @@ void assertTrackableReferences(List<ArReferenceImage> references) {
 /// only after `tools/patch_arcore_image_width.ps1` (re-run after `pub get`).
 class ArCoreImageTracker implements ArTracker {
   static const _probe = MethodChannel('mx.lmb.plusur/arcore_probe');
+  static const _photoCapture = MethodChannel('mx.lmb.plusur/ar_photo_capture');
 
   final StreamController<ArDetection> _detections =
       StreamController<ArDetection>.broadcast();
@@ -137,8 +132,9 @@ class ArCoreImageTracker implements ArTracker {
   final Map<String, Matrix4> _poses = {};
   final Map<String, ARNode> _nodes = {};
   final Map<String, String> _nodeAssets = {};
-  final List<_EffectBall> _effectBalls = [];
+  final List<_EffectParticle> _effectParticles = [];
   String? _effectTrackerName;
+  ArParticleEffect? _activeParticleEffect;
   double _effectProgress = 0;
   double _presentationYaw = 0;
   ArModelAttach? modelAttach;
@@ -147,6 +143,9 @@ class ArCoreImageTracker implements ArTracker {
   bool _stopped = false;
   bool _configuring = false;
   String _availability = '';
+
+  @override
+  bool get supportsPhotoCapture => Platform.isAndroid;
 
   /// Camera platform view. The screen stacks chrome on top. Do not import
   /// the plugin from the screen — call this instead.
@@ -360,8 +359,15 @@ class ArCoreImageTracker implements ArTracker {
     if (node != null) {
       node.transform = _anchoredPose(transformation);
     }
-    if (_effectBalls.isNotEmpty && _effectTrackerName == imageName) {
-      _applyEffectTransforms(transformation, progress: _effectProgress);
+    final effect = _activeParticleEffect;
+    if (_effectParticles.isNotEmpty &&
+        _effectTrackerName == imageName &&
+        effect != null) {
+      _applyEffectTransforms(
+        transformation,
+        progress: _effectProgress,
+        effect: effect,
+      );
     }
     _detections.add(
       ArDetection(
@@ -377,10 +383,7 @@ class ArCoreImageTracker implements ArTracker {
   /// [_presentationYaw] is the información action's single spin. It is
   /// applied in local space after the lift so tracking updates keep it.
   Matrix4 _anchoredPose(Matrix4 imagePose) {
-    return modelPoseForImage(
-      imagePose,
-      presentationYaw: _presentationYaw,
-    );
+    return modelPoseForImage(imagePose, presentationYaw: _presentationYaw);
   }
 
   @override
@@ -420,9 +423,30 @@ class ArCoreImageTracker implements ArTracker {
   }
 
   @override
+  Future<bool> setClipPaused({
+    required String trackerName,
+    required bool paused,
+  }) async {
+    final channel = _objectChannel;
+    if (channel == null || _stopped || !_nodes.containsKey(trackerName)) {
+      return false;
+    }
+    try {
+      return await channel.invokeMethod<bool>('setClipPaused', {
+            'name': modelNodeName(trackerName),
+            'paused': paused,
+          }) ==
+          true;
+    } on Object {
+      return false;
+    }
+  }
+
+  @override
   Future<bool> attachEffect({
     required String trackerName,
     required String glbAsset,
+    required ArParticleEffect effect,
   }) async {
     final pose = _poses[trackerName];
     final objects = _objects;
@@ -437,27 +461,21 @@ class ArCoreImageTracker implements ArTracker {
     }
 
     final rng = math.Random();
-    // Cap node count — mid-tier Filament + screen particles already paint.
+    // Cap particle count for mid-tier Filament devices.
     const count = 6;
     var placed = 0;
     for (var i = 0; i < count; i++) {
       final angle = (i / count) * math.pi * 2 + rng.nextDouble() * 0.35;
-      final radius = 0.012 + rng.nextDouble() * 0.018;
-      final start = Vector3(
-        math.cos(angle) * radius * 0.35,
-        0.03 + rng.nextDouble() * 0.02,
-        math.sin(angle) * radius * 0.35,
-      );
-      final velocity = Vector3(
-        math.cos(angle) * (0.05 + rng.nextDouble() * 0.07),
-        0.04 + rng.nextDouble() * 0.08,
-        math.sin(angle) * (0.05 + rng.nextDouble() * 0.07),
-      );
+      final particle = _particleMotion(effect, angle, rng);
       final node = ARNode(
         type: NodeType.localGLB,
         uri: glbAsset,
         name: '${effectNodeName(trackerName)}_$i',
-        transformation: _ballWorldPose(pose, start, scale: 0.55),
+        transformation: _particleWorldPose(
+          pose,
+          particle.start,
+          scale: particle.scale,
+        ),
       );
       bool added;
       try {
@@ -466,50 +484,92 @@ class ArCoreImageTracker implements ArTracker {
         added = false;
       }
       if (!added) continue;
-      _effectBalls.add(
-        _EffectBall(
+      _effectParticles.add(
+        _EffectParticle(
           node: node,
-          start: start,
-          velocity: velocity,
-          spin: (rng.nextDouble() - 0.5) * 8,
+          start: particle.start,
+          velocity: particle.velocity,
+          spin: particle.spin,
+          scale: particle.scale,
         ),
       );
       placed += 1;
     }
     if (placed == 0) return false;
     _effectTrackerName = trackerName;
+    _activeParticleEffect = effect;
     _effectProgress = 0;
     return true;
+  }
+
+  ({Vector3 start, Vector3 velocity, double spin, double scale})
+      _particleMotion(ArParticleEffect effect, double angle, math.Random rng) {
+    final radial = Vector3(math.cos(angle), 0, math.sin(angle));
+    return switch (effect) {
+      ArParticleEffect.jonron => (
+          start: Vector3(radial.x * 0.006, 0.03, radial.z * 0.006),
+          velocity: Vector3(radial.x * 0.07, 0.10, radial.z * 0.07),
+          spin: (rng.nextDouble() - 0.5) * 8,
+          scale: 0.55,
+        ),
+      ArParticleEffect.chispas => (
+          start: Vector3(radial.x * 0.008, 0.02, radial.z * 0.008),
+          velocity: Vector3(radial.x * 0.025, 0.15, radial.z * 0.025),
+          spin: (rng.nextDouble() - 0.5) * 18,
+          scale: 0.72,
+        ),
+      ArParticleEffect.confeti => (
+          start: Vector3(radial.x * 0.018, 0.05, radial.z * 0.018),
+          velocity: Vector3(radial.x * 0.045, 0.025, radial.z * 0.045),
+          spin: (rng.nextDouble() - 0.5) * 24,
+          scale: 0.8,
+        ),
+      ArParticleEffect.polvoDelDiamante => (
+          start: Vector3(radial.x * 0.012, 0.006, radial.z * 0.012),
+          velocity: Vector3(radial.x * 0.03, 0.018, radial.z * 0.03),
+          spin: (rng.nextDouble() - 0.5) * 3,
+          scale: 0.9,
+        ),
+    };
   }
 
   @override
   void updateEffect(double progress) {
     _effectProgress = progress.clamp(0.0, 1.0);
     final name = _effectTrackerName;
-    if (name == null || _effectBalls.isEmpty) return;
+    if (name == null || _effectParticles.isEmpty) return;
     final pose = _poses[name];
     if (pose == null) return;
-    _applyEffectTransforms(pose, progress: _effectProgress);
+    _applyEffectTransforms(
+      pose,
+      progress: _effectProgress,
+      effect: _activeParticleEffect!,
+    );
   }
 
   @override
   Future<void> clearEffect() async {
     final objects = _objects;
-    final balls = List<_EffectBall>.from(_effectBalls);
-    _effectBalls.clear();
+    final particles = List<_EffectParticle>.from(_effectParticles);
+    _effectParticles.clear();
     _effectTrackerName = null;
+    _activeParticleEffect = null;
     _effectProgress = 0;
     if (objects == null) return;
-    for (final ball in balls) {
+    for (final particle in particles) {
       try {
-        objects.removeNode(ball.node);
+        objects.removeNode(particle.node);
       } on Object {
         // Node already gone with the session.
       }
     }
   }
 
-  void _applyEffectTransforms(Matrix4 imagePose, {required double progress}) {
+  void _applyEffectTransforms(
+    Matrix4 imagePose, {
+    required double progress,
+    required ArParticleEffect effect,
+  }) {
     // Hold nearly full size, then shrink away in the last quarter.
     final fade = progress < 0.72
         ? 1.0
@@ -520,23 +580,29 @@ class ArCoreImageTracker implements ArTracker {
     // Soften scale near zero so Filament does not keep a speck.
     final visibleScale = fade <= 0.02 ? 0.001 : scale;
 
-    for (final ball in _effectBalls) {
-      final wobble = math.sin(progress * math.pi * 4 + ball.spin) * 0.006;
+    for (final particle in _effectParticles) {
+      final wobble = math.sin(progress * math.pi * 4 + particle.spin) * 0.006;
+      final gravity = effect == ArParticleEffect.confeti ? -0.055 : 0.0;
+      final dustDrop =
+          effect == ArParticleEffect.polvoDelDiamante ? -0.004 : 0.0;
       final drift = Vector3(
-        ball.start.x + ball.velocity.x * progress + wobble,
-        ball.start.y + ball.velocity.y * progress,
-        ball.start.z + ball.velocity.z * progress - wobble * 0.5,
+        particle.start.x + particle.velocity.x * progress + wobble,
+        particle.start.y +
+            particle.velocity.y * progress +
+            gravity * progress * progress +
+            dustDrop * progress,
+        particle.start.z + particle.velocity.z * progress - wobble * 0.5,
       );
-      ball.node.transform = _ballWorldPose(
+      particle.node.transform = _particleWorldPose(
         imagePose,
         drift,
-        scale: visibleScale,
-        yaw: ball.spin * progress,
+        scale: particle.scale * visibleScale,
+        yaw: particle.spin * progress,
       );
     }
   }
 
-  Matrix4 _ballWorldPose(
+  Matrix4 _particleWorldPose(
     Matrix4 imagePose,
     Vector3 local, {
     required double scale,
@@ -549,6 +615,74 @@ class ArCoreImageTracker implements ArTracker {
     }
     pose.scaleByDouble(scale, scale, scale, 1);
     return pose;
+  }
+
+  @override
+  Future<void> capturePhoto({required Uint8List overlayPng}) async {
+    if (!Platform.isAndroid) {
+      throw const ArPhotoCaptureException(
+        ArPhotoCaptureFailure.unsupportedPlatform,
+      );
+    }
+    try {
+      final supported = await _photoCapture.invokeMethod<bool>(
+        'checkCaptureSupported',
+      );
+      if (supported != true) {
+        throw const ArPhotoCaptureException(
+          ArPhotoCaptureFailure.unsupportedAndroidVersion,
+        );
+      }
+    } on ArPhotoCaptureException {
+      rethrow;
+    } on PlatformException catch (error) {
+      if (error.code == 'unsupported_android_version') {
+        throw const ArPhotoCaptureException(
+          ArPhotoCaptureFailure.unsupportedAndroidVersion,
+        );
+      }
+      throw const ArPhotoCaptureException(ArPhotoCaptureFailure.captureFailed);
+    } on MissingPluginException {
+      throw const ArPhotoCaptureException(ArPhotoCaptureFailure.captureFailed);
+    }
+
+    final Uint8List? scenePng;
+    try {
+      scenePng = await _sessionChannel?.invokeMethod<Uint8List>(
+        'snapshot',
+      );
+    } on PlatformException {
+      throw const ArPhotoCaptureException(ArPhotoCaptureFailure.captureFailed);
+    } on MissingPluginException {
+      throw const ArPhotoCaptureException(ArPhotoCaptureFailure.captureFailed);
+    }
+    if (scenePng == null || scenePng.isEmpty || overlayPng.isEmpty) {
+      throw const ArPhotoCaptureException(ArPhotoCaptureFailure.captureFailed);
+    }
+
+    try {
+      final saved = await _photoCapture.invokeMethod<bool>(
+        'capturePhoto',
+        <String, Uint8List>{
+          'arScenePng': scenePng,
+          'overlayPng': overlayPng,
+        },
+      );
+      if (saved != true) {
+        throw const ArPhotoCaptureException(ArPhotoCaptureFailure.saveFailed);
+      }
+    } on ArPhotoCaptureException {
+      rethrow;
+    } on PlatformException catch (error) {
+      final failure = switch (error.code) {
+        'unsupported_android_version' =>
+          ArPhotoCaptureFailure.unsupportedAndroidVersion,
+        'permission_denied' => ArPhotoCaptureFailure.permissionDenied,
+        'capture_failed' => ArPhotoCaptureFailure.captureFailed,
+        _ => ArPhotoCaptureFailure.saveFailed,
+      };
+      throw ArPhotoCaptureException(failure);
+    }
   }
 
   ArTrackerFailure _availabilityFailure() {
@@ -665,18 +799,20 @@ class ArCoreImageTracker implements ArTracker {
   }
 }
 
-class _EffectBall {
-  _EffectBall({
+class _EffectParticle {
+  _EffectParticle({
     required this.node,
     required this.start,
     required this.velocity,
     required this.spin,
+    required this.scale,
   });
 
   final ARNode node;
   final Vector3 start;
   final Vector3 velocity;
   final double spin;
+  final double scale;
 }
 
 class _ArCoreSurface extends StatelessWidget {

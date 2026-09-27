@@ -1,6 +1,6 @@
 ﻿# LMB Plusur — Work Items para Agentes
 
-> Backlog after Constitution **v2.0.0** (decisions D-01…D-20 + professor
+> Backlog under Constitution **v2.5.0** (decisions D-01…D-26 + professor
 > checklist). Each item is a **copy-paste prompt**. One item per branch/PR.
 > Format: contexto → tarea → criterios de aceptación → archivos → fuera de alcance.
 >
@@ -55,8 +55,12 @@
 | BUG-03 | 🐛 | 🟠 P1 | Keep AR information open until the user closes it | ☑ | AR UX |
 | BUG-04 | 🐛 | 🟠 P1 | Restore video thumbnails and visible YouTube filter previews | ☑ | Videos / filters |
 | BUG-05 | 🐛 | 🟡 P2 | Show supplied club photos in Historia | ☑ | Historia |
+| BUG-06 | 🐛 | 🔴 P0 | Fix blank images saved by AR photo capture | ☑ | AR capture |
+| BUG-07 | 🐛 | 🟠 P1 | Pause/resume every supported AR clip, including idle | ☐ | AR animation |
+| BUG-08 | 🐛 | 🔴 P0 | Restore AR camera after returning to the app | ☐ | AR lifecycle |
 | US-18 | 📗 | 🟠 P1 | Select stadium or player model after AR lock | ☑ | AR depth |
 | US-19 | 📗 | 🟠 P1 | Lay AR model parallel to scanned logo | ☑ | AR depth |
+| US-20 | 📗 | 🟠 P1 | Pause animation, save AR photos, and trigger four independent particle effects | ◐ | AR interaction / capture |
 | ~~US-05…US-08~~ | — | — | ~~Old monolithic AR items~~ | ⊘ | Replaced by AR-01…AR-07 |
 | ~~BUG-01~~ | — | — | ~~AR mock always Guerreros~~ | ⊘ | Deleted with the mock in AR-03 |
 
@@ -84,6 +88,125 @@ already ships); record explanatory demo video (10pt).
 The Historia view now reads `historiaImagenUrl` from `assets/data.json` for all
 ten Zona Sur clubs. Remote image failures retain the existing baseball
 placeholder instead of leaving the card empty.
+
+## BUG-06 · 🔴 P0 · Fix blank images saved by AR photo capture · ☑ Hecho
+
+**Prompt**
+```
+Contexto: US-20 / D-26 added Android AR photo capture through PixelCopy and
+MediaStore. On a physical Android device, capture reports success and creates
+gallery files, but the saved images are blank. The app copied the Activity
+window while the pinned AR plugin renders camera/model in a separate
+GLSurfaceView; a successful window copy and file write are not proof that the
+AR scene was captured.
+
+Tarea: Trace and fix the Android capture/composition path so the saved image
+contains the actual live AR camera image, tracked model, and visible Flutter
+AR chrome. Preserve the existing Android-only scope, locked-session gating,
+Pictures/LMB Plusur destination, explicit unsupported/error feedback, and
+MediaStore behavior. Use the pinned plugin's native AR-scene snapshot for its
+GLSurfaceView and capture only Flutter chrome separately for composition. Do
+not capture/decode camera frames in Dart, rely only on an Activity-window
+copy, or turn a blank capture into a success.
+
+Criterios de aceptación:
+- On a physical Android 8+ device, the saved gallery image is non-empty and
+  visibly contains the camera scene, anchored model, and visible AR controls.
+- Verify the result visually after more than one capture; files must not be
+  blank/black and capture must not interrupt the AR session.
+- Capture failures remain visible to the user and do not create a
+  success-shaped result.
+- Add focused tests for capture result/error handling at the platform seam;
+  retain physical-device image inspection as a required acceptance gate.
+- No iOS support is added or implied.
+- **Physical acceptance (2026-09-26):** M2012K10C / Android 13. Two new
+  captures (`LMB_AR_1790469669646.png`, `LMB_AR_1790469677404.png`) were pulled
+  from `Pictures/LMB Plusur` and visually inspected; both show the live scene,
+  tracked model, and AR controls without blank regions replacing the capture.
+
+Archivos: `android/app/src/main/kotlin/mx/lmb/plusur/lmb_plusur/MainActivity.kt`,
+`lib/ar/`, `lib/screens/ar/`, AR tests, `docs/ar-architecture.md`,
+`docs/agent-handoff.md`
+
+Fuera de alcance: iOS capture, video recording, filters, upload, redesign of
+the AR screen, or unrelated camera lifecycle changes.
+```
+
+## BUG-07 · 🟠 P1 · Pause/resume every supported AR clip, including idle · ☐ Pendiente
+
+**Prompt**
+```
+Contexto: US-20 / D-26 requires pausing the active model animation. Current
+acceptance covers the animated player's idle and celebration clips, but pause
+behavior must not depend on the selected model being a player or on a
+celebration action having run. The current stadium catalog models are static.
+
+Tarea: Make pause/resume apply to any supported clip on the currently selected
+AR model, including the standard idle clip, and verify it after model
+selection. Preserve the exact-frame freeze/resume behavior through ArTracker.
+Do not add an animation to a static stadium GLB: if a selected stadium has no
+clip, it must not show a misleading pause control. If a stadium asset exposes
+a supported clip, that clip must be pausable too.
+
+Criterios de aceptación:
+- For every selected model with an active supported clip, pause freezes that
+  clip at its current frame and resume continues from that frame.
+- The idle clip can be paused immediately; the user does not need to trigger
+  celebration first.
+- Switching models does not leave a stale paused state or target the previous
+  model's animation.
+- Static models with no clip do not expose an enabled/nonfunctional pause
+  control.
+- Add tracker/widget regression coverage for idle and model changes; verify
+  each currently animated model on a physical Android device.
+- Animation pause/resume does not stop tracking, change effects, or rebuild the
+  camera platform view.
+
+Archivos: `lib/ar/ar_tracker.dart`, `lib/ar/trackers/`,
+`lib/screens/ar/`, `lib/screens/ar/widgets/`, `tools/patch_filament_clips.ps1`,
+AR tests, `docs/ar-architecture.md`, `docs/agent-handoff.md`
+
+Fuera de alcance: authoring new stadium animations, new clips, particle-effect
+changes, photo capture fixes, or AR lifecycle recovery.
+```
+
+## BUG-08 · 🔴 P0 · Restore AR camera after returning to the app · ☐ Pendiente
+
+**Prompt**
+```
+Contexto: In a live AR session, briefly pressing Android's power/lock button
+or leaving the app and returning can leave the camera preview black. The
+anchored model and animations continue, so the AR session and rendered scene
+are out of sync after the app lifecycle transition.
+
+Tarea: Handle Android app lifecycle transitions while the AR screen is active
+so returning from the lock screen/background restores a live camera preview
+and a coherent tracking/model state. Use the existing ArTracker boundary and
+the pinned plugin's supported lifecycle behavior; do not create a second
+concurrent camera session or bypass the tracker with screen-specific plugin
+calls. If the session must restart, cleanly release the old session and
+re-establish tracking through the existing state flow.
+
+Criterios de aceptación:
+- After locking/unlocking the screen and after backgrounding/foregrounding the
+  app, the camera preview becomes live again without navigating away from AR.
+- Tracking resumes coherently: the model follows only a fully tracked marker;
+  no stale pose is presented as current tracking.
+- Repeat each transition at least five times on a physical Android device
+  without a black preview, duplicate session, crash, or leaked camera use.
+- Lifecycle handling is testable at the app/tracker boundary and does not
+  rebuild the camera surface on ordinary AR control taps.
+- Surface a clear recoverable AR failure state if native camera/session
+  recovery fails; never silently leave a black view presented as working.
+- No iOS lifecycle behavior is added unless separately specified.
+
+Archivos: `lib/ar/`, `lib/ar/trackers/arcore_image_tracker.dart`,
+`lib/screens/ar/ar_scan_screen.dart`, `android/app/src/main/`, AR tests,
+`docs/ar-architecture.md`, `docs/agent-handoff.md`
+
+Fuera de alcance: photo capture corrections, animation feature expansion,
+general app-wide lifecycle refactoring, background AR operation, or iOS work.
+```
 
 ## US-01 · 🟠 P1 · Team list name search (D-10) · ☑ Hecho
 
@@ -691,9 +814,13 @@ On `ArLocked`:
 1. **Celebración** — plays clip `celebracion` (arms up / bat overhead), then
    idle. Spawns ~10 baseball `ARNode`s that drift for ~2.8 s and shrink away.
    Screen-space sparks/confetti + optional ¡JONRÓN! banner reinforce.
-2. **Efecto jonrón** — same multi-ball + particles; loops until toggled off.
-   One VFX at a time. `updateEffect` each frame; `clearEffect` on leave /
-   toggle off / end of oneshot. Not soccer branding.
+2. **Efecto jonrón** — independent in-scene baseball particles. One VFX at a
+   time. `updateEffect` each frame; `clearEffect` on leave / toggle off / end
+   of oneshot. Not soccer branding.
+
+US-20 adds Chispas, Confeti, and Polvo del diamante as separate selectable
+presets and decouples all four effects from animation playback; Celebración
+now triggers only its model clip.
 
 D-22 amended: player clips are `idle`, `gesto`, `celebracion`.
 
@@ -994,16 +1121,78 @@ Fuera de alcance: AR work, renaming JSON keys, redesigning the data layer.
 
 ---
 
+## US-20 · 📗 · 🟠 P1 · AR capture, animation pause, and four independent particle effects · ◐ En progreso
+
+**Prompt**
+```
+Contexto: Professor review requires control of the running AR animation,
+photos saved to the phone gallery, and four particle effects independently
+triggerable apart from animation. Constitution D-26 and AR architecture §§3, 6, 10,
+and 11 define the amended contract. D-05 permits only this scan-locked AR
+snapshot; the video + filters feature remains unchanged.
+
+Tarea:
+1) On an animated model after ArLocked, add a pause/resume control that freezes
+   the currently playing clip at its exact frame and resumes from that frame.
+   Keep this in the ArTracker seam; do not rebuild the platform camera view.
+2) Add an Android-only AR photo control after ArLocked. Capture the complete
+   AR window (camera, tracked model, and visible AR chrome) and save it to
+   Pictures/LMB Plusur via MediaStore. API 26+ is supported; API 24–25 must
+   show an explicit unsupported message. Handle Android 8–9 legacy write
+   permission only when capture is invoked. Show success/failure feedback.
+3) Provide four separate selectable in-scene particle effects:
+   Jonrón (baseball burst), Chispas (gold sparks), Confeti (team-color
+   confetti), and Polvo del diamante (infield dust). Each has its own
+   appearance/motion preset and control; only one may be active. Effects are
+   triggered independently and never implicitly by an animation. Keep each
+   effect to at most 6 scene-graph nodes and clear it on deselect/leave.
+4) Implement through ArTracker and the existing tracker scene graph. Do not
+   import the AR plugin in UI, capture/decode camera frames in Dart, or add an
+   unapproved image-matching path. No iOS capture is included or implied.
+
+Criterios de aceptación:
+- The animated player can be paused during idle or celebration and resumes
+  from the same animation frame; static models do not expose pause.
+- AR photo capture is available only after a confirmed lock. On Android 8+,
+  a device test finds a new image in Pictures/LMB Plusur containing the camera,
+  anchored model, and visible AR chrome. Android 7.x receives clear Spanish
+  unsupported copy. Permission denial/save failure is visible and does not
+  terminate the AR session.
+- All four named effects can be triggered individually without starting or
+  changing a model animation. Switching effects leaves no previous effect
+  nodes attached, does not exceed 6 particle nodes, and keeps the session live.
+- The AR camera platform view is not rebuilt by action taps. No UI advertises
+  the Android-only photo path on iOS.
+- Widget/unit tests cover paused/resumed clip requests, all four effect
+  selections, effect clearing, locked-only photo control, and capture
+  success/failure feedback through a fake tracker.
+- flutter analyze and focused AR tests pass. Physical Android validation of
+  saved gallery output remains required; no iOS acceptance is claimed.
+
+Archivos: `lib/ar/ar_tracker.dart`, `lib/ar/trackers/`, `lib/screens/ar/`,
+`lib/screens/ar/widgets/`, `android/app/src/main/`, `tools/` (plugin clip
+patch), `assets/models/` (lightweight effect particles), AR tests,
+`CONSTITUTION.md`, `docs/ar-architecture.md`, `docs/agent-handoff.md`
+
+Fuera de alcance: iOS photo capture, general-purpose camera/gallery routes,
+video capture or filters, cloud upload, additional animation clips, more
+than one simultaneous effect, and changes to the marker database.
+```
+
 ## Suggested sequence
 
+0. **US-20 regressions, one item per branch:** ~~BUG-06~~ → BUG-07 → BUG-08
+   (photo output accepted → pause coverage → camera lifecycle recovery).
 1. ~~US-01 → US-02 → US-03 → US-04~~ ✅ done (existing shell)
 2. **AR foundation, no native risk:** AR-01 → AR-02 → AR-03
    *(human works AR-00 in parallel — it only blocks AR-05)*
 3. **AR native:** AR-04 → AR-05 → AR-06 → AR-07 (grading core)
 4. US-11 → US-12 (video + filters grading core)
 5. US-09 → US-10 → US-13 (depth / bonus — all build on AR-07)
-6. ~~DEBT-01 → US-14 → US-15 → US-16~~ US-14…US-17 done. Remaining:
-   **BUG-02** (failed actions) then US-09 / US-10 / DEBT-01.
+6. ~~DEBT-01 → US-14 → US-15 → US-16~~ US-14…US-20 core implementation
+   landed; animation/effect device acceptance remains open. After BUG-07 →
+   BUG-08, continue the existing backlog:
+   **BUG-02** (failed actions), then US-09 / US-10 / DEBT-01.
 
 Do not start AR-04 until AR-01…AR-03 are merged and green. That ordering is the
 whole point of the reset: the state machine and content mapping are proven

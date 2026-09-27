@@ -885,6 +885,67 @@ def write_efecto_jonron(path: Path) -> tuple[int, tuple[list[float], list[float]
     return mesh.triangle_count, mesh.bounds()
 
 
+def write_particle_shape(path: Path, kind: str) -> tuple[int, tuple[list[float], list[float]]]:
+    """Writes a small, vertex-colored particle mesh for an independent AR VFX."""
+    mesh = Mesh()
+    if kind == "chispas":
+        points = []
+        for i in range(10):
+            angle = math.pi * 2 * i / 10
+            radius = 0.012 if i % 2 == 0 else 0.0045
+            points.append((math.cos(angle) * radius, math.sin(angle) * radius))
+        mesh.extrude_xz(points, -0.0015, 0.0015, (0.98, 0.76, 0.16, 1.0))
+    elif kind == "confeti":
+        colors = (
+            (0.82, 0.12, 0.16, 1.0),
+            (0.12, 0.54, 0.30, 1.0),
+            (0.96, 0.78, 0.18, 1.0),
+        )
+        for i, color in enumerate(colors):
+            x = (i - 1) * 0.005
+            z = (1 - i) * 0.003
+            mesh.box(x - 0.002, -0.001, z - 0.006, x + 0.002, 0.001, z + 0.006, color)
+    elif kind == "polvo_diamante":
+        colors = (
+            (0.60, 0.38, 0.20, 1.0),
+            (0.78, 0.58, 0.34, 1.0),
+            (0.48, 0.30, 0.16, 1.0),
+        )
+        for i, color in enumerate(colors):
+            x = (i - 1) * 0.005
+            z = (i % 2 - 0.5) * 0.006
+            mesh.sphere(x, 0.0, z, 0.006 + i * 0.001, color, segments=8)
+    else:
+        raise ValueError(f"Unknown particle shape: {kind}")
+
+    blob = bytearray()
+    buffer_views: list[dict] = []
+    accessors: list[dict] = []
+    primitive = _mesh_views(blob, mesh, buffer_views, accessors)
+    gltf = {
+        "asset": {"version": "2.0", "generator": f"LMB Plusur {kind} particles"},
+        "scene": 0,
+        "scenes": [{"nodes": [0]}],
+        "nodes": [{"mesh": 0, "name": kind}],
+        "meshes": [{"name": kind, "primitives": [primitive]}],
+        "materials": [
+            {
+                "name": "vertexColor",
+                "pbrMetallicRoughness": {
+                    "baseColorFactor": [1, 1, 1, 1],
+                    "metallicFactor": 0.02,
+                    "roughnessFactor": 0.7,
+                },
+            }
+        ],
+        "accessors": accessors,
+        "bufferViews": buffer_views,
+        "buffers": [{"byteLength": len(blob)}],
+    }
+    _write_glb(path, gltf, bytes(blob))
+    return mesh.triangle_count, mesh.bounds()
+
+
 def _report(kind: str, path: Path, tris: int, size: int, bounds: tuple[list[float], list[float]]) -> None:
     mn, mx = bounds
     height = mx[1] - mn[1]
@@ -900,11 +961,18 @@ def main() -> int:
     parser.add_argument("--stadiums-only", action="store_true")
     parser.add_argument("--players-only", action="store_true")
     parser.add_argument("--efecto-only", action="store_true")
+    parser.add_argument("--particles-only", action="store_true")
     args = parser.parse_args()
     if args.efecto_only:
         path = MODELS / "efecto_jonron" / "modelo.glb"
         tris, bounds = write_efecto_jonron(path)
         _report("efecto", path, tris, path.stat().st_size, bounds)
+        return 0
+    if args.particles_only:
+        for name in ("chispas", "confeti", "polvo_diamante"):
+            path = MODELS / f"efecto_{name}" / "modelo.glb"
+            tris, bounds = write_particle_shape(path, name)
+            _report(name, path, tris, path.stat().st_size, bounds)
         return 0
     clubs = CLUBS
     if args.only:
