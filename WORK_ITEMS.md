@@ -1,6 +1,6 @@
 ﻿# LMB Plusur — Work Items para Agentes
 
-> Backlog under Constitution **v2.5.0** (decisions D-01…D-26 + professor
+> Backlog under Constitution **v2.5.1** (decisions D-01…D-27 + professor
 > checklist). Each item is a **copy-paste prompt**. One item per branch/PR.
 > Format: contexto → tarea → criterios de aceptación → archivos → fuera de alcance.
 >
@@ -57,7 +57,7 @@
 | BUG-05 | 🐛 | 🟡 P2 | Show supplied club photos in Historia | ☑ | Historia |
 | BUG-06 | 🐛 | 🔴 P0 | Fix blank images saved by AR photo capture | ☑ | AR capture |
 | BUG-07 | 🐛 | 🟠 P1 | Pause/resume every supported AR clip, including idle | ☐ | AR animation |
-| BUG-08 | 🐛 | 🔴 P0 | Restore AR camera after returning to the app | ☐ | AR lifecycle |
+| BUG-08 | 🐛 | 🔴 P0 | Restore AR camera after returning to the app | ◐ | AR lifecycle |
 | US-18 | 📗 | 🟠 P1 | Select stadium or player model after AR lock | ☑ | AR depth |
 | US-19 | 📗 | 🟠 P1 | Lay AR model parallel to scanned logo | ☑ | AR depth |
 | US-20 | 📗 | 🟠 P1 | Pause animation, save AR photos, and trigger four independent particle effects | ◐ | AR interaction / capture |
@@ -170,7 +170,7 @@ Fuera de alcance: authoring new stadium animations, new clips, particle-effect
 changes, photo capture fixes, or AR lifecycle recovery.
 ```
 
-## BUG-08 · 🔴 P0 · Restore AR camera after returning to the app · ☐ Pendiente
+## BUG-08 · 🔴 P0 · Restore AR camera after returning to the app · ◐ En progreso
 
 **Prompt**
 ```

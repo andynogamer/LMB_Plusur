@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-09-26 · by: BUG-06 capture fix (device verified)
+**Last updated:** 2026-09-26 · by: BUG-08 AR camera recovery (code)
 
 ---
 
@@ -20,7 +20,7 @@ These are **binding**, not advisory:
 
 | # | File | What it gives you |
 |---|---|---|
-| 1 | `CONSTITUTION.md` | Governance, v2.5.0, decisions D-01…D-26 |
+| 1 | `CONSTITUTION.md` | Governance, v2.5.1, decisions D-01…D-27 |
 | 2 | `AGENTS.md` | How to work here (auto-loaded as a workspace rule) |
 | 3 | `WORK_ITEMS.md` | The backlog. Each item's `Prompt` block **is** the spec |
 | 4 | `docs/ar-postmortem.md` | Why AR attempt #1 was thrown away (RC-1…RC-7) |
@@ -138,11 +138,19 @@ Measured later, four of them were. **Never copy code from that branch.**
   `LMB_AR_1790469677404.png`) were pulled from Pictures and visually inspected;
   both contain the live scene, tracked model, and controls. Device acceptance
   is complete for BUG-06.
+- **BUG-08 — code landed 2026-09-26.** Android pause/hidden parks a lock as
+  `ArLost` and asks the tracker to pause the ARCore session; resume restores
+  that session on the same surface and waits for a fully tracked detection.
+  Chrome taps still must not `setState` the camera scaffold. Native methods
+  `pauseSession` / `resumeSession` need
+  `tools/patch_arcore_session_lifecycle.ps1` after `pub get`. Widget tests
+  wait with a bounded `pump` loop — do not `await` an open `lifecycleGate`
+  and do not use `pumpAndSettle` (repeating AR animations never settle).
+  **5× lock-screen and background/foreground on a physical Android device
+  is still open.** iOS lifecycle is out of scope.
 - **Pending AR regressions:** BUG-07 covers pausing any supported clip,
   including idle (current stadium GLBs are static and must not gain a fake
-  pause control); BUG-08 covers the black camera preview after locking the
-  Android screen or returning from the background. Keep them separate and
-  handle after BUG-06.
+  pause control). Keep them separate.
 - US-14 — **Done (code).** Splash warm-up (~1.1 s) + logo `cacheWidth`;
   video chrome isolated from filter rebuilds; `DataService` memoization;
   AR camera outside action rebuilds; VFX capped at 6 balls. Notes:
@@ -239,12 +247,12 @@ Do not mix BUG-02 with US-09/US-10.
 **Next**
 
 ```
-BUG-07 pause/resume coverage → BUG-08 camera lifecycle recovery.
+BUG-08 device 5× lock/background → BUG-07 pause/resume coverage.
 Remaining human/device gates: AR-06/07 acceptance and printed marker checks.
 ```
 
-Next: BUG-07 pause/resume coverage, then BUG-08 camera lifecycle recovery.
-Other device gates remain AR-06/07 and print Bravos/Tigres.
+Next: physical Android confirmation for BUG-08 (five lock-screen cycles and
+five background/foreground cycles without a black preview), then BUG-07.
 
 Release APK path: `build/app/outputs/flutter-apk/app-release.apk`.
 Rebuild after both plugin patches before installing.
@@ -312,6 +320,7 @@ chrome). Do not fall back to the fake tracker when that session fails.
   ```powershell
   powershell -ExecutionPolicy Bypass -File tools/patch_arcore_image_width.ps1
   powershell -ExecutionPolicy Bypass -File tools/patch_filament_clips.ps1
+  powershell -ExecutionPolicy Bypass -File tools/patch_arcore_session_lifecycle.ps1
   ```
 - ⚠️ **Plugin 1.1.3 hardcodes reference width at 0.2 m** and `precompile`
   errors with `Session not initialized` if called before any `onInitialize`.
@@ -329,6 +338,15 @@ chrome). Do not fall back to the fake tracker when that session fails.
   `ArScanScreen`). Tapping Celebración / Información / an effect must **not**
   `setState` the `Scaffold` that owns `camera.buildSurface()`. Session
   start still `setState`s once to attach the platform view.
+- ⚠️ **BUG-08 widget tests must not wait forever.** `pumpAndSettle` never
+  returns if an AR `AnimationController` is repeating. `FakeArTracker.lifecycleGate`
+  hangs unless the test completes it — leave it null. Do not spin on
+  `tester.pump` after `AppLifecycleState.paused`: that state disables frames,
+  so an unbounded `runAsync` wait is the hang. Widget tests drive
+  `ArScanScreenState.debugHandleAppLifecycle` instead, then `pump` — do not
+  `await` that future in widget tests (it can hang the fake async zone). Ignore
+  `AppLifecycleState.inactive`; it fires on the way back to `resumed` and
+  would pause the camera again.
 - US-20 photo capture is Android-only: PixelCopy requires API 26+, and API
   26–28 needs the runtime legacy storage grant. The image is saved through
   MediaStore into `Pictures/LMB Plusur`. No iOS capture implementation or UI
@@ -381,6 +399,7 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-09-26 | **BUG-08 code.** Screen observes `paused`/`hidden`/`resumed` only (not `inactive`). Controller parks `ArLocked` as `ArLost`, re-subscribes detections after tracker resume, and maps a failed restore to `ArFailed(sessionLost)`. Tracker talks to `pauseSession`/`resumeSession` on the pinned plugin after a third post-`pub get` patch. Tests use bounded pumps, not `runAsync` wait-forever loops. Device 5× still open. |
 | 2026-09-26 | **BUG-06 done.** Replaced Activity-window-only PixelCopy (which misses the AR plugin's separate GL surface) with the plugin's native AR-scene snapshot plus a transparent Flutter chrome capture, composed natively before MediaStore save. Added blank-input rejection and pre-snapshot API gating. Analyze, 12 focused AR tests, and Android debug build pass. Two captures from M2012K10C / Android 13 were pulled from Pictures and visually confirmed to contain the live scene, model, and controls. |
 | 2026-09-26 | **AR regression triage.** Split three reported US-20 failures into independent pending items: BUG-06 blank gallery captures, BUG-07 pause/resume coverage for supported clips including idle (no new stadium animation), and BUG-08 AR camera recovery after screen lock/background. Ordered one-at-a-time; no implementation changed. |
 | 2026-09-26 | **US-20 / D-26.** Added animation pause/resume at the current clip frame, Android PixelCopy → MediaStore AR photos, and four independently triggered scene-graph particle presets (Jonrón, Chispas, Confeti, Polvo). Added bounded GLBs and updated the pinned-plugin patch and governance. `flutter analyze`, all 12 focused AR tests, and `flutter build apk --debug` pass; photo capture later passed physical review under BUG-06, animation/effect device acceptance remains open. |
@@ -390,7 +409,6 @@ Rules of thumb:
 | 2026-09-19 | **US-09 / US-02 refinement.** Replaced the random/infinite stats counter with a deterministic plate-appearance simulator: three outs per half-inning, runners, hits, runs and final-game logic. Removed the redundant AR entry from the already-selected team menu; the main shell remains the scanner entry. `flutter analyze` and focused tests pass. |
 | 2026-09-19 | **BUG-04 follow-up.** Fixed the YouTube filter race: the first CSS application could run before the `YoutubePlayer` and its iframe existed, leaving the pressed filter chip out of sync with playback. The player now applies CSS after the platform view mounts, retries until the iframe is present, and reapplies it when the selected filter changes. Analyze and the full 52-test suite pass. |
 | 2026-09-19 | **BUG-04.** Added real YouTube thumbnails with a network/error fallback. CSS-compatible filters now remain active on the YouTube iframe during playback through the plugin WebView controller; Pixelado stays preview-only. Direct MP4 playback remains fully filtered. Added `VideoArchivo.miniaturaUrl` and CSS mapping tests. |
-| 2026-09-19 | **BUG-03.** Kept the AR Información panel open after the presentation turn; only the model yaw resets automatically. Added a persistence regression test. |
 
 ## 8. How to work
 
@@ -403,9 +421,9 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 ## 9. Current task
 
-> Next: BUG-07 — make pause/resume cover every supported active clip including
-> idle. Do not add a fake pause control or new animation to static stadium
-> models. Handle BUG-08 separately after BUG-07.
+> Next: BUG-08 device acceptance — five Android lock-screen cycles and five
+> background/foreground cycles with no black preview, duplicate session, or
+> crash. Then BUG-07 pause/resume coverage for supported clips including idle.
 
 _(The human edits this line each session. Leave it pointing at the next item
 when you finish.)_

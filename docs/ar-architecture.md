@@ -1,7 +1,7 @@
 # AR architecture contract
 
 **Status:** binding. Referenced by Constitution **Article VI**.
-**Version:** 1.1.0 · 2026-09-26
+**Version:** 1.1.1 · 2026-09-26
 **Scope:** everything under `lib/ar/`, plus AR-related native config.
 **Read first:** [`ar-postmortem.md`](./ar-postmortem.md) — this document is its remedy.
 
@@ -118,6 +118,11 @@ abstract interface class ArTracker {
   /// Loads the reference-image database and starts the camera session.
   /// Throws [ArTrackerException] — never returns a half-started session.
   Future<void> start({required List<ArReferenceImage> references});
+
+  /// Pauses or resumes the live camera after an Android app lifecycle change.
+  /// Must not open a second concurrent session. Throws [ArTrackerException]
+  /// when resume cannot restore the camera.
+  Future<void> handleAppLifecycleChange({required bool resumed});
 
   /// Deterministic detections. Emits per tracked frame; may repeat.
   Stream<ArDetection> get detections;
@@ -457,6 +462,14 @@ Mandatory usage notes, learned the hard way:
 - `setClipPaused` freezes the active Filament clip without advancing its
   animation time and resumes from that same time. It is available only for a
   loaded animated model. It does not alter the AR session or effect state.
+- Android app pause/resume while the scan screen is open goes through
+  `ArTracker.handleAppLifecycleChange`. The screen must not rebuild
+  `buildSurface()` for ordinary chrome taps. Native `pauseSession` /
+  `resumeSession` exist only after
+  `tools/patch_arcore_session_lifecycle.ps1` (re-run after `pub get`, same
+  rule as the width and clip patches). A failed resume is `ArFailed` with
+  `sessionLost` — never a black preview presented as working. iOS lifecycle
+  is out of scope.
 - Android photo capture takes the AR scene from the plugin's native `snapshot`
   method and the Flutter chrome from a transparent overlay boundary, then
   composites and saves through `MediaStore` to `Pictures/LMB Plusur`. Do not
@@ -561,6 +574,9 @@ docs/
 - [ ] Every `ArFailed` path has Spanish copy and an escape to the manual path.
 - [ ] Demo content is impossible without `isDemo == true` and the badge.
 - [ ] `dispose()` stops the tracker and cancels every subscription.
+- [ ] Android pause/resume of the scan screen goes through
+      `ArTracker.handleAppLifecycleChange` and does not rebuild the camera
+      surface on chrome taps. Failed resume is `ArFailed`.
 - [ ] New markers normalized (D-21), scored `arcoreimg eval-img` ≥ 75, and the
       score plus shipped variant recorded in the marker guide §7.
 - [ ] Device acceptance table (§7) filled in, including both control rows.

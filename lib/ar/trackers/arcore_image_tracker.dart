@@ -233,6 +233,35 @@ class ArCoreImageTracker implements ArTracker {
     await _configure(session);
   }
 
+  @override
+  Future<void> handleAppLifecycleChange({required bool resumed}) async {
+    if (_stopped) {
+      throw const ArTrackerException(ArTrackerFailure.sessionLost);
+    }
+    final channel = _sessionChannel;
+    if (channel == null) {
+      throw const ArTrackerException(ArTrackerFailure.sessionLost);
+    }
+    try {
+      final ok = await channel.invokeMethod<bool>(
+        resumed ? 'resumeSession' : 'pauseSession',
+      );
+      if (resumed && ok != true) {
+        throw const ArTrackerException(ArTrackerFailure.sessionLost);
+      }
+    } on ArTrackerException {
+      rethrow;
+    } on MissingPluginException {
+      throw const ArTrackerException(
+        ArTrackerFailure.sessionLost,
+        'resumeSession/pauseSession missing — re-run '
+        'tools/patch_arcore_session_lifecycle.ps1',
+      );
+    } on PlatformException catch (error) {
+      throw ArTrackerException(ArTrackerFailure.sessionLost, error);
+    }
+  }
+
   void _onViewCreated(
     ARSessionManager session,
     ARObjectManager objects,

@@ -62,11 +62,11 @@ class ArScanScreen extends StatefulWidget {
   final Future<Uint8List> Function()? overlaySnapshotForTesting;
 
   @override
-  State<ArScanScreen> createState() => _ArScanScreenState();
+  State<ArScanScreen> createState() => ArScanScreenState();
 }
 
-class _ArScanScreenState extends State<ArScanScreen>
-    with TickerProviderStateMixin {
+class ArScanScreenState extends State<ArScanScreen>
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   ArSessionController? _controller;
   StreamSubscription<ArSessionState>? _states;
   List<Marcador> _marcadores = const [];
@@ -136,7 +136,31 @@ class _ArScanScreenState extends State<ArScanScreen>
             if (status != AnimationStatus.completed || !mounted) return;
             _patchChrome(_chrome.copyWith(gestoPressed: false));
           });
+    WidgetsBinding.instance.addObserver(this);
     unawaited(_openSession());
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Ignore inactive: it also fires on the way back to resumed and would
+    // pause the camera again before resume ran.
+    switch (state) {
+      case AppLifecycleState.paused:
+      case AppLifecycleState.hidden:
+        unawaited(_controller?.handleAppLifecycleChange(resumed: false));
+      case AppLifecycleState.resumed:
+        unawaited(_controller?.handleAppLifecycleChange(resumed: true));
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.detached:
+        return;
+    }
+  }
+
+  @visibleForTesting
+  Future<void> debugHandleAppLifecycle({required bool resumed}) {
+    final controller = _controller;
+    if (controller == null) return Future<void>.value();
+    return controller.handleAppLifecycleChange(resumed: resumed);
   }
 
   Future<void> _openSession() async {
@@ -631,6 +655,7 @@ class _ArScanScreenState extends State<ArScanScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _efectoDrive.dispose();
     _celebrationProgress.dispose();
     _spin.dispose();

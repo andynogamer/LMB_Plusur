@@ -15,6 +15,7 @@ class FakeArTracker implements ArTracker {
     this.startFailure,
     this.supportsPhotoCapture = false,
     this.photoCaptureFailure,
+    this.lifecycleFailure,
   });
 
   final bool supported;
@@ -50,8 +51,17 @@ class FakeArTracker implements ArTracker {
   int capturePhotoCount = 0;
   final List<Uint8List> capturedPhotoOverlays = [];
   final ArPhotoCaptureException? photoCaptureFailure;
+  ArTrackerException? lifecycleFailure;
 
   double presentationYaw = 0;
+
+  /// App-lifecycle calls, in order. Tests assert pause then resume.
+  final List<bool> lifecycleChanges = [];
+  bool appResumed = true;
+
+  /// When set, [handleAppLifecycleChange] waits here. Tests must complete
+  /// it; leaving it pending hangs the suite.
+  Completer<void>? lifecycleGate;
 
   @override
   Future<bool> isSupported() async => supported;
@@ -66,6 +76,19 @@ class FakeArTracker implements ArTracker {
     }
     _references = List<ArReferenceImage>.unmodifiable(references);
     _stopped = false;
+  }
+
+  @override
+  Future<void> handleAppLifecycleChange({required bool resumed}) async {
+    final gate = lifecycleGate;
+    if (gate != null) {
+      await gate.future;
+    }
+    if (_stopped) return;
+    lifecycleChanges.add(resumed);
+    appResumed = resumed;
+    final failure = lifecycleFailure;
+    if (resumed && failure != null) throw failure;
   }
 
   @override

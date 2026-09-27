@@ -80,6 +80,7 @@ class ArSessionController {
   ArSessionState _state = const ArPreparing();
   bool _disposed = false;
   bool _started = false;
+  bool _appResumed = true;
 
   ArSessionState get state => _state;
 
@@ -114,6 +115,60 @@ class ArSessionController {
       onError: _onTrackerError,
     );
     _emit(ArSearching(hintEquipo: hintEquipo));
+  }
+
+  /// Parks tracking while the app is backgrounded, then restores the
+  /// camera through [ArTracker]. Does not rebuild UI chrome.
+  Future<void> handleAppLifecycleChange({required bool resumed}) async {
+    await _applyAppLifecycleChange(resumed: resumed);
+  }
+
+  Future<void> _applyAppLifecycleChange({required bool resumed}) async {
+    if (_disposed || !_started || _state is ArFailed) return;
+    if (_appResumed == resumed) return;
+    _appResumed = resumed;
+
+    if (!resumed) {
+      final detections = _detections;
+      _detections = null;
+      unawaited(detections?.cancel());
+      _parkTracking();
+    }
+
+    try {
+      await _tracker.handleAppLifecycleChange(resumed: resumed);
+    } on ArTrackerException catch (error) {
+      if (!_disposed) _fail(error.failure);
+      return;
+    } catch (_) {
+      if (!_disposed) _fail(ArTrackerFailure.unknown);
+      return;
+    }
+
+    if (_disposed || _state is ArFailed) return;
+    if (resumed) {
+      _detections = _tracker.detections.listen(
+        _onDetection,
+        onError: _onTrackerError,
+      );
+    }
+  }
+
+  /// Stale poses are not current tracking. Keep content in [ArLost] until
+  /// a fully tracked detection of the same marker arrives.
+  void _parkTracking() {
+    _gate.reset();
+    switch (_state) {
+      case ArLocked(:final marcador):
+      case ArLost(:final marcador):
+        _emit(ArLost(marcador: marcador));
+      case ArCandidate():
+      case ArSearching():
+        _emit(ArSearching(hintEquipo: hintEquipo));
+      case ArPreparing():
+      case ArFailed():
+        return;
+    }
   }
 
   /// Cancels the detection subscription and stops the tracker.

@@ -297,4 +297,53 @@ void main() {
 
     await harness.controller.dispose();
   });
+
+  test('pausa deja ArLocked en ArLost y resume espera tracking completo', () async {
+    final harness = _Harness();
+    await harness.start();
+    harness.tracker.emit(_detection(leones));
+    harness.tracker.emit(_detection(leones));
+    expect(harness.controller.state, isA<ArLocked>());
+
+    await harness.controller.handleAppLifecycleChange(resumed: false);
+    expect(harness.tracker.lifecycleChanges, [false]);
+    expect(harness.tracker.appResumed, isFalse);
+    final lost = harness.controller.state;
+    expect(lost, isA<ArLost>());
+    expect((lost as ArLost).marcador.id, leones);
+
+    harness.tracker.emit(_detection(leones));
+    expect(harness.controller.state, isA<ArLost>());
+
+    await harness.controller.handleAppLifecycleChange(resumed: true);
+    expect(harness.tracker.lifecycleChanges, [false, true]);
+    expect(harness.tracker.appResumed, isTrue);
+    expect(harness.controller.state, isA<ArLost>());
+
+    harness.tracker.emit(_detection(leones, tracked: false));
+    expect(harness.controller.state, isA<ArLost>());
+    harness.tracker.emit(_detection(leones));
+    expect(harness.controller.state, isA<ArLocked>());
+
+    await harness.controller.dispose();
+  });
+
+  test('un resume nativo fallido termina en ArFailed recuperable', () async {
+    final harness = _Harness();
+    harness.tracker.lifecycleFailure = const ArTrackerException(
+      ArTrackerFailure.sessionLost,
+    );
+    await harness.start();
+
+    await harness.controller.handleAppLifecycleChange(resumed: false);
+    await harness.controller.handleAppLifecycleChange(resumed: true);
+    expect(harness.controller.state, isA<ArFailed>());
+    expect(
+      (harness.controller.state as ArFailed).failure,
+      ArTrackerFailure.sessionLost,
+    );
+    expect((harness.controller.state as ArFailed).copy.acciones, contains('Reintentar'));
+
+    await harness.controller.dispose();
+  });
 }
