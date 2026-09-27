@@ -95,7 +95,7 @@ void main() {
     },
   );
 
-  Future<void> pumpScan(
+  Future<GlobalKey<ArScanScreenState>> pumpScan(
     WidgetTester tester, {
     required FakeArTracker tracker,
     Equipo? hint,
@@ -104,12 +104,14 @@ void main() {
     Future<Uint8List> Function()? overlaySnapshotForTesting,
   }) async {
     final target = marcador ?? leones;
+    final screenKey = GlobalKey<ArScanScreenState>();
     await tester.pumpWidget(
       MaterialApp(
         routes: {
           AppRoutes.teams: (_) => const Scaffold(body: Text('lista-equipos')),
         },
         home: ArScanScreen(
+          key: screenKey,
           equipoHint: hint,
           tracker: tracker,
           registry: registryOverride ??
@@ -124,6 +126,7 @@ void main() {
     await tester.pump();
     await tester.pump();
     await tester.pump();
+    return screenKey;
   }
 
   Future<void> lock(FakeArTracker tracker, Marcador marcador) async {
@@ -667,6 +670,77 @@ void main() {
       find.text('Sin permiso no podemos guardar la foto.'),
       findsOneWidget,
     );
+    expect(find.byKey(const Key('ar-locked')), findsOneWidget);
+  });
+
+  testWidgets('ciclo paused/resumed restaura el tracker sin colgarse', (
+    tester,
+  ) async {
+    final tracker = FakeArTracker();
+    final screen = await pumpScan(tester, tracker: tracker);
+    expect(find.byKey(const Key('ar-searching')), findsOneWidget);
+
+    screen.currentState!.debugHandleAppLifecycle(resumed: false);
+    await tester.pump();
+    expect(tracker.lifecycleChanges, [false]);
+    expect(tracker.appResumed, isFalse);
+    expect(find.byKey(const Key('ar-searching')), findsOneWidget);
+
+    screen.currentState!.debugHandleAppLifecycle(resumed: true);
+    await tester.pump();
+    expect(tracker.lifecycleChanges, [false, true]);
+    expect(tracker.appResumed, isTrue);
+    expect(find.byKey(const Key('ar-searching')), findsOneWidget);
+  });
+
+  testWidgets('al volver un lock previo no se presenta como tracking actual', (
+    tester,
+  ) async {
+    final tracker = FakeArTracker();
+    final screen = await pumpScan(tester, tracker: tracker);
+    await lock(tracker, leones);
+    await tester.pump();
+    await tester.pump();
+    expect(find.byKey(const Key('ar-locked')), findsOneWidget);
+    expect(find.byKey(const Key('ar-lost')), findsNothing);
+
+    screen.currentState!.debugHandleAppLifecycle(resumed: false);
+    await tester.pump();
+    await tester.pump();
+    expect(tracker.appResumed, isFalse);
+    expect(find.byKey(const Key('ar-lost')), findsOneWidget);
+
+    screen.currentState!.debugHandleAppLifecycle(resumed: true);
+    await tester.pump();
+    await tester.pump();
+    expect(tracker.appResumed, isTrue);
+    expect(find.byKey(const Key('ar-lost')), findsOneWidget);
+
+    tracker.emit(
+      ArDetection(
+        trackerName: leones.id,
+        pose: Matrix4.identity(),
+        isFullyTracked: true,
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    expect(find.byKey(const Key('ar-lost')), findsNothing);
+    expect(find.byKey(const Key('ar-locked')), findsOneWidget);
+  });
+
+  testWidgets('un tap de control no dispara el ciclo de cámara', (
+    tester,
+  ) async {
+    final tracker = FakeArTracker();
+    await pumpScan(tester, tracker: tracker);
+    await lock(tracker, leones);
+    await tester.pump();
+    await tester.pump();
+
+    await tester.tap(find.text('TRIVIA AR'));
+    await tester.pump();
+    expect(tracker.lifecycleChanges, isEmpty);
     expect(find.byKey(const Key('ar-locked')), findsOneWidget);
   });
 }
