@@ -56,7 +56,7 @@
 | BUG-04 | 🐛 | 🟠 P1 | Restore video thumbnails and visible YouTube filter previews | ☑ | Videos / filters |
 | BUG-05 | 🐛 | 🟡 P2 | Show supplied club photos in Historia | ☑ | Historia |
 | BUG-06 | 🐛 | 🔴 P0 | Fix blank images saved by AR photo capture | ☑ | AR capture |
-| BUG-07 | 🐛 | 🟠 P1 | Pause/resume every supported AR clip, including idle | ☐ | AR animation |
+| BUG-07 | 🐛 | 🟠 P1 | Pause/resume every supported AR clip, including idle | ◐ | AR animation |
 | BUG-08 | 🐛 | 🔴 P0 | Restore AR camera after returning to the app | ☐ | AR lifecycle |
 | US-18 | 📗 | 🟠 P1 | Select stadium or player model after AR lock | ☑ | AR depth |
 | US-19 | 📗 | 🟠 P1 | Lay AR model parallel to scanned logo | ☑ | AR depth |
@@ -132,7 +132,7 @@ Fuera de alcance: iOS capture, video recording, filters, upload, redesign of
 the AR screen, or unrelated camera lifecycle changes.
 ```
 
-## BUG-07 · 🟠 P1 · Pause/resume every supported AR clip, including idle · ☐ Pendiente
+## BUG-07 · 🟠 P1 · Pause/resume every supported AR clip, including idle · ◐ Código listo · falta el dispositivo
 
 **Prompt**
 ```
@@ -161,6 +161,10 @@ Criterios de aceptación:
   each currently animated model on a physical Android device.
 - Animation pause/resume does not stop tracking, change effects, or rebuild the
   camera platform view.
+- **Code verification (2026-09-26):** focused tracker/widget tests, `flutter
+  analyze`, and `flutter build apk --debug` pass. Physical animation acceptance
+  remains pending: the connected M2012K10C / Android 13 was asleep at the lock
+  screen during this session.
 
 Archivos: `lib/ar/ar_tracker.dart`, `lib/ar/trackers/`,
 `lib/screens/ar/`, `lib/screens/ar/widgets/`, `tools/patch_filament_clips.ps1`,
