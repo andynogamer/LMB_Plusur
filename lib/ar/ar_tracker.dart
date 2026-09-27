@@ -97,6 +97,11 @@ abstract interface class ArTracker {
   /// Throws [ArTrackerException] — never returns a half-started session.
   Future<void> start({required List<ArReferenceImage> references});
 
+  /// Pauses or resumes the live camera session after an Android app
+  /// lifecycle change. Must not open a second concurrent session.
+  /// Throws [ArTrackerException] when resume cannot restore the camera.
+  Future<void> handleAppLifecycleChange({required bool resumed});
+
   /// Deterministic detections. Emits per tracked frame; may repeat.
   Stream<ArDetection> get detections;
 

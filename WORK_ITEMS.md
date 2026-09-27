@@ -1,6 +1,6 @@
 ﻿# LMB Plusur — Work Items para Agentes
 
-> Backlog under Constitution **v2.5.0** (decisions D-01…D-26 + professor
+> Backlog under Constitution **v2.5.1** (decisions D-01…D-27 + professor
 > checklist). Each item is a **copy-paste prompt**. One item per branch/PR.
 > Format: contexto → tarea → criterios de aceptación → archivos → fuera de alcance.
 >
@@ -56,8 +56,8 @@
 | BUG-04 | 🐛 | 🟠 P1 | Restore video thumbnails and visible YouTube filter previews | ☑ | Videos / filters |
 | BUG-05 | 🐛 | 🟡 P2 | Show supplied club photos in Historia | ☑ | Historia |
 | BUG-06 | 🐛 | 🔴 P0 | Fix blank images saved by AR photo capture | ☑ | AR capture |
-| BUG-07 | 🐛 | 🟠 P1 | Pause/resume every supported AR clip, including idle | ◐ | AR animation |
-| BUG-08 | 🐛 | 🔴 P0 | Restore AR camera after returning to the app | ☐ | AR lifecycle |
+| BUG-07 | 🐛 | 🟠 P1 | Pause/resume every supported AR clip, including idle | ☑ | AR animation |
+| BUG-08 | 🐛 | 🔴 P0 | Restore AR camera after returning to the app | ◐ | AR lifecycle |
 | US-18 | 📗 | 🟠 P1 | Select stadium or player model after AR lock | ☑ | AR depth |
 | US-19 | 📗 | 🟠 P1 | Lay AR model parallel to scanned logo | ☑ | AR depth |
 | US-20 | 📗 | 🟠 P1 | Pause animation, save AR photos, and trigger four independent particle effects | ◐ | AR interaction / capture |
@@ -132,7 +132,7 @@ Fuera de alcance: iOS capture, video recording, filters, upload, redesign of
 the AR screen, or unrelated camera lifecycle changes.
 ```
 
-## BUG-07 · 🟠 P1 · Pause/resume every supported AR clip, including idle · ◐ Código listo · falta el dispositivo
+## BUG-07 · 🟠 P1 · Pause/resume every supported AR clip, including idle · ☑ Hecho
 
 **Prompt**
 ```
@@ -162,9 +162,8 @@ Criterios de aceptación:
 - Animation pause/resume does not stop tracking, change effects, or rebuild the
   camera platform view.
 - **Code verification (2026-09-26):** focused tracker/widget tests, `flutter
-  analyze`, and `flutter build apk --debug` pass. Physical animation acceptance
-  remains pending: the connected M2012K10C / Android 13 was asleep at the lock
-  screen during this session.
+  analyze`, and `flutter build apk --debug` pass. Physical pause/resume of
+  supported clips including idle is accepted on the Android device.
 
 Archivos: `lib/ar/ar_tracker.dart`, `lib/ar/trackers/`,
 `lib/screens/ar/`, `lib/screens/ar/widgets/`, `tools/patch_filament_clips.ps1`,
@@ -174,7 +173,7 @@ Fuera de alcance: authoring new stadium animations, new clips, particle-effect
 changes, photo capture fixes, or AR lifecycle recovery.
 ```
 
-## BUG-08 · 🔴 P0 · Restore AR camera after returning to the app · ☐ Pendiente
+## BUG-08 · 🔴 P0 · Restore AR camera after returning to the app · ◐ En progreso
 
 **Prompt**
 ```
@@ -1185,8 +1184,8 @@ than one simultaneous effect, and changes to the marker database.
 
 ## Suggested sequence
 
-0. **US-20 regressions, one item per branch:** ~~BUG-06~~ → BUG-07 → BUG-08
-   (photo output accepted → pause coverage → camera lifecycle recovery).
+0. **US-20 regressions, one item per branch:** ~~BUG-06~~ → ~~BUG-07~~ → BUG-08
+   (photo output accepted → pause coverage accepted → camera lifecycle recovery).
 1. ~~US-01 → US-02 → US-03 → US-04~~ ✅ done (existing shell)
 2. **AR foundation, no native risk:** AR-01 → AR-02 → AR-03
    *(human works AR-00 in parallel — it only blocks AR-05)*
@@ -1194,8 +1193,8 @@ than one simultaneous effect, and changes to the marker database.
 4. US-11 → US-12 (video + filters grading core)
 5. US-09 → US-10 → US-13 (depth / bonus — all build on AR-07)
 6. ~~DEBT-01 → US-14 → US-15 → US-16~~ US-14…US-20 core implementation
-   landed; animation/effect device acceptance remains open. After BUG-07 →
-   BUG-08, continue the existing backlog:
+   landed. BUG-07 pause/resume is accepted on device. After BUG-08,
+   continue the existing backlog:
    **BUG-02** (failed actions), then US-09 / US-10 / DEBT-01.
 
 Do not start AR-04 until AR-01…AR-03 are merged and green. That ordering is the

@@ -17,7 +17,12 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 | [`docs/ar-architecture.md`](./docs/ar-architecture.md) | The AR technical contract: layers, `ArTracker` seam, state machine, error taxonomy, budgets. |
 | [`docs/ar-marker-guide.md`](./docs/ar-marker-guide.md) | How to author printable markers ARCore can actually track. |
 
-**Version**: 2.5.0 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-26
+**Version**: 2.5.1 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-26
+
+> **v2.5.1 — AR camera lifecycle (BUG-08).** `ArTracker` gains
+> `handleAppLifecycleChange`. Returning from Android lock/background must
+> restore the live camera through the tracker, not a second session and not
+> a chrome `setState` of `buildSurface()`. iOS lifecycle is out of scope.
 
 > **v2.5.0 — AR capture and controls (US-20).** D-05 is amended narrowly to
 > allow still-image capture from a successfully locked AR session; this does
@@ -745,7 +750,7 @@ Track fixes via `WORK_ITEMS.md`.
 | D-23 | **Scan set = logos that score ≥ 75, not 90, and not substitute cards.** Active logos: Leones 100, Olmecas 100, Piratas 100, Bravos 90, Tigres raw 75, Diablos flame 80, Guerreros shield raw 90, Conspiradores wordmark raw 100, Águila crest raw 100, Pericos wordmark raw 100. Do not normalize Tigres, the Guerreros shield, the Conspiradores wordmark, the Águila crest, or the Pericos wordmark. The old 50-score files and the first Conspiradores, Águila, and Pericos files stay out. The Águila wordmark also scored 100 raw but was not shipped (it carries a +N watermark). The other Pericos candidates were not scored. No matcher. | **Amended 2026-09-08** |
 | D-24 | After an AR marker locks, fans may choose the club's D-22 stadium or player GLB. Flutter owns the choice; the tracker replaces the anchored node in place without restarting the session. The marker's original model remains the default. | **Ratified 2026-09-19** |
 | D-25 | Club GLBs are authored Y-up and are placed parallel to the scanned logo plane with a local **-90° X rotation**. Presentation yaw rotates around the marker normal. | **Ratified 2026-09-19; amended for orientation sign** |
-| D-26 | After AR lock, Android users may pause/resume the active model animation, capture the AR window to the system Pictures gallery, and independently trigger four selectable baseball particle effects (jonrón, chispas, confeti, polvo del diamante). Effects use the tracker scene graph, one active at a time, and are never coupled to animation playback. US-20 does not implement or claim iOS capture; if requested, iOS requires a separate AVFoundation/Photos implementation and device acceptance. | **Ratified 2026-09-26** |
+| D-27 | While the AR scan screen is open, Android pause/resume is owned by `ArTracker.handleAppLifecycleChange`. The controller parks a lock as `ArLost` until a fully tracked detection returns. Recovery uses the pinned plugin session (after `tools/patch_arcore_session_lifecycle.ps1`), never a second concurrent camera session, and never a camera-surface rebuild from chrome taps. A failed resume is `ArFailed(sessionLost)`. iOS lifecycle is not included. | **Ratified 2026-09-26** |
 
 Open residual (non-blocking for backlog writing):
 
