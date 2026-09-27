@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:vector_math/vector_math_64.dart';
 
@@ -12,10 +13,15 @@ class FakeArTracker implements ArTracker {
   FakeArTracker({
     this.supported = true,
     this.startFailure,
+    this.supportsPhotoCapture = false,
+    this.photoCaptureFailure,
   });
 
   final bool supported;
   final ArTrackerException? startFailure;
+
+  @override
+  final bool supportsPhotoCapture;
 
   /// Sync so a scripted [emit] is applied before the call returns. The
   /// production tracker is chatty; debouncing stays in the controller.
@@ -34,10 +40,16 @@ class FakeArTracker implements ArTracker {
   final List<({String trackerName, String clipName, bool loop})> playedClips =
       [];
 
+  final List<({String trackerName, bool paused})> clipPauseChanges = [];
+
   /// Effect attach/clear calls for tests.
-  final List<({String trackerName, String glbAsset})> attachedEffects = [];
+  final List<({String trackerName, String glbAsset, ArParticleEffect effect})>
+      attachedEffects = [];
   final List<({String trackerName, String glbAsset})> attachedModels = [];
   int clearEffectCount = 0;
+  int capturePhotoCount = 0;
+  final List<Uint8List> capturedPhotoOverlays = [];
+  final ArPhotoCaptureException? photoCaptureFailure;
 
   double presentationYaw = 0;
 
@@ -71,11 +83,17 @@ class FakeArTracker implements ArTracker {
     bool loop = false,
   }) async {
     if (_stopped || clipName.isEmpty) return false;
-    playedClips.add((
-      trackerName: trackerName,
-      clipName: clipName,
-      loop: loop,
-    ));
+    playedClips.add((trackerName: trackerName, clipName: clipName, loop: loop));
+    return true;
+  }
+
+  @override
+  Future<bool> setClipPaused({
+    required String trackerName,
+    required bool paused,
+  }) async {
+    if (_stopped) return false;
+    clipPauseChanges.add((trackerName: trackerName, paused: paused));
     return true;
   }
 
@@ -83,9 +101,14 @@ class FakeArTracker implements ArTracker {
   Future<bool> attachEffect({
     required String trackerName,
     required String glbAsset,
+    required ArParticleEffect effect,
   }) async {
     if (_stopped || glbAsset.isEmpty) return false;
-    attachedEffects.add((trackerName: trackerName, glbAsset: glbAsset));
+    attachedEffects.add((
+      trackerName: trackerName,
+      glbAsset: glbAsset,
+      effect: effect,
+    ));
     effectProgress = 0;
     return true;
   }
@@ -101,6 +124,17 @@ class FakeArTracker implements ArTracker {
   Future<void> clearEffect() async {
     clearEffectCount += 1;
     effectProgress = 0;
+  }
+
+  @override
+  Future<void> capturePhoto({required Uint8List overlayPng}) async {
+    if (_stopped) {
+      throw const ArPhotoCaptureException(ArPhotoCaptureFailure.captureFailed);
+    }
+    final failure = photoCaptureFailure;
+    if (failure != null) throw failure;
+    capturePhotoCount += 1;
+    capturedPhotoOverlays.add(overlayPng);
   }
 
   @override

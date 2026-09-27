@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-09-21 · by: Historia club photos
+**Last updated:** 2026-09-26 · by: BUG-06 capture fix (device verified)
 
 ---
 
@@ -20,7 +20,7 @@ These are **binding**, not advisory:
 
 | # | File | What it gives you |
 |---|---|---|
-| 1 | `CONSTITUTION.md` | Governance, v2.4.10, decisions D-01…D-23 |
+| 1 | `CONSTITUTION.md` | Governance, v2.5.0, decisions D-01…D-26 |
 | 2 | `AGENTS.md` | How to work here (auto-loaded as a workspace rule) |
 | 3 | `WORK_ITEMS.md` | The backlog. Each item's `Prompt` block **is** the spec |
 | 4 | `docs/ar-postmortem.md` | Why AR attempt #1 was thrown away (RC-1…RC-7) |
@@ -101,10 +101,9 @@ Measured later, four of them were. **Never copy code from that branch.**
   low-poly player, Piratas = trophy box. Device hold-to-card and the 5×
   enter/leave run are not done.
 - AR-07 (code) — Actions exist only in `ArLocked`. **Celebración** plays
-  `celebracion` then idle, and places ~6 drifting baseball VFX nodes.
-  **Información** reads `titulo` / `infoTexto`, speaks them (TTS es-MX), and
-  runs one 360° yaw. Stadium and trophy `animaciones` are empty. Device
-  confirmation not run.
+  `celebracion` then idle. **Información** reads `titulo` / `infoTexto`, speaks
+  them (TTS es-MX), and runs one 360° yaw. Stadium and trophy `animaciones`
+  are empty. Device confirmation not run.
 - **D-22 catalog (code)** — 10 static `estadio.glb` + 10 `jugador.glb` under
   `assets/models/<club_id>/`. Shared mesh family from
   `tools/write_lowpoly_glbs.py`. Players: clips `idle` (3 s), `gesto`
@@ -113,10 +112,37 @@ Measured later, four of them were. **Never copy code from that branch.**
   Dart spawns many nodes). Stadiums ~764 tris.
   Regenerating overwrites Leones/Olmecas scan copies; Piratas box stays
   from `write_marker_glbs.dart`.
-- US-13 — **Done (reopen closed).** `celebracion` + multi-ball in-scene
-  VFX (`attachEffect` / `updateEffect` / `clearEffect`, ~2.8 s drift then
-  shrink-away) plus screen-space particle chrome (`ArBaseballVfx`). One
-  VFX at a time. Device toggle-spam not run.
+- US-13 — **Done (reopen closed).** `celebracion` is a model animation.
+  US-20 separates particle effects from animation playback; only one
+  in-scene effect can be active at a time. Device toggle-spam not run.
+- **US-20 / D-26 — code landed 2026-09-26.** Animated models expose pause /
+  resume that freezes the active clip at its frame. Android-only photo capture
+  combines the plugin's native AR scene snapshot with a Flutter chrome PNG,
+  then saves through MediaStore under
+  `Pictures/LMB Plusur`; requires Android 8+, and Android 8–9 asks for legacy
+  write permission at capture time. Four independently selectable scene-graph
+  presets: Jonrón, Chispas, Confeti, and Polvo del diamante, capped at six
+  nodes and one active effect. `tools/patch_filament_clips.ps1` now adds both
+  clip ticking and pause/resume. Focused widget coverage is in
+  `test/ar/ar_scan_screen_test.dart`. **Physical Android photo capture is
+  accepted under BUG-06; animation and effects acceptance remains open.** iOS
+  photo capture is explicitly not
+  implemented or claimed; if required, scope a separate AVFoundation + Photos
+  work item and test on an iPhone.**
+- **BUG-06 — done (2026-09-26).** The former Activity-window PixelCopy could
+  omit the plugin's separate camera/model `GLSurfaceView`. Capture now uses
+  the plugin's native scene snapshot, captures Flutter chrome separately,
+  composites on Android, and rejects flat/blank inputs. Analyze, the 12 AR
+  widget tests, and debug APK build pass. On connected M2012K10C / Android 13,
+  two saved files (`LMB_AR_1790469669646.png`,
+  `LMB_AR_1790469677404.png`) were pulled from Pictures and visually inspected;
+  both contain the live scene, tracked model, and controls. Device acceptance
+  is complete for BUG-06.
+- **Pending AR regressions:** BUG-07 covers pausing any supported clip,
+  including idle (current stadium GLBs are static and must not gain a fake
+  pause control); BUG-08 covers the black camera preview after locking the
+  Android screen or returning from the background. Keep them separate and
+  handle after BUG-06.
 - US-14 — **Done (code).** Splash warm-up (~1.1 s) + logo `cacheWidth`;
   video chrome isolated from filter rebuilds; `DataService` memoization;
   AR camera outside action rebuilds; VFX capped at 6 balls. Notes:
@@ -162,9 +188,13 @@ Measured later, four of them were. **Never copy code from that branch.**
   0.15, not a measurement). Does not block AR-06.
 - AR-06 device: hold-to-card + 5× enter/leave. Optional: replace the procedural
   GLBs with nicer art from `docs/model-prompts.md`.
-- AR-07 device: on Olmecas, Celebración plays `celebracion` + drifting
-  baseballs + particles, then idle; Información speaks and turns once.
-  Toggling must not drop the session.
+- AR-07 device: on Olmecas, Celebración plays `celebracion`, then idle;
+  Información speaks and turns once. Toggling must not drop the session.
+- US-20 device (Android 8+): pause/resume idle and celebration at the same
+  frame, save a capture to `Pictures/LMB Plusur`, and independently trigger
+  each of the four particle presets. Android 7.x should show unsupported copy.
+  iOS capture is intentionally not implemented; add a separate native item if
+  the professor requires it.
 - Print Bravos and the raw Tigres logo at ≥ 15 cm matte and try a lock.
   Those two are in the database but not yet confirmed on a phone.
 
@@ -209,10 +239,12 @@ Do not mix BUG-02 with US-09/US-10.
 **Next**
 
 ```
-Human/device gates: AR-06/07 acceptance and printed marker checks
+BUG-07 pause/resume coverage → BUG-08 camera lifecycle recovery.
+Remaining human/device gates: AR-06/07 acceptance and printed marker checks.
 ```
 
-Next: human device gates (AR-06/07, print Bravos/Tigres, APK splash).
+Next: BUG-07 pause/resume coverage, then BUG-08 camera lifecycle recovery.
+Other device gates remain AR-06/07 and print Bravos/Tigres.
 
 Release APK path: `build/app/outputs/flutter-apk/app-release.apk`.
 Rebuild after both plugin patches before installing.
@@ -268,15 +300,15 @@ chrome). Do not fall back to the fake tracker when that session fails.
   trophy box. The player is a joint hierarchy (no skinning). Clips must
   stay named `idle`, `gesto`, and `celebracion`. Designed height ~11.5 cm;
   do not scale it in Dart. `celebracion` is 2.8 s; the pressed state uses
-  that length. Native returns to `idle` when the one-shot ends.
-  In-scene VFX uses `attachEffect` / `updateEffect` / `clearEffect` with
-  `assets/models/efecto_jonron/modelo.glb` (`--efecto-only` to regenerate).
-  Screen-space particles live in `ArBaseballVfx` (chrome only). Cap is
-  **6** in-scene balls after US-14.
-- ⚠️ **Plugin 1.1.3 never ticks Filament clips.** After every
-  `flutter pub get`, re-run both patches (pub restores the unpatched
-  plugin). Do not bump the pin. A missing clip or a missing patch returns
-  false and must not drop the session:
+  that length. Native returns to `idle` when the one-shot ends. Four D-26
+  particle meshes live under `assets/models/efecto_*/`; regenerate the three
+  additional meshes with `python tools/write_lowpoly_glbs.py --particles-only`.
+  Effects are separately selected and capped at **6** scene-graph nodes.
+- ⚠️ **Plugin 1.1.3 never ticks Filament clips or pauses them by itself.**
+  After every `flutter pub get`, re-run both patches (pub restores the
+  unpatched plugin). The clip patch supplies ticking and pause/resume at the
+  current frame. Do not bump the pin. A missing clip or patch returns false
+  and must not drop the session:
   ```powershell
   powershell -ExecutionPolicy Bypass -File tools/patch_arcore_image_width.ps1
   powershell -ExecutionPolicy Bypass -File tools/patch_filament_clips.ps1
@@ -294,9 +326,13 @@ chrome). Do not fall back to the fake tracker when that session fails.
   `ArLost` will not fire from a real session until a later plugin change —
   paused is still never reported as fully tracked.
 - Action pressed / notes live in `ArChromeSnapshot` (`ValueNotifier` on
-  `ArScanScreen`). Tapping Celebración / Información / Efecto must **not**
+  `ArScanScreen`). Tapping Celebración / Información / an effect must **not**
   `setState` the `Scaffold` that owns `camera.buildSurface()`. Session
   start still `setState`s once to attach the platform view.
+- US-20 photo capture is Android-only: PixelCopy requires API 26+, and API
+  26–28 needs the runtime legacy storage grant. The image is saved through
+  MediaStore into `Pictures/LMB Plusur`. No iOS capture implementation or UI
+  support is included.
 - **Superseded AR-04 wiring:** a capable device no longer uses
   `FakeArTracker`. That was temporary until AR-05. Demo is
   `--dart-define=LMB_AR_DEMO=true` only.
@@ -345,6 +381,9 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-09-26 | **BUG-06 done.** Replaced Activity-window-only PixelCopy (which misses the AR plugin's separate GL surface) with the plugin's native AR-scene snapshot plus a transparent Flutter chrome capture, composed natively before MediaStore save. Added blank-input rejection and pre-snapshot API gating. Analyze, 12 focused AR tests, and Android debug build pass. Two captures from M2012K10C / Android 13 were pulled from Pictures and visually confirmed to contain the live scene, model, and controls. |
+| 2026-09-26 | **AR regression triage.** Split three reported US-20 failures into independent pending items: BUG-06 blank gallery captures, BUG-07 pause/resume coverage for supported clips including idle (no new stadium animation), and BUG-08 AR camera recovery after screen lock/background. Ordered one-at-a-time; no implementation changed. |
+| 2026-09-26 | **US-20 / D-26.** Added animation pause/resume at the current clip frame, Android PixelCopy → MediaStore AR photos, and four independently triggered scene-graph particle presets (Jonrón, Chispas, Confeti, Polvo). Added bounded GLBs and updated the pinned-plugin patch and governance. `flutter analyze`, all 12 focused AR tests, and `flutter build apk --debug` pass; photo capture later passed physical review under BUG-06, animation/effect device acceptance remains open. |
 | 2026-09-21 | **BUG-05.** Added the ten supplied club-history image URLs to `assets/data.json`, mapped `historiaImagenUrl` into `Equipo`, and replaced Historia's generic card with a cached network image plus the existing safe fallback. Added data coverage tests. |
 | 2026-09-21 | **Release 1.0.1+2.** Bumped the Android app version and rebuilt the release APK after adding Historia images. |
 | 2026-09-19 | **US-15 packaging refinement.** Generated Android launcher icons from the authored LMB logo using a centered square crop across mdpi, hdpi, xhdpi, xxhdpi and xxxhdpi. Release APK remains on the existing debug-signing class-demo path. |
@@ -352,24 +391,6 @@ Rules of thumb:
 | 2026-09-19 | **BUG-04 follow-up.** Fixed the YouTube filter race: the first CSS application could run before the `YoutubePlayer` and its iframe existed, leaving the pressed filter chip out of sync with playback. The player now applies CSS after the platform view mounts, retries until the iframe is present, and reapplies it when the selected filter changes. Analyze and the full 52-test suite pass. |
 | 2026-09-19 | **BUG-04.** Added real YouTube thumbnails with a network/error fallback. CSS-compatible filters now remain active on the YouTube iframe during playback through the plugin WebView controller; Pixelado stays preview-only. Direct MP4 playback remains fully filtered. Added `VideoArchivo.miniaturaUrl` and CSS mapping tests. |
 | 2026-09-19 | **BUG-03.** Kept the AR Información panel open after the presentation turn; only the model yaw resets automatically. Added a persistence regression test. |
-| 2026-09-19 | **Animation follow-up.** Model selection now drives clip capability: D-22 Jugador starts `idle` and exposes celebration even when the scanned marker's default asset was static. Focused AR tests pass. |
-| 2026-09-19 | **US-19 / D-25.** Oriented the authored club GLBs parallel to the scanned logo plane and changed Información's presentation spin to the marker normal. Corrected the local X rotation sign after device-oriented review so the model is not upside down. Added matrix coverage; analyze and the full 49-test suite pass. |
-| 2026-09-19 | **US-18 UX refinement.** Moved stadium/player selection to compact icon controls outside the main card and disabled Información in Trivia AR; added regression coverage for both overflow paths. |
-| 2026-09-19 | **US-18 / D-24.** Added locked-session stadium/player model selection. Flutter chooses the catalog GLB; the tracker replaces the anchored node in place. Focused analyze and 10 AR tests pass. |
-| 2026-09-19 | **DEBT-01.** Removed the unused English `Team` / `TriviaQuestion` models and `MockData` cluster. No production imports or behavior changed; `flutter analyze` and the focused regression suite pass. Next: human/device acceptance gates. |
-| 2026-09-19 | **US-10.** Added Galería AR / Trivia AR mode switching inside the locked AR chrome. Trivia reuses the scanned marker’s linked team question data, gives Spanish answer feedback, and keeps the existing model/action session intact. Added focused mode coverage; targeted analyze and 9 AR tests pass. Next: DEBT-01. |
-| 2026-09-19 | **US-09.** Added local `StatsSimulator` timer service and a themed Spanish simulated scoreboard to the team menu. Scores, inning, and hits update automatically without network calls or tap spam. Added service tests; targeted analyze and tests pass. Next: US-10. |
-| 2026-09-19 | **BUG-02.** Failed-panel recovery actions are wired: settings opens device app settings, install opens the ARCore Play Store URL, retry remains local, and manual selection alone navigates to teams. Added focused widget coverage; targeted analyze and 8 AR scan tests pass. `url_launcher` is now a direct dependency. Next: US-09. |
-| 2026-09-13 | **README.** Portfolio rewrite: English product overview, six phone-viewport shots in `docs/screenshots/`, AR camera omitted with a web-capture disclaimer. Run/APK steps kept. Next still BUG-02. |
-| 2026-09-09 | **R-03.** Ten YouTube highlights in `assets/videos.json`. Player uses `youtube_player_iframe`. Sample MP4s removed. Constitution → v2.4.10. Some clubs share a video id (human list). |
-| 2026-09-09 | **US-17.** Camera-first AR chrome: viewfinder, info on demand, hide Celebración on static GLBs, keep chrome on ArLost, small ¡JONRÓN! chip, action notifier. `flutter test test/ar/ar_scan_screen_test.dart` 6 passed. Next: BUG-02. |
-| 2026-09-09 | **AR UI audit.** Locked chrome covers the GLB; Celebración shown on static models; failed “Abrir ajustes”/“Instalar” go to teams. Added US-17 + BUG-02. Next is US-17, not DEBT-01. |
-| 2026-09-09 | **US-16.** Bilingual README product/run brief. Known debt #8 cleared. Constitution → v2.4.9. |
-| 2026-09-09 | **US-15.** `flutter build apk` green (~70 MB). README install steps. Release uses debug signing (class). |
-| 2026-09-09 | **US-14.** Video filter jank fix, splash warm-up, DataService cache, AR camera isolation, VFX caps. See `docs/performance.md`. |
-| 2026-09-09 | **US-13 polish.** Drifting baseball nodes + shrink-away; screen particles in `ArBaseballVfx`. Seam: `updateEffect(progress)`. |
-| 2026-09-09 | **US-13 closed.** `celebracion` clip + in-scene `efecto_jonron` ARNode. D-22 amended. Optional 2D banner is chrome only. Constitution → v2.4.8. |
-| 2026-09-09 | **US-13 reopened.** Screen-space burst alone fails the 15pt 3D gate and architecture §6. |
 
 ## 8. How to work
 
@@ -382,7 +403,9 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 ## 9. Current task
 
-> Next: human/device acceptance gates for AR-06/07 and printed markers.
+> Next: BUG-07 — make pause/resume cover every supported active clip including
+> idle. Do not add a fake pause control or new animation to static stadium
+> models. Handle BUG-08 separately after BUG-07.
 
 _(The human edits this line each session. Leave it pointing at the next item
 when you finish.)_

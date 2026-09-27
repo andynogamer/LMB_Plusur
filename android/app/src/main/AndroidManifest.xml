@@ -2,6 +2,10 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <!-- ARCore image tracking (D-17). Rollback: delete this permission. -->
     <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- D-26: legacy MediaStore writes only on Android 8–9. Rollback with AR photo capture. -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
     <application
         android:label="LMB Plusur"
         android:name="${applicationName}"

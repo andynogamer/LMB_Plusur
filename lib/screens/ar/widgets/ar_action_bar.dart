@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../ar/ar_tracker.dart';
 import '../../../theme/app_colors.dart';
 
 /// Clip names written by `tools/write_lowpoly_glbs.py`. Do not invent others.
 const String kClipIdle = 'idle';
 const String kClipGesto = 'gesto';
 const String kClipCelebracion = 'celebracion';
-
-/// Shared VFX GLB for the in-scene baseball burst (US-13).
-const String kEfectoJonronAsset = 'assets/models/efecto_jonron/modelo.glb';
 
 /// Matches the `celebracion` clip length in that generator.
 const Duration kCelebracionClipLength = Duration(milliseconds: 2800);
@@ -22,32 +20,38 @@ const String kCelebracionMissingCopy =
 const String kCelebracionFailedCopy =
     'No pudimos reproducir la celebración. El escaneo sigue activo.';
 
-/// Two action types plus a baseball VFX toggle, reachable from [ArLocked]
-/// and [ArLost]. Celebración is omitted when the GLB has no clip.
 class ArActionBar extends StatelessWidget {
   const ArActionBar({
     super.key,
     required this.gestoPressed,
     required this.infoPressed,
-    required this.efectoPressed,
+    required this.animationPaused,
+    required this.activeEffect,
     required this.onGesto,
     required this.onInfo,
-    required this.onEfecto,
+    required this.onToggleAnimationPause,
+    required this.onCapturePhoto,
+    required this.onEffectSelected,
     this.infoEnabled = true,
     this.showCelebracion = true,
+    this.showAnimationControl = false,
+    this.showPhotoCapture = true,
     this.note,
   });
 
   final bool gestoPressed;
   final bool infoPressed;
-  final bool efectoPressed;
+  final bool animationPaused;
+  final ArParticleEffect? activeEffect;
   final VoidCallback onGesto;
   final VoidCallback onInfo;
-  final VoidCallback onEfecto;
+  final VoidCallback onToggleAnimationPause;
+  final VoidCallback onCapturePhoto;
+  final ValueChanged<ArParticleEffect> onEffectSelected;
   final bool infoEnabled;
-
-  /// False for stadium / trophy GLBs with empty `animaciones`.
   final bool showCelebracion;
+  final bool showAnimationControl;
+  final bool showPhotoCapture;
   final String? note;
 
   @override
@@ -59,21 +63,14 @@ class ArActionBar extends StatelessWidget {
       selected: infoPressed,
       onPressed: infoEnabled ? onInfo : null,
     );
-    final efecto = _ActionButton(
-      buttonKey: const Key('ar-action-efecto'),
-      label: efectoPressed ? 'Quitar efecto' : 'Efecto jonrón',
-      icon: Icons.auto_awesome_rounded,
-      selected: efectoPressed,
-      onPressed: onEfecto,
-    );
 
     return Column(
       key: const Key('ar-actions'),
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (showCelebracion) ...[
-          Row(
-            children: [
+        Row(
+          children: [
+            if (showCelebracion) ...[
               Expanded(
                 child: _ActionButton(
                   buttonKey: const Key('ar-action-gesto'),
@@ -84,19 +81,64 @@ class ArActionBar extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Expanded(child: info),
             ],
-          ),
+            Expanded(child: info),
+          ],
+        ),
+        if (showAnimationControl) ...[
           const SizedBox(height: 8),
-          efecto,
-        ] else
-          Row(
+          _ActionButton(
+            buttonKey: const Key('ar-action-animation-pause'),
+            label: animationPaused ? 'Reanudar animación' : 'Pausar animación',
+            icon: animationPaused
+                ? Icons.play_arrow_rounded
+                : Icons.pause_rounded,
+            selected: animationPaused,
+            onPressed: onToggleAnimationPause,
+          ),
+        ],
+        if (showPhotoCapture) ...[
+          const SizedBox(height: 8),
+          _ActionButton(
+            buttonKey: const Key('ar-action-photo'),
+            label: 'Tomar foto',
+            icon: Icons.photo_camera_rounded,
+            selected: false,
+            onPressed: onCapturePhoto,
+          ),
+        ],
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'EFECTOS DEL DIAMANTE',
+            style: GoogleFonts.poppins(
+              color: AppColors.white,
+              fontWeight: FontWeight.w800,
+              fontSize: 11,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        SizedBox(
+          height: 44,
+          child: ListView(
+            key: const Key('ar-effect-selector'),
+            scrollDirection: Axis.horizontal,
             children: [
-              Expanded(child: info),
-              const SizedBox(width: 8),
-              Expanded(child: efecto),
+              for (final effect in ArParticleEffect.values)
+                Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: _EffectButton(
+                    effect: effect,
+                    selected: activeEffect == effect,
+                    onPressed: () => onEffectSelected(effect),
+                  ),
+                ),
             ],
           ),
+        ),
         if (note != null) ...[
           const SizedBox(height: 8),
           Text(
@@ -112,6 +154,57 @@ class ArActionBar extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+class _EffectButton extends StatelessWidget {
+  const _EffectButton({
+    required this.effect,
+    required this.selected,
+    required this.onPressed,
+  });
+
+  final ArParticleEffect effect;
+  final bool selected;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final (label, icon) = switch (effect) {
+      ArParticleEffect.jonron => ('Jonrón', Icons.sports_baseball_rounded),
+      ArParticleEffect.chispas => ('Chispas', Icons.auto_awesome_rounded),
+      ArParticleEffect.confeti => ('Confeti', Icons.celebration_rounded),
+      ArParticleEffect.polvoDelDiamante => ('Polvo', Icons.grain_rounded),
+    };
+    final background = selected ? AppColors.button : AppColors.navyCard;
+    final foreground = selected ? AppColors.black : AppColors.white;
+    return SizedBox(
+      height: 44,
+      child: ElevatedButton.icon(
+        key: Key('ar-effect-${effect.name}'),
+        onPressed: onPressed,
+        icon: Icon(icon, size: 17),
+        label: Text(label.toUpperCase()),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: background,
+          foregroundColor: foreground,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: BorderSide(
+              color: selected
+                  ? AppColors.button
+                  : AppColors.button.withValues(alpha: 0.35),
+            ),
+          ),
+          textStyle: GoogleFonts.poppins(
+            fontWeight: FontWeight.w800,
+            fontSize: 11,
+          ),
+        ),
+      ),
     );
   }
 }

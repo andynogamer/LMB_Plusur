@@ -17,7 +17,15 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 | [`docs/ar-architecture.md`](./docs/ar-architecture.md) | The AR technical contract: layers, `ArTracker` seam, state machine, error taxonomy, budgets. |
 | [`docs/ar-marker-guide.md`](./docs/ar-marker-guide.md) | How to author printable markers ARCore can actually track. |
 
-**Version**: 2.4.15 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-19
+**Version**: 2.5.0 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-26
+
+> **v2.5.0 — AR capture and controls (US-20).** D-05 is amended narrowly to
+> allow still-image capture from a successfully locked AR session; this does
+> not replace or expand the graded video-filter feature. **D-26** specifies
+> Android-only AR window capture to the system Pictures gallery, independent
+> animation pause/resume, and four separately selectable in-scene baseball
+> particle effects. iOS capture is explicitly not included; if required, it
+> needs a separate native implementation and acceptance run.
 
 > **v2.4.15 — focused team-menu flow.** The manual team menu is for
 > team-specific content; its AR entry is removed because the user already
@@ -391,12 +399,16 @@ red screens. "Marker not recognised" is **not** an error; it is still searching.
 #### VI.8 Native configuration is deliberate (D-17)
 
 Permitted: `minSdk = 24`, `CAMERA` permission, `com.google.ar.core` meta-data as
-`optional`, the `com.google.ar.core` `<queries>` entry.
+`optional`, the `com.google.ar.core` `<queries>` entry, and
+`WRITE_EXTERNAL_STORAGE` with `maxSdkVersion="28"` only for the D-26 legacy
+MediaStore save path on Android 8–9. No broad storage permission is permitted.
 
 **Forbidden without an amendment**, each because it broke attempt #1:
 
 - `isDebuggable = false` on the **debug** build type — it disables debugging
   repo-wide to smooth one screen.
+- Broad or unbounded storage permissions — D-26's legacy photo write grant
+  must be capped at API 28.
 - Hardcoding `compileSdk` past the Flutter stable default.
 - A manual `com.google.ar:core` Gradle dependency racing the plugin's own.
 - Gradle JDK auto-download / foojay toolchain resolution.
@@ -460,8 +472,13 @@ separate still-photo camera product).
   - Colores invertidos
 - Filters run **on-device** on the playback/preview pipeline. Do not upload
   user media to a server.
-- Still-image capture is **out of MVP scope** unless a later work item adds it;
-  do not confuse it with the required video-filter feature.
+- Still-image capture is **out of MVP scope** except for the scan-locked AR
+  snapshot explicitly added by **US-20 / D-26**. That snapshot is not a video
+  filter or a separate still-photo mode and does not replace the required
+  video-filter feature.
+- US-20's AR photo-to-gallery integration is **Android-only**. No iOS capture
+  behavior is promised or implied; iOS support requires a later, separately
+  scoped native implementation and device acceptance.
 - Never commit large binary user exports or secrets.
 
 ### VIII. No accounts; light local memory (D-08)
@@ -555,7 +572,7 @@ Splash → Main
 | Trivia / retos | Implemented (extend) | From `trivias`; last score only; AR trivia mode planned. |
 | Video archive + filters | Implemented | YouTube catalog (R-03); allowed filters only. |
 | AR markers (≥3) | 5 logos in DB (scores ≥ 75); 3 accepted on device | Gate is 75, not 90. Human: Leones, Olmecas, Piratas lock. Bravos and Tigres raw are not device-checked. |
-| AR controls | Code (AR-07); device not checked | ≥2 action types on `ArLocked` only: gesto (`idle`/`gesto`) and información (`infoTexto` + TTS + one 360°). |
+| AR controls | Code (AR-07/US-20); device not checked | On `ArLocked`: animation play/pause, information + TTS, Android photo-to-gallery, and four independently selected in-scene particle effects. iOS photo capture is deferred. |
 | Simulated live stats | Planned | Local mock “tiempo real”. |
 | Multiple AR modes | Planned | e.g. galería, trivia AR, video inmersivo. |
 | AR model choice | Implemented (US-18) | On `ArLocked` / `ArLost`, choose the club's stadium or player GLB; tracker replacement preserves the session and pose anchor. |
@@ -686,6 +703,11 @@ MUST NOT:
 10. **~~Parallel English domain (Article IV violation).~~** Cleared in DEBT-01
    (2026-09-19). The unused `Team`, `TriviaQuestion`, and `MockData` legacy
    cluster was removed; production data remains on `Equipo` / `Trivia`.
+11. **AR photo capture is Android-only (US-20 / D-26).** Capture uses Android
+   PixelCopy + MediaStore after a confirmed lock. The corresponding iOS
+   capture/Photos flow is not implemented; do not advertise parity. If the
+   professor requires it, add a separate iOS-native work item and verify on a
+   physical iPhone.
 
 Track fixes via `WORK_ITEMS.md`.
 
@@ -700,7 +722,7 @@ Track fixes via `WORK_ITEMS.md`.
 | ~~D-03 (v2.2.4)~~ | ~~3D = estadios / trofeos / pelotas / jugadores históricos; student- or AI-authored; interactive animations.~~ **Amended by D-22** on `full-project` — required models are stadium + player per club. | ~~Ratified 2026-09-04~~ |
 | D-03 | 3D is student- or AI-authored. On `full-project`: **one stadium and one player per Zona Sur club** (20 GLBs). Shared mesh, team color and crest only. Only the player is animated. | **Amended 2026-09-07** |
 | D-04 | Scholar use OK for marks; logos **not yet collected** — blocking real scan QA until ≥3 markers exist. | **Ratified 2026-09-04** |
-| D-05 | Graded feature = **video catalog + filters** (allowed/forbidden lists). Still photos out of MVP. | **Ratified 2026-09-04** |
+| D-05 | Graded feature = **video catalog + filters** (allowed/forbidden lists). Still photos are out of MVP except for the explicitly scoped scan-locked AR snapshot in US-20 / D-26. | **Amended 2026-09-26** |
 | D-06 | **No API**; local JSON + assets; media via URLs only. | **Ratified 2026-09-04** |
 | D-07 | Videos/highlights = **remote URLs**. | **Ratified 2026-09-04** |
 | D-08 | **No logins**; optional **last trivia score** on device only. | **Ratified 2026-09-04** |
@@ -723,6 +745,7 @@ Track fixes via `WORK_ITEMS.md`.
 | D-23 | **Scan set = logos that score ≥ 75, not 90, and not substitute cards.** Active logos: Leones 100, Olmecas 100, Piratas 100, Bravos 90, Tigres raw 75, Diablos flame 80, Guerreros shield raw 90, Conspiradores wordmark raw 100, Águila crest raw 100, Pericos wordmark raw 100. Do not normalize Tigres, the Guerreros shield, the Conspiradores wordmark, the Águila crest, or the Pericos wordmark. The old 50-score files and the first Conspiradores, Águila, and Pericos files stay out. The Águila wordmark also scored 100 raw but was not shipped (it carries a +N watermark). The other Pericos candidates were not scored. No matcher. | **Amended 2026-09-08** |
 | D-24 | After an AR marker locks, fans may choose the club's D-22 stadium or player GLB. Flutter owns the choice; the tracker replaces the anchored node in place without restarting the session. The marker's original model remains the default. | **Ratified 2026-09-19** |
 | D-25 | Club GLBs are authored Y-up and are placed parallel to the scanned logo plane with a local **-90° X rotation**. Presentation yaw rotates around the marker normal. | **Ratified 2026-09-19; amended for orientation sign** |
+| D-26 | After AR lock, Android users may pause/resume the active model animation, capture the AR window to the system Pictures gallery, and independently trigger four selectable baseball particle effects (jonrón, chispas, confeti, polvo del diamante). Effects use the tracker scene graph, one active at a time, and are never coupled to animation playback. US-20 does not implement or claim iOS capture; if requested, iOS requires a separate AVFoundation/Photos implementation and device acceptance. | **Ratified 2026-09-26** |
 
 Open residual (non-blocking for backlog writing):
 

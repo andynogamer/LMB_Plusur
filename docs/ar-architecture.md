@@ -1,7 +1,7 @@
 # AR architecture contract
 
 **Status:** binding. Referenced by Constitution **Article VI**.
-**Version:** 1.0.1 · 2026-09-07
+**Version:** 1.1.0 · 2026-09-26
 **Scope:** everything under `lib/ar/`, plus AR-related native config.
 **Read first:** [`ar-postmortem.md`](./ar-postmortem.md) — this document is its remedy.
 
@@ -132,9 +132,19 @@ abstract interface class ArTracker {
   /// not tick Animator until `tools/patch_filament_clips.ps1`.
   Future<bool> playClip({required String trackerName, required String clipName, bool loop = false});
 
+  /// Freezes or resumes the active clip at its current frame.
+  /// Returns false if there is no active clip or the renderer cannot control it.
+  Future<bool> setClipPaused({required String trackerName, required bool paused});
+
   /// Extra yaw composed onto the tracked pose. The información action uses
   /// one 360° turn. Zero means the pose alone.
   void setPresentationYaw(double radians);
+
+  /// Saves a native AR-scene snapshot composited with transparent Flutter
+  /// chrome to the phone's photo gallery.
+  /// Available only in a locked Android AR session; unsupported platforms must
+  /// report an explicit unsupported result, never claim success.
+  Future<void> capturePhoto({required Uint8List overlayPng});
 
   Future<void> stop();
   Future<void> dispose();
@@ -284,6 +294,26 @@ Overlay chrome (buttons, panels, badges) is ordinary Flutter widgets stacked ove
 the AR surface, using `AppColors` + Poppins + `FeatureCard` / `PrimaryButton`
 per Article IX.
 
+In-session photos combine two rendering surfaces: the pinned AR plugin's
+native `snapshot` captures its camera/model `GLSurfaceView` (including its
+Filament overlay), and a Flutter `RepaintBoundary` captures the transparent AR
+chrome. Android composes the chrome over the AR scene and writes the result
+through `MediaStore` under `Pictures/LMB Plusur`. An Activity-window-only
+`PixelCopy` is not sufficient because the AR scene is rendered in a separate
+surface. The capture control is available only after `ArLocked`; blank scene
+or overlay inputs must fail visibly rather than save a blank image. Android
+API 26+ is checked before requesting the plugin snapshot; Android 8–9 still
+request legacy write permission only when saving. This implementation is
+Android-only; iOS capture and Photos-library permission handling are explicitly
+deferred and must not be represented as supported.
+
+The four D-26 particle effects are independent, named tracker-scene-graph
+presets: **Jonrón** (baseball burst), **Chispas** (gold sparks), **Confeti**
+(team-color confetti), and **Polvo del diamante** (infield dust). A user
+selects them through separate AR controls; only one effect is active at once.
+Animation playback never starts, stops, or selects an effect. Each effect is
+bounded to six lightweight particle nodes and follows the tracked pose.
+
 ---
 
 ## 7. Verification strategy
@@ -382,6 +412,7 @@ Enforced in the device acceptance run; regressions block the slice.
 | GLB size per marker | ≤ 4 MB, ≤ 50 k tris | mid-tier Android thermals |
 | Reference images in the active DB | 5 logos that score ≥ 75 | Gate is 75, not 90. ARCore allows 20. Still one simultaneous track. |
 | Concurrent particle/VFX effects | 1 | Article on low-end devices |
+| Particle nodes per selected effect | **6** | Four visual presets share the same bounded scene-graph budget |
 
 `package:image` is **dev-tooling and test only**. It must not appear in a
 runtime code path.
@@ -423,6 +454,19 @@ Mandatory usage notes, learned the hard way:
   `flutter pub get`, same rule as the width patch. A missing clip or a missing
   patch returns false from `playClip` and must not drop the session. Do not
   bump the pin. Do not write a matcher.
+- `setClipPaused` freezes the active Filament clip without advancing its
+  animation time and resumes from that same time. It is available only for a
+  loaded animated model. It does not alter the AR session or effect state.
+- Android photo capture takes the AR scene from the plugin's native `snapshot`
+  method and the Flutter chrome from a transparent overlay boundary, then
+  composites and saves through `MediaStore` to `Pictures/LMB Plusur`. Do not
+  substitute Activity-window-only `PixelCopy`; it can omit the plugin's
+  separate AR rendering surface. Check Android API 26+ before invoking the
+  plugin snapshot; older devices receive explicit unsupported copy. On API
+  26–28, request legacy write permission only when capture is invoked. Reject
+  empty/blank scene or overlay images visibly. Do not add camera-frame decoding
+  in Dart, photo files in app storage, or a server. There is no iOS
+  implementation in US-20.
 - Gate model placement on `isFullyTracked` (`AugmentedImage` full tracking
   state). Placing on a `paused` image gives you a model floating at the wrong
   depth.
@@ -435,6 +479,7 @@ Mandatory usage notes, learned the hard way:
 |---|---|
 | `minSdk = 24` | ARCore floor |
 | `CAMERA` permission | required |
+| `WRITE_EXTERNAL_STORAGE` with `maxSdkVersion="28"` | D-26 legacy MediaStore writes on Android 8–9 only |
 | `com.google.ar.core` meta-data = `optional` | app still installs on non-AR devices |
 | `<package android:name="com.google.ar.core"/>` in `<queries>` | availability check on API 30+ |
 
@@ -520,4 +565,8 @@ docs/
       score plus shipped variant recorded in the marker guide §7.
 - [ ] Device acceptance table (§7) filled in, including both control rows.
 - [ ] No forbidden native config from §11.
+- [ ] Capture is offered only after lock, reports failures visibly, and never
+      claims iOS support in the Android-only US-20 implementation.
+- [ ] Four distinct particle presets are independently selectable from model
+      animation controls and obey the one-effect/six-node limits.
 - [ ] `flutter analyze` clean on touched files.

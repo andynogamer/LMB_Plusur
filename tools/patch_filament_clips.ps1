@@ -32,7 +32,10 @@ function Write-Plugin([string] $path, [string] $text) {
 $rendererText = [System.IO.File]::ReadAllText($renderer)
 $viewText = [System.IO.File]::ReadAllText($view)
 
-if ($rendererText.Contains("lmb-plusur: filament clips") -and $viewText.Contains("lmb-plusur: filament clips")) {
+if ($rendererText.Contains("lmb-plusur: filament clips") -and
+    $viewText.Contains("lmb-plusur: filament clips") -and
+    $rendererText.Contains("lmb-plusur: pause filament clips") -and
+    $viewText.Contains("lmb-plusur: pause filament clips")) {
   Write-Output "already patched: $renderer"
   exit 0
 }
@@ -252,4 +255,50 @@ if (-not $viewText.Contains("lmb-plusur: filament clips")) {
   $viewText = $viewText.Replace($handlerNeedle, $handler)
   Write-Plugin $view $viewText
   Write-Output "patched: $view"
+}
+
+$rendererText = [System.IO.File]::ReadAllText($renderer)
+$viewText = [System.IO.File]::ReadAllText($view)
+
+if (-not $rendererText.Contains("lmb-plusur: pause filament clips")) {
+  $pauseMethod = @'
+
+    // lmb-plusur: pause filament clips
+    fun setClipPaused(name: String, paused: Boolean): Boolean {
+        val state = activeClips[name] ?: return false
+        state.playing = !paused
+        return true
+    }
+
+'@
+  $rendererText = $rendererText.TrimEnd()
+  if (-not $rendererText.EndsWith("}")) {
+    Write-Error "ModelRenderer.kt does not end with a class close."
+  }
+  $rendererText = $rendererText.Substring(0, $rendererText.LastIndexOf("}")) +
+      $pauseMethod + $nl + "}" + $nl
+  Write-Plugin $renderer $rendererText
+  Write-Output "patched pause control: $renderer"
+}
+
+if (-not $viewText.Contains("lmb-plusur: pause filament clips")) {
+  $handlerNeedle = '                        "playClip" -> {'
+  $pauseHandler = @'
+                        "setClipPaused" -> {
+                            // lmb-plusur: pause filament clips. Keep the current animation time.
+                            val nodeName = call.argument<String>("name")
+                            val paused = call.argument<Boolean>("paused")
+                            if (nodeName.isNullOrEmpty() || paused == null) {
+                                result.success(false)
+                            } else {
+                                result.success(modelRenderer.setClipPaused(nodeName, paused))
+                            }
+                        }
+'@
+  if (-not $viewText.Contains($handlerNeedle)) {
+    Write-Error "playClip handler anchor missing in AndroidARView.kt."
+  }
+  $viewText = $viewText.Replace($handlerNeedle, $pauseHandler + $nl + $handlerNeedle)
+  Write-Plugin $view $viewText
+  Write-Output "patched pause control: $view"
 }
