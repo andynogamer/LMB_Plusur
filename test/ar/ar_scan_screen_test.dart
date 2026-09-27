@@ -54,6 +54,47 @@ void main() {
     registry = MarkerRegistry.fromMarcadores([leones]);
   });
 
+  test(
+    'tracker seam pauses and resumes idle, then clears it on model replace',
+    () async {
+      final tracker = FakeArTracker();
+      await tracker.start(references: const []);
+      await tracker.attachModel(
+        trackerName: leones.id,
+        glbAsset: 'assets/models/leones_yucatan/jugador.glb',
+      );
+      expect(
+        await tracker.playClip(
+          trackerName: leones.id,
+          clipName: kClipIdle,
+          loop: true,
+        ),
+        isTrue,
+      );
+      expect(
+        await tracker.setClipPaused(trackerName: leones.id, paused: true),
+        isTrue,
+      );
+      expect(tracker.pausedClips[leones.id], isTrue);
+      expect(
+        await tracker.setClipPaused(trackerName: leones.id, paused: false),
+        isTrue,
+      );
+      expect(tracker.pausedClips[leones.id], isFalse);
+
+      await tracker.attachModel(
+        trackerName: leones.id,
+        glbAsset: 'assets/models/leones_yucatan/estadio.glb',
+      );
+      expect(
+        await tracker.setClipPaused(trackerName: leones.id, paused: true),
+        isFalse,
+      );
+      expect(tracker.activeClips, isEmpty);
+      await tracker.dispose();
+    },
+  );
+
   Future<void> pumpScan(
     WidgetTester tester, {
     required FakeArTracker tracker,
@@ -361,6 +402,88 @@ void main() {
     expect(find.byKey(const Key('ar-locked')), findsOneWidget);
     expect(find.byKey(const Key('ar-model-selector')), findsOneWidget);
   });
+
+  testWidgets(
+    'pausa idle al instante y restablece el control al cambiar modelo',
+    (tester) async {
+      final tracker = FakeArTracker();
+      await pumpScan(tester, tracker: tracker);
+      await lock(tracker, leones);
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.byKey(const Key('ar-action-animation-pause')), findsNothing);
+      await tester.ensureVisible(find.byKey(const Key('ar-model-player')));
+      await tester.tap(find.byKey(const Key('ar-model-player')));
+      await tester.pump();
+      await tester.pump();
+
+      expect(tracker.activeClips[leones.id], kClipIdle);
+      expect(
+        find.byKey(const Key('ar-action-animation-pause')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('ar-action-gesto')), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('ar-action-animation-pause')));
+      await tester.pump();
+      await tester.pump();
+      expect(tracker.clipPauseChanges.last, (
+        trackerName: leones.id,
+        paused: true,
+      ));
+      expect(tracker.pausedClips[leones.id], isTrue);
+      expect(
+        tracker.playedClips.where((clip) => clip.clipName == kClipCelebracion),
+        isEmpty,
+      );
+
+      await tester.tap(find.byKey(const Key('ar-action-animation-pause')));
+      await tester.pump();
+      await tester.pump();
+      expect(tracker.clipPauseChanges.last, (
+        trackerName: leones.id,
+        paused: false,
+      ));
+      expect(tracker.pausedClips[leones.id], isFalse);
+
+      await tester.tap(find.byKey(const Key('ar-action-animation-pause')));
+      await tester.pump();
+      await tester.pump();
+      await tester.ensureVisible(find.byKey(const Key('ar-model-stadium')));
+      await tester.tap(find.byKey(const Key('ar-model-stadium')));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.byKey(const Key('ar-action-animation-pause')), findsNothing);
+      expect(tracker.activeClips.containsKey(leones.id), isFalse);
+      expect(tracker.pausedClips.containsKey(leones.id), isFalse);
+
+      await tester.ensureVisible(find.byKey(const Key('ar-model-player')));
+      await tester.tap(find.byKey(const Key('ar-model-player')));
+      await tester.pump();
+      await tester.pump();
+
+      expect(tracker.activeClips[leones.id], kClipIdle);
+      expect(tracker.pausedClips[leones.id], isFalse);
+      expect(
+        find.byKey(const Key('ar-action-animation-pause')),
+        findsOneWidget,
+      );
+      expect(find.text('PAUSAR ANIMACIÓN'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('ar-action-animation-pause')));
+      await tester.pump();
+      await tester.pump();
+      expect(tracker.clipPauseChanges.last, (
+        trackerName: leones.id,
+        paused: true,
+      ));
+      expect(
+        tracker.playedClips.where((clip) => clip.clipName == kClipCelebracion),
+        isEmpty,
+      );
+    },
+  );
 
   testWidgets('deshabilita información mientras la trivia está activa', (
     tester,

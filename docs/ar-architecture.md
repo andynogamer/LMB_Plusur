@@ -455,8 +455,10 @@ Mandatory usage notes, learned the hard way:
   patch returns false from `playClip` and must not drop the session. Do not
   bump the pin. Do not write a matcher.
 - `setClipPaused` freezes the active Filament clip without advancing its
-  animation time and resumes from that same time. It is available only for a
-  loaded animated model. It does not alter the AR session or effect state.
+  animation time and resumes from that same time. Show the pause control only
+  after `playClip` confirms an active clip; hide it for static or unloaded
+  models. Replacing a model clears the old clip/pause UI state before starting
+  the new model's `idle` clip. It does not alter the AR session or effect state.
 - Android photo capture takes the AR scene from the plugin's native `snapshot`
   method and the Flutter chrome from a transparent overlay boundary, then
   composites and saves through `MediaStore` to `Pictures/LMB Plusur`. Do not

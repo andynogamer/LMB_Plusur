@@ -91,6 +91,8 @@ class _ArScanScreenState extends State<ArScanScreen>
   );
   final ValueNotifier<ArModelChoice> _modelChoice =
       ValueNotifier<ArModelChoice>(ArModelChoice.defaultModel);
+  int _modelRevision = 0;
+  Future<void> _modelUpdateQueue = Future<void>.value();
 
   ArChromeSnapshot get _chrome => _chromeActions.value;
 
@@ -279,29 +281,71 @@ class _ArScanScreenState extends State<ArScanScreen>
   }
 
   Future<void> _attachLockedModel(ArTracker tracker, ArLocked locked) async {
-    final asset = _assetForModel(locked.marcador, _modelChoice.value);
+    final choice = _modelChoice.value;
+    final revision = ++_modelRevision;
+    await _queueModelAttachment(tracker, locked, choice, revision);
+  }
+
+  Future<void> _queueModelAttachment(
+    ArTracker tracker,
+    ArLocked locked,
+    ArModelChoice choice,
+    int revision,
+  ) async {
+    final update = _modelUpdateQueue.then((_) async {
+      if (!mounted || revision != _modelRevision) return;
+      await _attachSelectedModel(tracker, locked, choice, revision);
+    });
+    _modelUpdateQueue = update;
+    await update;
+  }
+
+  Future<void> _attachSelectedModel(
+    ArTracker tracker,
+    ArLocked locked,
+    ArModelChoice choice,
+    int revision,
+  ) async {
+    final asset = _assetForModel(locked.marcador, choice);
     await tracker.attachModel(trackerName: locked.marcador.id, glbAsset: asset);
-    if (!mounted) return;
+    if (!mounted || revision != _modelRevision) return;
     final note = tracker is ArCoreImageTracker
         ? modelFallbackCopy(tracker.modelAttach)
         : null;
     if (_chrome.modelNote != note) {
       _patchChrome(_chrome.copyWith(modelNote: note));
     }
-    if (_selectedModelHasAnimations(locked.marcador)) {
-      await tracker.playClip(
+    final idleAvailable = _modelSupportsClip(
+      locked.marcador,
+      kClipIdle,
+      choice,
+    );
+    var animationAvailable = false;
+    if (idleAvailable) {
+      animationAvailable = await tracker.playClip(
         trackerName: locked.marcador.id,
         clipName: kClipIdle,
         loop: true,
       );
     }
+    if (!mounted || revision != _modelRevision) return;
+    _patchChrome(
+      _chrome.copyWith(
+        animationAvailable: animationAvailable,
+        animationPaused: false,
+      ),
+    );
   }
 
-  bool _selectedModelHasAnimations(Marcador marcador) {
-    return switch (_modelChoice.value) {
+  bool _modelSupportsClip(
+    Marcador marcador,
+    String clipName, [
+    ArModelChoice? choice,
+  ]) {
+    return switch (choice ?? _modelChoice.value) {
       ArModelChoice.player => true,
       ArModelChoice.stadium => false,
-      ArModelChoice.defaultModel => marcador.animaciones.contains(kClipIdle),
+      ArModelChoice.defaultModel => marcador.animaciones.contains(clipName),
     };
   }
 
@@ -320,23 +364,27 @@ class _ArScanScreenState extends State<ArScanScreen>
       ..stop()
       ..reset();
     _modelChoice.value = choice;
-    await _attachLockedModel(
-      tracker,
-      ArLocked(marcador: marcador, isDemo: _liveIsDemo),
-    );
-    if (!mounted) return;
+    final revision = ++_modelRevision;
     _patchChrome(
       _chrome.copyWith(
         gestoPressed: false,
+        animationAvailable: false,
         animationPaused: false,
         actionNote: choice == ArModelChoice.stadium
             ? 'Modelo estadio seleccionado.'
             : 'Modelo jugador seleccionado.',
       ),
     );
+    await _queueModelAttachment(
+      tracker,
+      ArLocked(marcador: marcador, isDemo: _liveIsDemo),
+      choice,
+      revision,
+    );
   }
 
   Future<void> _releaseActions() async {
+    _modelRevision++;
     _celebrationProgress
       ..stop()
       ..reset();
@@ -377,6 +425,7 @@ class _ArScanScreenState extends State<ArScanScreen>
   Future<void> _onGesto(Marcador marcador) async {
     final tracker = _liveTracker;
     if (tracker == null) return;
+    final revision = _modelRevision;
     if (!_modelSupportsClip(marcador, kClipCelebracion)) {
       await FeedbackService.instance.error();
       if (!mounted) return;
@@ -387,14 +436,19 @@ class _ArScanScreenState extends State<ArScanScreen>
       _celebrationProgress
         ..stop()
         ..reset();
-      await tracker.playClip(
+      final resumed = await tracker.playClip(
         trackerName: marcador.id,
         clipName: kClipIdle,
         loop: true,
       );
-      if (!mounted) return;
+      if (!mounted || revision != _modelRevision) return;
       _patchChrome(
-        _chrome.copyWith(gestoPressed: false, animationPaused: false),
+        _chrome.copyWith(
+          gestoPressed: false,
+          animationAvailable: resumed,
+          animationPaused: false,
+          actionNote: resumed ? null : kCelebracionFailedCopy,
+        ),
       );
       return;
     }
@@ -404,7 +458,7 @@ class _ArScanScreenState extends State<ArScanScreen>
       clipName: kClipCelebracion,
       loop: false,
     );
-    if (!mounted) return;
+    if (!mounted || revision != _modelRevision) return;
     if (!played) {
       await FeedbackService.instance.error();
       _patchChrome(_chrome.copyWith(actionNote: kCelebracionFailedCopy));
@@ -415,19 +469,12 @@ class _ArScanScreenState extends State<ArScanScreen>
     _patchChrome(
       _chrome.copyWith(
         gestoPressed: true,
+        animationAvailable: true,
         animationPaused: false,
         actionNote: null,
       ),
     );
     _celebrationProgress.forward(from: 0);
-  }
-
-  bool _modelSupportsClip(Marcador marcador, String clipName) {
-    return switch (_modelChoice.value) {
-      ArModelChoice.player => true,
-      ArModelChoice.stadium => false,
-      ArModelChoice.defaultModel => marcador.animaciones.contains(clipName),
-    };
   }
 
   Future<void> _onEffectSelected(ArParticleEffect effect) async {
@@ -464,13 +511,14 @@ class _ArScanScreenState extends State<ArScanScreen>
 
   Future<void> _onToggleAnimationPause(Marcador marcador) async {
     final tracker = _liveTracker;
-    if (tracker == null) return;
+    if (tracker == null || !_chrome.animationAvailable) return;
+    final revision = _modelRevision;
     final paused = !_chrome.animationPaused;
     final changed = await tracker.setClipPaused(
       trackerName: marcador.id,
       paused: paused,
     );
-    if (!mounted) return;
+    if (!mounted || revision != _modelRevision) return;
     if (!changed) {
       await FeedbackService.instance.error();
       _patchChrome(
@@ -804,9 +852,7 @@ class _ArScanScreenState extends State<ArScanScreen>
                                                 kClipCelebracion,
                                               ),
                                               showAnimationControl:
-                                                  _selectedModelHasAnimations(
-                                                marcador,
-                                              ),
+                                                  actions.animationAvailable,
                                               showPhotoCapture:
                                                   showPhotoCapture,
                                               gestoPressed:

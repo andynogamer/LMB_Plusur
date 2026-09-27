@@ -41,10 +41,12 @@ class FakeArTracker implements ArTracker {
       [];
 
   final List<({String trackerName, bool paused})> clipPauseChanges = [];
+  final Map<String, String> activeClips = {};
+  final Map<String, bool> pausedClips = {};
 
   /// Effect attach/clear calls for tests.
   final List<({String trackerName, String glbAsset, ArParticleEffect effect})>
-      attachedEffects = [];
+  attachedEffects = [];
   final List<({String trackerName, String glbAsset})> attachedModels = [];
   int clearEffectCount = 0;
   int capturePhotoCount = 0;
@@ -74,6 +76,8 @@ class FakeArTracker implements ArTracker {
     required String glbAsset,
   }) async {
     attachedModels.add((trackerName: trackerName, glbAsset: glbAsset));
+    activeClips.remove(trackerName);
+    pausedClips.remove(trackerName);
   }
 
   @override
@@ -84,6 +88,8 @@ class FakeArTracker implements ArTracker {
   }) async {
     if (_stopped || clipName.isEmpty) return false;
     playedClips.add((trackerName: trackerName, clipName: clipName, loop: loop));
+    activeClips[trackerName] = clipName;
+    pausedClips[trackerName] = false;
     return true;
   }
 
@@ -92,8 +98,9 @@ class FakeArTracker implements ArTracker {
     required String trackerName,
     required bool paused,
   }) async {
-    if (_stopped) return false;
+    if (_stopped || !activeClips.containsKey(trackerName)) return false;
     clipPauseChanges.add((trackerName: trackerName, paused: paused));
+    pausedClips[trackerName] = paused;
     return true;
   }
 

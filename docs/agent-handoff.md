@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-09-26 · by: BUG-06 capture fix (device verified)
+**Last updated:** 2026-09-26 · by: BUG-07 animation pause/resume
 
 ---
 
@@ -138,11 +138,15 @@ Measured later, four of them were. **Never copy code from that branch.**
   `LMB_AR_1790469677404.png`) were pulled from Pictures and visually inspected;
   both contain the live scene, tracked model, and controls. Device acceptance
   is complete for BUG-06.
-- **Pending AR regressions:** BUG-07 covers pausing any supported clip,
-  including idle (current stadium GLBs are static and must not gain a fake
-  pause control); BUG-08 covers the black camera preview after locking the
-  Android screen or returning from the background. Keep them separate and
-  handle after BUG-06.
+- **BUG-07 — code/tests done (2026-09-26), device acceptance pending.** Pause
+  appears only after the selected model's clip starts successfully. Selecting
+  Jugador starts `idle` immediately; changing models clears pause state, and
+  static stadiums expose no pause control. Focused tracker/widget tests,
+  `flutter analyze`, and the Android debug build pass. M2012K10C / Android 13
+  was connected but asleep at the lock screen, so physical clip verification
+  could not be completed.
+- **Pending AR regression:** BUG-08 covers the black camera preview after
+  screen lock or returning from the background. Keep it separate from BUG-07.
 - US-14 — **Done (code).** Splash warm-up (~1.1 s) + logo `cacheWidth`;
   video chrome isolated from filter rebuilds; `DataService` memoization;
   AR camera outside action rebuilds; VFX capped at 6 balls. Notes:
@@ -193,6 +197,8 @@ Measured later, four of them were. **Never copy code from that branch.**
 - US-20 device (Android 8+): pause/resume idle and celebration at the same
   frame, save a capture to `Pictures/LMB Plusur`, and independently trigger
   each of the four particle presets. Android 7.x should show unsupported copy.
+  BUG-07 code coverage now verifies idle pause/resume and model-switch reset;
+  physical animation acceptance remains pending until the device is unlocked.
   iOS capture is intentionally not implemented; add a separate native item if
   the professor requires it.
 - Print Bravos and the raw Tigres logo at ≥ 15 cm matte and try a lock.
@@ -307,8 +313,10 @@ chrome). Do not fall back to the fake tracker when that session fails.
 - ⚠️ **Plugin 1.1.3 never ticks Filament clips or pauses them by itself.**
   After every `flutter pub get`, re-run both patches (pub restores the
   unpatched plugin). The clip patch supplies ticking and pause/resume at the
-  current frame. Do not bump the pin. A missing clip or patch returns false
-  and must not drop the session:
+  current frame. Model replacement removes the old active clip; the pause
+  control is exposed only after the selected clip starts successfully. Do not
+  bump the pin. A missing clip or patch returns false and must not drop the
+  session:
   ```powershell
   powershell -ExecutionPolicy Bypass -File tools/patch_arcore_image_width.ps1
   powershell -ExecutionPolicy Bypass -File tools/patch_filament_clips.ps1
@@ -381,6 +389,7 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-09-26 | **BUG-07 code done; physical acceptance pending.** Pause/resume now follows a successfully started clip, so Jugador's `idle` is controllable immediately and a failed/static clip cannot expose a misleading control. Model changes clear paused/celebration state before attaching the selected model; revision checks discard stale async clip results. Added direct tracker-seam and widget regressions for idle pause/resume, stadium/player switching, and fresh idle state. Focused AR tests, analyze, and Android debug APK build pass. The connected M2012K10C / Android 13 was asleep at the lock screen, so the physical animation run remains open. |
 | 2026-09-26 | **BUG-06 done.** Replaced Activity-window-only PixelCopy (which misses the AR plugin's separate GL surface) with the plugin's native AR-scene snapshot plus a transparent Flutter chrome capture, composed natively before MediaStore save. Added blank-input rejection and pre-snapshot API gating. Analyze, 12 focused AR tests, and Android debug build pass. Two captures from M2012K10C / Android 13 were pulled from Pictures and visually confirmed to contain the live scene, model, and controls. |
 | 2026-09-26 | **AR regression triage.** Split three reported US-20 failures into independent pending items: BUG-06 blank gallery captures, BUG-07 pause/resume coverage for supported clips including idle (no new stadium animation), and BUG-08 AR camera recovery after screen lock/background. Ordered one-at-a-time; no implementation changed. |
 | 2026-09-26 | **US-20 / D-26.** Added animation pause/resume at the current clip frame, Android PixelCopy → MediaStore AR photos, and four independently triggered scene-graph particle presets (Jonrón, Chispas, Confeti, Polvo). Added bounded GLBs and updated the pinned-plugin patch and governance. `flutter analyze`, all 12 focused AR tests, and `flutter build apk --debug` pass; photo capture later passed physical review under BUG-06, animation/effect device acceptance remains open. |
@@ -390,7 +399,6 @@ Rules of thumb:
 | 2026-09-19 | **US-09 / US-02 refinement.** Replaced the random/infinite stats counter with a deterministic plate-appearance simulator: three outs per half-inning, runners, hits, runs and final-game logic. Removed the redundant AR entry from the already-selected team menu; the main shell remains the scanner entry. `flutter analyze` and focused tests pass. |
 | 2026-09-19 | **BUG-04 follow-up.** Fixed the YouTube filter race: the first CSS application could run before the `YoutubePlayer` and its iframe existed, leaving the pressed filter chip out of sync with playback. The player now applies CSS after the platform view mounts, retries until the iframe is present, and reapplies it when the selected filter changes. Analyze and the full 52-test suite pass. |
 | 2026-09-19 | **BUG-04.** Added real YouTube thumbnails with a network/error fallback. CSS-compatible filters now remain active on the YouTube iframe during playback through the plugin WebView controller; Pixelado stays preview-only. Direct MP4 playback remains fully filtered. Added `VideoArchivo.miniaturaUrl` and CSS mapping tests. |
-| 2026-09-19 | **BUG-03.** Kept the AR Información panel open after the presentation turn; only the model yaw resets automatically. Added a persistence regression test. |
 
 ## 8. How to work
 
@@ -403,9 +411,10 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 ## 9. Current task
 
-> Next: BUG-07 — make pause/resume cover every supported active clip including
-> idle. Do not add a fake pause control or new animation to static stadium
-> models. Handle BUG-08 separately after BUG-07.
+> Next: BUG-08 — restore the AR camera after returning from lock/background.
+> Before treating BUG-07 as fully accepted, unlock the M2012K10C and verify
+> pause/resume on each animated model plus model-switch reset. Do not add a fake
+> pause control or new animation to static stadium models.
 
 _(The human edits this line each session. Leave it pointing at the next item
 when you finish.)_

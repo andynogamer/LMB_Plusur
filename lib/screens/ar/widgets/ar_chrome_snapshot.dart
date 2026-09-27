@@ -8,6 +8,7 @@ class ArChromeSnapshot {
   const ArChromeSnapshot({
     this.gestoPressed = false,
     this.infoPressed = false,
+    this.animationAvailable = false,
     this.animationPaused = false,
     this.activeEffect,
     this.actionNote,
@@ -18,6 +19,7 @@ class ArChromeSnapshot {
 
   final bool gestoPressed;
   final bool infoPressed;
+  final bool animationAvailable;
   final bool animationPaused;
   final ArParticleEffect? activeEffect;
   final String? actionNote;
@@ -26,6 +28,7 @@ class ArChromeSnapshot {
   ArChromeSnapshot copyWith({
     bool? gestoPressed,
     bool? infoPressed,
+    bool? animationAvailable,
     bool? animationPaused,
     Object? activeEffect = _keep,
     Object? actionNote = _keep,
@@ -34,6 +37,7 @@ class ArChromeSnapshot {
     return ArChromeSnapshot(
       gestoPressed: gestoPressed ?? this.gestoPressed,
       infoPressed: infoPressed ?? this.infoPressed,
+      animationAvailable: animationAvailable ?? this.animationAvailable,
       animationPaused: animationPaused ?? this.animationPaused,
       activeEffect: identical(activeEffect, _keep)
           ? this.activeEffect
