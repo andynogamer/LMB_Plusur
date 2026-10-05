@@ -59,6 +59,7 @@
 | BUG-07 | 🐛 | 🟠 P1 | Pause/resume every supported AR clip, including idle | ☑ | AR animation |
 | BUG-08 | 🐛 | 🔴 P0 | Restore AR camera after returning to the app | ◐ | AR lifecycle |
 | BUG-09 | 🐛 | 🟠 P1 | Use Piratas' stadium model as the AR default | ☑ | AR model |
+| BUG-10 | 🐛 | 🟡 P2 | Lock the app to upright portrait orientation | ☑ | Platform / UI |
 | US-18 | 📗 | 🟠 P1 | Select stadium or player model after AR lock | ☑ | AR depth |
 | US-19 | 📗 | 🟠 P1 | Lay AR model parallel to scanned logo | ☑ | AR depth |
 | US-20 | 📗 | 🟠 P1 | Pause animation, save AR photos, and trigger four independent particle effects | ◐ | AR interaction / capture |
@@ -1269,3 +1270,36 @@ miniaturas reales con fallback, y `HighlightVideoPlayer` muestra la miniatura
 filtrable antes de montar el WebView de YouTube. Los filtros permitidos
 compatibles con CSS permanecen en el iframe durante la reproducción. URLs
 directas siguen usando `video_player` y el pipeline de filtros completo.
+
+## BUG-10 · 🐛 · 🟡 P2 · Lock the app to upright portrait orientation · ☑ Hecho
+
+**Prompt**
+```
+Contexto: LMB Plusur's layouts are designed for portrait. Landscape
+orientation makes the app behave strangely.
+
+Tarea: Keep this app in upright portrait orientation on Android and iOS.
+Apply the lock only to LMB Plusur, not to device-wide settings. Preserve the
+existing vertical UI and avoid unrelated native configuration changes.
+
+Criterios de aceptación:
+- Flutter requests `DeviceOrientation.portraitUp` before displaying the app.
+- Android's main activity is locked to portrait.
+- iPhone and iPad supported orientations contain upright portrait only; iPad
+  multitasking is disabled if required to enforce that orientation.
+- No landscape or upside-down portrait orientation is enabled.
+- No AR or video-filter behavior changes.
+- `flutter analyze`, `flutter test`, and an Android debug build pass; report
+  that iOS cannot be built locally when validation runs on Windows.
+
+Archivos: `lib/main.dart`, `android/app/src/main/AndroidManifest.xml`,
+`ios/Runner/Info.plist`, `WORK_ITEMS.md`, `docs/agent-handoff.md`.
+Fuera de alcance: device-wide settings, layout redesign, AR behavior, and
+video filters. The native orientation entries can be rolled back independently
+from unrelated platform configuration.
+```
+
+**Hecho 2026-10-05:** Flutter requests upright portrait before `runApp`;
+Android's main activity and iOS supported orientations also restrict the app
+to portrait. iPad multitasking is disabled so iPad orientation restrictions
+are honored. No layout, AR, or filter behavior changed.
