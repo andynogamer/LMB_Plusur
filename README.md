@@ -58,7 +58,7 @@ The product UI is in **Spanish**. There is no login, no API, and no cloud accoun
 
 **Play trivia.** Each club has a question bank. A round is five random items; the last score is saved locally and shown the next time you open that club.
 
-**Watch the archive.** Highlights load from a local catalog of public YouTube URLs. Preview filters run on the device: blur, pixelate, thermal, color grade, soft, pastels, and high saturation.
+**Watch the archive.** Highlights load from a local catalog of public YouTube URLs. Filters run on the device: blur, thermal, color grade, soft, pastels, and high saturation.
 
 ---
 

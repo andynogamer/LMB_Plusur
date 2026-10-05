@@ -10,7 +10,6 @@ import '../widgets/app_header.dart';
 import '../widgets/filtros_partido.dart';
 import '../widgets/highlight_video_player.dart';
 import '../widgets/screen_background.dart';
-import '../utils/youtube_id.dart';
 
 /// Video archive. [equipo] filters to that club; null opens the full catalog.
 class HighlightsScreen extends StatefulWidget {
@@ -162,18 +161,6 @@ class _HighlightsScreenState extends State<HighlightsScreen> {
                 seleccionado: _filtro,
                 onChanged: (filtro) => setState(() => _filtro = filtro),
               ),
-              if (youtubeVideoId(video.url) != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    '* Pixelado sólo está disponible en la vista previa.',
-                    style: GoogleFonts.poppins(
-                      color: AppColors.muted,
-                      fontSize: 11,
-                      height: 1.35,
-                    ),
-                  ),
-                ),
             ] else
               _posterWithThumbnail(video),
           ],

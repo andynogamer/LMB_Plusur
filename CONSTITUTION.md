@@ -17,7 +17,15 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 | [`docs/ar-architecture.md`](./docs/ar-architecture.md) | The AR technical contract: layers, `ArTracker` seam, state machine, error taxonomy, budgets. |
 | [`docs/ar-marker-guide.md`](./docs/ar-marker-guide.md) | How to author printable markers ARCore can actually track. |
 
-**Version**: 2.5.1 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-09-26
+**Version**: 2.5.2 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-10-05
+
+> **v2.5.2 — US-12 Pixelado removal.** Reverses Article VII's ratified
+> requirement to provide Pixelado. It worked in local previews and direct MP4
+> playback, but could not be applied reliably to YouTube playback, leaving one
+> advertised filter with inconsistent behavior. Removing it makes every
+> remaining filter available across the existing preview/playback paths. Blur,
+> thermal, color adjustment, and custom filters remain required; all forbidden
+> filters remain forbidden.
 
 > **v2.5.1 — AR camera lifecycle (BUG-08).** `ArTracker` gains
 > `handleAppLifecycleChange`. Returning from Android lock/background must
@@ -465,7 +473,6 @@ separate still-photo camera product).
   URLs). Each video MUST be editable/previewable with filters.
 - **Allowed filter families (MUST implement representatives of each):**
   - Desenfoque (blur)
-  - Pixelado
   - Cámara térmica
   - Ajuste de color
   - Personalizados: e.g. suavizado, colores pasteles, alta saturación
@@ -692,9 +699,9 @@ MUST NOT:
 4. **Timer mock deleted (AR-03).** `lib/screens/ar_view_screen.dart` is gone.
    The AR route is `ArScanScreen`. Do not restore the `Timer` or the Guerreros
    default. Scan UI must keep reading `ArSessionState` only.
-5. **Video filters are preview-only on the archive player.** Allowed
-   families live in `FilterEngine`. Do not add blanco y negro, escala de
-   grises, sepia, exposición, or invert.
+5. **Video filters run on archive previews and playback.** Allowed families
+   live in `FilterEngine`; Pixelado was removed in v2.5.2. Do not add blanco y
+   negro, escala de grises, sepia, exposición, or invert.
 6. **Video archive loads local JSON** (`assets/videos.json`). Playback
    URLs are YouTube watch links (R-03). `HighlightVideoPlayer` uses
    `youtube_player_iframe` for those ids; `video_player` remains for any

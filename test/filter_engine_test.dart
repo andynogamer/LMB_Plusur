@@ -8,15 +8,23 @@ void main() {
 
     expect(
         nombres,
-        containsAll([
+        equals({
+          'ninguno',
           'desenfoque',
-          'pixelado',
           'termica',
           'ajusteColor',
           'suavizado',
           'pasteles',
           'altaSaturacion',
-        ]));
+        }));
+    expect(
+      FilterEngine.familias.map(FilterEngine.etiqueta).toSet(),
+      equals({'Desenfoque', 'Cámara térmica', 'Ajuste de color'}),
+    );
+    expect(
+      FilterEngine.personalizados.map(FilterEngine.etiqueta).toSet(),
+      equals({'Suavizado', 'Pasteles', 'Alta saturación'}),
+    );
     expect(
       nombres.any(
         (name) =>
@@ -68,10 +76,6 @@ void main() {
     expect(
       FilterEngine.youtubeCss(FiltroPartido.altaSaturacion),
       'saturate(1.85)',
-    );
-    expect(
-      FilterEngine.youtubeCss(FiltroPartido.pixelado),
-      'none',
     );
   });
 }

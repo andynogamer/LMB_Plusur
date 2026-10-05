@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-10-05 · by: BUG-09 Piratas model default
+**Last updated:** 2026-10-05 · by: US-12 Pixelado removal
 
 ---
 
@@ -20,7 +20,7 @@ These are **binding**, not advisory:
 
 | # | File | What it gives you |
 |---|---|---|
-| 1 | `CONSTITUTION.md` | Governance, v2.5.1, decisions D-01…D-27 |
+| 1 | `CONSTITUTION.md` | Governance, v2.5.2, decisions D-01…D-27 |
 | 2 | `AGENTS.md` | How to work here (auto-loaded as a workspace rule) |
 | 3 | `WORK_ITEMS.md` | The backlog. Each item's `Prompt` block **is** the spec |
 | 4 | `docs/ar-postmortem.md` | Why AR attempt #1 was thrown away (RC-1…RC-7) |
@@ -179,12 +179,15 @@ Measured later, four of them were. **Never copy code from that branch.**
   WebView on Android. `VideoArchivo.miniaturaUrl` now derives an
   `i.ytimg.com` preview, and YouTube cards/player previews show that image
   before the WebView mounts. CSS-compatible allowed filters are reapplied to
-  the iframe during playback through the plugin's public WebView controller;
-  Pixelado remains preview-only because CSS cannot reliably pixelate a
-  cross-origin iframe. Direct MP4 URLs still use the fully filtered
+  the iframe during playback
+  through the plugin's public WebView controller. Pixelado was removed by the
+  v2.5.2 US-12 amendment because it could not be applied consistently to
+  YouTube playback. Direct MP4 URLs still use the fully filtered
   `video_player` path. Do not restore `DemoHighlights`. Some clubs share a
   video id (human-supplied list).
-- US-12 — Allowed filter families only. Forbidden set absent.
+- US-12 — Blur, thermal, color adjustment, and custom filters (soft, pastels,
+  high saturation) are allowed. Pixelado is removed; forbidden filters remain
+  absent.
 - AR-00 / D-23 — scan targets are **logos**, not substitute cards. Gate is
   **≥ 75**, not 90. Active: Leones 100, Olmecas 100, Piratas 100, Bravos 90,
   Tigres **raw JPEG** 75, Diablos flame logo **80**, Guerreros shield logo
@@ -241,8 +244,7 @@ Measured later, four of them were. **Never copy code from that branch.**
   thumbnails are shown with a safe fallback. CSS-compatible filter chips
   remain active on the YouTube iframe during playback; iframe creation is
   handled with a bounded retry and filter changes reapply after playback
-  begins. Pixelado is explicitly preview-only. Direct video URLs retain live
-  filter processing.
+  begins. Direct video URLs retain live filter processing.
 - **US-02 refinement:** The selected-team menu no longer repeats
   **Abrir experiencia AR**. The primary shell's **Escanear Logo** card remains
   the scanner entry, while the team menu stays focused on team-specific
@@ -365,10 +367,9 @@ chrome). Do not fall back to the fake tracker when that session fails.
 - YouTube archive clips use `youtube_player_iframe` (WebView). Flutter
   `ColorFilter` / `ImageFilter` do **not** tint that platform view on Android.
   The video widget now uses the plugin's public `WebViewController` to apply
-  CSS filters to the iframe; Pixelado cannot be made reliable there and stays
-  preview-only. Filters still wrap the widget for MP4 leftovers. Do not scrape
-  YouTube into `video_player`. After `flutter pub get`, re-run the two AR
-  plugin patches.
+  CSS-compatible filters to the iframe. Filters still wrap the widget for MP4
+  leftovers. Do not scrape YouTube into `video_player`. After `flutter pub get`,
+  re-run the two AR plugin patches.
 - **README screenshots (2026-09-13).** `flutter run -d web-server` paints a
   blank page unless a Dart debug client connects. Use `flutter build web`
   and a static server instead. Headless Chrome needs SwiftShader
@@ -407,6 +408,7 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-10-05 | **US-12 amended (v2.5.2).** Removed Pixelado from Article VII, the runtime enum/renderer, archive controls, and YouTube/MP4 filter choices because it could not work consistently on YouTube playback. Removed its preview-only warning and updated US-12, BUG-04, README, and performance notes. Other allowed families and forbidden-filter constraints are unchanged. |
 | 2026-10-05 | **BUG-09 device accepted.** Human confirmed the Piratas D-22 stadium GLB displays correctly as the marker default, replacing the black/glitched trophy rectangle. Data and locked-state attachment regressions pass. Player visual confirmation and broader AR-06 hold/enter/leave checks remain open. |
 | 2026-09-26 | **BUG-07 done on device.** Pause/resume covers supported clips including idle; static stadiums stay without a fake pause control. |
 | 2026-09-26 | **BUG-08 code.** Screen observes `paused`/`hidden`/`resumed` only (not `inactive`). Controller parks `ArLocked` as `ArLost`, re-subscribes detections after tracker resume, and maps a failed restore to `ArFailed(sessionLost)`. Tracker talks to `pauseSession`/`resumeSession` on the pinned plugin after a third post-`pub get` patch. Tests use bounded pumps, not `runAsync` wait-forever loops. Device 5× still open. |
@@ -416,7 +418,6 @@ Rules of thumb:
 | 2026-09-26 | **US-20 / D-26.** Added animation pause/resume at the current clip frame, Android PixelCopy → MediaStore AR photos, and four independently triggered scene-graph particle presets (Jonrón, Chispas, Confeti, Polvo). Added bounded GLBs and updated the pinned-plugin patch and governance. `flutter analyze`, all 12 focused AR tests, and `flutter build apk --debug` pass; photo capture later passed physical review under BUG-06, animation/effect device acceptance remains open. |
 | 2026-09-21 | **BUG-05.** Added the ten supplied club-history image URLs to `assets/data.json`, mapped `historiaImagenUrl` into `Equipo`, and replaced Historia's generic card with a cached network image plus the existing safe fallback. Added data coverage tests. |
 | 2026-09-21 | **Release 1.0.1+2.** Bumped the Android app version and rebuilt the release APK after adding Historia images. |
-| 2026-09-19 | **US-15 packaging refinement.** Generated Android launcher icons from the authored LMB logo using a centered square crop across mdpi, hdpi, xhdpi, xxhdpi and xxxhdpi. Release APK remains on the existing debug-signing class-demo path. |
 
 ## 8. How to work
 
@@ -431,8 +432,7 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 > Next: BUG-08 device acceptance — five Android lock-screen cycles and five
 > background/foreground cycles with no black preview, duplicate session, or
-> crash. Separately requested follow-ups (portrait-only orientation and the
-> Pixelado spec amendment/removal) require their own work items and branches.
+> crash. Portrait-only orientation remains separately scoped.
 
 _(The human edits this line each session. Leave it pointing at the next item
 when you finish.)_
