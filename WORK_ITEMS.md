@@ -58,6 +58,7 @@
 | BUG-06 | 🐛 | 🔴 P0 | Fix blank images saved by AR photo capture | ☑ | AR capture |
 | BUG-07 | 🐛 | 🟠 P1 | Pause/resume every supported AR clip, including idle | ☑ | AR animation |
 | BUG-08 | 🐛 | 🔴 P0 | Restore AR camera after returning to the app | ◐ | AR lifecycle |
+| BUG-09 | 🐛 | 🟠 P1 | Use Piratas' stadium model as the AR default | ☑ | AR model |
 | US-18 | 📗 | 🟠 P1 | Select stadium or player model after AR lock | ☑ | AR depth |
 | US-19 | 📗 | 🟠 P1 | Lay AR model parallel to scanned logo | ☑ | AR depth |
 | US-20 | 📗 | 🟠 P1 | Pause animation, save AR photos, and trigger four independent particle effects | ◐ | AR interaction / capture |
@@ -209,6 +210,36 @@ Archivos: `lib/ar/`, `lib/ar/trackers/arcore_image_tracker.dart`,
 
 Fuera de alcance: photo capture corrections, animation feature expansion,
 general app-wide lifecycle refactoring, background AR operation, or iOS work.
+```
+
+## BUG-09 · 🐛 · 🟠 P1 · Use Piratas' stadium model as the AR default · ☑ Hecho
+
+**Prompt**
+```
+Context: The Piratas marker's modelAsset points to a marker-specific trophy
+GLB that appears as a black/glitched rectangle on device. The D-22 catalog
+already contains a stadium and player GLB for Piratas, and D-24 allows the
+user to switch between them after the marker locks.
+
+Task: Make the Piratas stadium GLB the marker's default AR model. Keep the
+post-lock stadium/player selector and the existing ArTracker/model-placement
+flow; do not alter tracking, marker identity, or the D-22 catalog.
+
+Acceptance criteria:
+- `marcador_trofeo_piratas` defaults to
+  `assets/models/piratas_campeche/estadio.glb`.
+- A focused test verifies the marker data and locked-state model attachment
+  use that GLB; the selector remains available to switch to the player.
+- `flutter analyze` and focused AR/data tests pass.
+- Physical-device visual confirmation (user-reported 2026-10-05): the Piratas
+  stadium default works correctly. Player-selector visual confirmation and
+  broader AR-06 hold/enter/leave checks remain open.
+
+Files: `assets/ar_markers.json`, AR/data tests, `CONSTITUTION.md` Known debt,
+`docs/agent-handoff.md`, `WORK_ITEMS.md`
+
+Out of scope: tracker/plugin changes, replacing the D-22 GLBs, orientation
+policy, video filters, or unrelated AR lifecycle work.
 ```
 
 ## US-01 · 🟠 P1 · Team list name search (D-10) · ☑ Hecho

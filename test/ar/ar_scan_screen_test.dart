@@ -13,6 +13,7 @@ import 'package:lmb_plusur/screens/ar/ar_scan_screen.dart';
 import 'package:lmb_plusur/screens/ar/widgets/ar_action_bar.dart';
 import 'package:lmb_plusur/screens/ar/widgets/ar_failed_panel.dart';
 import 'package:lmb_plusur/services/ar_speech_service.dart';
+import 'package:lmb_plusur/services/data_service.dart';
 import 'package:lmb_plusur/services/feedback_service.dart';
 
 Marcador _marcador({
@@ -403,6 +404,25 @@ void main() {
     expect(find.byKey(const Key('ar-action-gesto')), findsOneWidget);
     expect(find.byKey(const Key('ar-action-animation-pause')), findsOneWidget);
     expect(find.byKey(const Key('ar-locked')), findsOneWidget);
+    expect(find.byKey(const Key('ar-model-selector')), findsOneWidget);
+  });
+
+  testWidgets('Piratas coloca el estadio del catálogo al bloquear su logo', (
+    tester,
+  ) async {
+    final piratas = (await DataService().cargarMarcadores()).singleWhere(
+      (marcador) => marcador.id == 'marcador_trofeo_piratas',
+    );
+    final tracker = FakeArTracker();
+    await pumpScan(tester, tracker: tracker, marcador: piratas);
+    await lock(tracker, piratas);
+    await tester.pump();
+    await tester.pump();
+
+    expect(
+      tracker.attachedModels.single.glbAsset,
+      'assets/models/piratas_campeche/estadio.glb',
+    );
     expect(find.byKey(const Key('ar-model-selector')), findsOneWidget);
   });
 

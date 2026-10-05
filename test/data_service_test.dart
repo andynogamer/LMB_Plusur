@@ -25,6 +25,18 @@ void main() {
     );
   });
 
+  test(
+    'Piratas usa el estadio del catálogo como modelo AR por defecto',
+    () async {
+      final marcadores = await DataService().cargarMarcadores();
+      final piratas = marcadores.singleWhere(
+        (marcador) => marcador.id == 'marcador_trofeo_piratas',
+      );
+
+      expect(piratas.modelAsset, 'assets/models/piratas_campeche/estadio.glb');
+    },
+  );
+
   test('Equipo.fromJson mapea campos españoles', () {
     final equipo = Equipo.fromJson({
       'id': 'demo',
