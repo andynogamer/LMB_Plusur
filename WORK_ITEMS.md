@@ -1,6 +1,6 @@
 ﻿# LMB Plusur — Work Items para Agentes
 
-> Backlog under Constitution **v2.5.1** (decisions D-01…D-27 + professor
+> Backlog under Constitution **v2.5.2** (decisions D-01…D-27 + professor
 > checklist). Each item is a **copy-paste prompt**. One item per branch/PR.
 > Format: contexto → tarea → criterios de aceptación → archivos → fuera de alcance.
 >
@@ -44,7 +44,7 @@
 | US-09 | 📗 | 🟠 P1 | Simulated live stats in AR / team | ☑ | Actions |
 | US-10 | 📗 | 🟠 P1 | Multiple AR modes (galería / trivia / video) | ☑ | Bonus + modes |
 | US-11 | 📗 | 🔴 P0 | Video archive UI (remote URLs) | ☑ | Videos |
-| US-12 | 📗 | 🔴 P0 | Video filters — allowed set only | ☑ | Filters |
+| US-12 | 📗 | 🔴 P0 | Video filters — allowed set without Pixelado | ☑ | Filters |
 | US-13 | 📗 | 🟠 P1 | Baseball-coherent 3D animations / VFX | ☑ | 15pt effects |
 | US-14 | 📗 | 🟡 P2 | Performance pass (load / stability) | ☑ | 15pt perf |
 | US-15 | 📗 | 🟡 P2 | Android APK release build | ☑ | Packaging |
@@ -816,9 +816,10 @@ Fuera de alcance: filter pipeline (US-12), downloading entire files for offline.
 
 **Prompt**
 ```
-Contexto: Constitution Article VII — MUST implement blur, pixelate, thermal,
-color adjust, and custom (soft / pastel / high saturation). MUST NOT
-implement B&W, grayscale, sepia, exposure, invert.
+Contexto: Constitution Article VII — MUST implement blur, thermal, color
+adjust, and custom (soft / pastel / high saturation). Pixelado was removed by
+the v2.5.2 amendment because it could not be applied consistently to YouTube
+playback. MUST NOT implement B&W, grayscale, sepia, exposure, or invert.
 
 Tarea: On the video player/editor UI, let user preview apply each allowed
 filter family (at least one control per family). Custom section includes
@@ -827,7 +828,7 @@ filters in enums/UI. Prefer on-device fragment shaders or image/video frame
 processing that keeps playback usable on mid Android phones.
 
 Criterios de aceptación:
-- All allowed families reachable in UI with visible effect.
+- All remaining allowed families reachable in UI with visible effect.
 - Forbidden filters absent from UI and code enums.
 - Feedback on filter select (US-04 service if present).
 - Baseball-themed copy (“Filtros del partido”, etc.).
@@ -1247,11 +1248,9 @@ Android.
 Tarea: Derivar la miniatura de cada URL de YouTube y usarla en el póster y en
 la vista previa del reproductor. Mantener los filtros permitidos visibles y
 funcionales sobre esa vista previa. Aplicar los filtros compatibles con CSS al
-iframe de YouTube durante el playback mediante el WebViewController público;
-Pixelado permanece sólo en preview porque CSS no puede hacerlo de forma
-fiable sobre un iframe cross-origin. No descargar, extraer ni retransmitir
-videos de YouTube. Mantener el pipeline de video_player filtrable para URLs
-directas.
+iframe de YouTube durante el playback mediante el WebViewController público.
+No descargar, extraer ni retransmitir videos de YouTube. Mantener el pipeline
+de video_player filtrable para URLs directas.
 
 Criterios de aceptación:
 - Las tarjetas del archivo muestran la miniatura de YouTube, con fallback
@@ -1259,14 +1258,14 @@ Criterios de aceptación:
 - Al seleccionar un filtro permitido antes de reproducir, el efecto se ve
   sobre la miniatura filtrada.
 - Al pulsar reproducir, los filtros CSS compatibles permanecen activos en el
-  iframe; Pixelado se identifica como preview-only.
+  iframe.
 - No se agregan filtros prohibidos ni una API/backend.
 - flutter analyze y las pruebas de videos pasan.
 ```
 
-**Hecho 2026-09-19:** `VideoArchivo.miniaturaUrl` deriva la URL `i.ytimg.com`,
-el archivo usa miniaturas reales con fallback, y `HighlightVideoPlayer` muestra
-la miniatura filtrable antes de montar el WebView de YouTube. Los filtros CSS
-compatibles permanecen en el iframe durante la reproducción; Pixelado queda
-limitado a preview. URLs directas siguen usando `video_player` y el pipeline
-de filtros completo.
+**Hecho 2026-09-19; actualizado por la enmienda US-12 v2.5.2:**
+`VideoArchivo.miniaturaUrl` deriva la URL `i.ytimg.com`, el archivo usa
+miniaturas reales con fallback, y `HighlightVideoPlayer` muestra la miniatura
+filtrable antes de montar el WebView de YouTube. Los filtros permitidos
+compatibles con CSS permanecen en el iframe durante la reproducción. URLs
+directas siguen usando `video_player` y el pipeline de filtros completo.

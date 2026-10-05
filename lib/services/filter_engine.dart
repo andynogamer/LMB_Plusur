@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 enum FiltroPartido {
   ninguno,
   desenfoque,
-  pixelado,
   termica,
   ajusteColor,
   suavizado,
@@ -20,7 +19,6 @@ enum FiltroPartido {
 abstract final class FilterEngine {
   static const List<FiltroPartido> familias = [
     FiltroPartido.desenfoque,
-    FiltroPartido.pixelado,
     FiltroPartido.termica,
     FiltroPartido.ajusteColor,
   ];
@@ -35,7 +33,6 @@ abstract final class FilterEngine {
     return switch (filtro) {
       FiltroPartido.ninguno => 'Original',
       FiltroPartido.desenfoque => 'Desenfoque',
-      FiltroPartido.pixelado => 'Pixelado',
       FiltroPartido.termica => 'Cámara térmica',
       FiltroPartido.ajusteColor => 'Ajuste de color',
       FiltroPartido.suavizado => 'Suavizado',
@@ -52,7 +49,6 @@ abstract final class FilterEngine {
           imageFilter: ImageFilter.blur(sigmaX: 2.4, sigmaY: 2.4),
           child: child,
         ),
-      FiltroPartido.pixelado => _Pixelado(child: child),
       FiltroPartido.termica => ColorFiltered(
           colorFilter: const ColorFilter.matrix(_termica),
           child: child,
@@ -84,7 +80,6 @@ abstract final class FilterEngine {
     return switch (filtro) {
       FiltroPartido.ninguno => 'none',
       FiltroPartido.desenfoque => 'blur(2.4px)',
-      FiltroPartido.pixelado => 'none',
       FiltroPartido.termica =>
         'saturate(2.4) contrast(1.25) hue-rotate(145deg)',
       FiltroPartido.ajusteColor =>
@@ -93,39 +88,6 @@ abstract final class FilterEngine {
       FiltroPartido.pasteles => 'brightness(1.18) saturate(0.72) contrast(0.9)',
       FiltroPartido.altaSaturacion => 'saturate(1.85)',
     };
-  }
-}
-
-/// Nearest-neighbor downsample so the preview reads as blocks, not a tint.
-class _Pixelado extends StatelessWidget {
-  const _Pixelado({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRect(
-      child: FittedBox(
-        fit: BoxFit.fill,
-        child: SizedBox(
-          width: 42,
-          height: 24,
-          child: Transform(
-            alignment: Alignment.center,
-            filterQuality: FilterQuality.none,
-            transform: Matrix4.identity(),
-            child: FittedBox(
-              fit: BoxFit.cover,
-              child: SizedBox(
-                width: 420,
-                height: 240,
-                child: child,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }
 

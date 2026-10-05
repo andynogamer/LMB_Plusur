@@ -8,7 +8,7 @@ and asset inventory (2026-09-09). Device frame timings still human-open.
 | Path | Cost |
 |---|---|
 | Splash → main | Fixed **3 s** timer + full-res decode of `LMB_plusur.png` (1920×1080) into a 176 px circle. Poppins fetched on first paint via `google_fonts`. |
-| Video + filter | `VideoPlayerController.addListener` → `setState` every tick rebuilt the **whole** stack, including `FilterEngine.aplicar` (blur / pixelado). Classic jank with desenfoque. |
+| Video + filter | `VideoPlayerController.addListener` → `setState` every tick rebuilt the **whole** stack, including `FilterEngine.aplicar` (blur / color transforms). Classic jank with desenfoque. |
 | AR enter | Compiles **all** scored logos into the image DB (~2.3 MB markers). Águila ~795 KB, Diablos ~697 KB dominate. |
 | AR VFX | One baseball burst plus screen-space particles; chrome `setState` rebuilt the camera `PlatformView` sibling. |
 | JSON | `DataService` re-read `data.json` / `videos.json` / `ar_markers.json` on every screen open. |
@@ -23,7 +23,7 @@ controllers.
 |---|---|
 | Splash waits on logo precache + Poppins + ~1.1 s brand beat (no 3 s idle) | Perceived load closer to real warm-up (~1–1.5 s typical). |
 | `AppLogo` uses `cacheWidth` / `cacheHeight` from display size × DPR | Avoids decoding the full 1920×1080 bitmap for every logo widget. |
-| Video chrome in `ListenableBuilder`; filter+`VideoPlayer` outside tick rebuilds | Blur/pixelado no longer rebuilt every frame. |
+| Video chrome in `ListenableBuilder`; filter+`VideoPlayer` outside tick rebuilds | Blur and color transforms no longer rebuild every frame. |
 | YouTube posters use remote `i.ytimg.com` thumbnails and filters run on the Flutter preview before the WebView mounts | Removes the black poster state and makes filter selection visibly verifiable without trying to repaint an Android platform view. |
 | Slightly softer blur sigmas (2.4 / 0.9) | Cheaper compositor path; look still readable. |
 | VFX: four independent particle meshes; at most **6** scene-graph nodes for one selected effect | Preserves the one-effect limit and keeps the Filament budget bounded. |
