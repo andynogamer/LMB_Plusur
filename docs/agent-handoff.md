@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-10-05 · by: US-12 Suavizado removal
+**Last updated:** 2026-10-05 · by: BUG-11 AR particle quality
 
 ---
 
@@ -136,6 +136,12 @@ Measured later, four of them were. **Never copy code from that branch.**
   photo capture is explicitly not
   implemented or claimed; if required, scope a separate AVFoundation + Photos
   work item and test on an iPhone.**
+- **BUG-11 — code landed 2026-10-05.** Particle GLBs use brighter vertex
+  colors and emissive materials; all four presets now have time-based
+  trajectories, per-particle lifetimes, scale-in, and fade-out. Motion unit
+  tests cover the four paths. Physical Android visual confirmation of all
+  presets remains open: the connected M2012K10C was at its lock screen during
+  this session, so the AR view could not be inspected.
 - **BUG-06 — done (2026-09-26).** The former Activity-window PixelCopy could
   omit the plugin's separate camera/model `GLSurfaceView`. Capture now uses
   the plugin's native scene snapshot, captures Flutter chrome separately,
@@ -412,6 +418,7 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-10-05 | **BUG-11 code.** Brightened all four procedural particle materials and replaced linear drift with ballistic arcs, confetti flutter/descent, low dust spread, per-particle lifetimes, scale-in, and fade-out. Added motion tests and clarified the visual/motion requirement in the AR architecture. Physical Android visual confirmation remains open. |
 | 2026-10-05 | **US-12 amended (v2.5.3).** Removed Suavizado from Article VII examples and the runtime enum, renderer, controls, and YouTube/MP4 CSS mapping because it duplicated the existing blur family at a weaker setting. Desenfoque, Pasteles, Alta saturación, and the other families remain; forbidden filters stay forbidden. |
 | 2026-10-05 | **BUG-10 portrait orientation.** Flutter requests `portraitUp` before `runApp`; Android and iOS declarations allow upright portrait only. iPad multitasking is disabled to enforce that orientation list. Analyzer, all Flutter tests, and Android debug build pass; iOS build unavailable on Windows. |
 | 2026-10-05 | **US-12 amended (v2.5.2).** Removed Pixelado from Article VII, the runtime enum/renderer, archive controls, and YouTube/MP4 filter choices because it could not work consistently on YouTube playback. Removed its preview-only warning and updated US-12, BUG-04, README, and performance notes. Other allowed families and forbidden-filter constraints are unchanged. |
@@ -421,7 +428,6 @@ Rules of thumb:
 | 2026-09-26 | **BUG-07 code.** Pause/resume now follows a successfully started clip, so Jugador's `idle` is controllable immediately and a failed/static clip cannot expose a misleading control. Model changes clear paused/celebration state before attaching the selected model; revision checks discard stale async clip results. Added direct tracker-seam and widget regressions for idle pause/resume, stadium/player switching, and fresh idle state. |
 | 2026-09-26 | **BUG-06 done.** Replaced Activity-window-only PixelCopy (which misses the AR plugin's separate GL surface) with the plugin's native AR-scene snapshot plus a transparent Flutter chrome capture, composed natively before MediaStore save. Added blank-input rejection and pre-snapshot API gating. Analyze, 12 focused AR tests, and Android debug build pass. Two captures from M2012K10C / Android 13 were pulled from Pictures and visually confirmed to contain the live scene, model, and controls. |
 | 2026-09-26 | **AR regression triage.** Split three reported US-20 failures into independent pending items: BUG-06 blank gallery captures, BUG-07 pause/resume coverage for supported clips including idle (no new stadium animation), and BUG-08 AR camera recovery after screen lock/background. Ordered one-at-a-time; no implementation changed. |
-| 2026-09-26 | **US-20 / D-26.** Added animation pause/resume at the current clip frame, Android PixelCopy → MediaStore AR photos, and four independently triggered scene-graph particle presets (Jonrón, Chispas, Confeti, Polvo). Added bounded GLBs and updated the pinned-plugin patch and governance. `flutter analyze`, all 12 focused AR tests, and `flutter build apk --debug` pass; photo capture later passed physical review under BUG-06, animation/effect device acceptance remains open. |
 
 ## 8. How to work
 
@@ -436,7 +442,8 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 > Next: BUG-08 device acceptance — five Android lock-screen cycles and five
 > background/foreground cycles with no black preview, duplicate session, or
-> crash. The portrait-only orientation request is complete (BUG-10).
+> crash. BUG-11's four particle presets also need physical Android visual
+> confirmation. The portrait-only orientation request is complete (BUG-10).
 
 _(The human edits this line each session. Leave it pointing at the next item
 when you finish.)_

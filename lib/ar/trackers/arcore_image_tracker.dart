@@ -14,6 +14,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:vector_math/vector_math_64.dart' show Vector3;
 
 import '../ar_tracker.dart';
+import '../particle_motion.dart';
 
 /// Composes the authored model orientation onto ARCore's image pose.
 ///
@@ -395,7 +396,6 @@ class ArCoreImageTracker implements ArTracker {
       _applyEffectTransforms(
         transformation,
         progress: _effectProgress,
-        effect: effect,
       );
     }
     _detections.add(
@@ -495,15 +495,19 @@ class ArCoreImageTracker implements ArTracker {
     var placed = 0;
     for (var i = 0; i < count; i++) {
       final angle = (i / count) * math.pi * 2 + rng.nextDouble() * 0.35;
-      final particle = _particleMotion(effect, angle, rng);
+      final motion = ArParticleMotion.forEffect(
+        effect: effect,
+        angle: angle,
+        random: rng,
+      );
       final node = ARNode(
         type: NodeType.localGLB,
         uri: glbAsset,
         name: '${effectNodeName(trackerName)}_$i',
         transformation: _particleWorldPose(
           pose,
-          particle.start,
-          scale: particle.scale,
+          motion.start,
+          scale: motion.scale * 0.45,
         ),
       );
       bool added;
@@ -516,10 +520,7 @@ class ArCoreImageTracker implements ArTracker {
       _effectParticles.add(
         _EffectParticle(
           node: node,
-          start: particle.start,
-          velocity: particle.velocity,
-          spin: particle.spin,
-          scale: particle.scale,
+          motion: motion,
         ),
       );
       placed += 1;
@@ -531,37 +532,6 @@ class ArCoreImageTracker implements ArTracker {
     return true;
   }
 
-  ({Vector3 start, Vector3 velocity, double spin, double scale})
-      _particleMotion(ArParticleEffect effect, double angle, math.Random rng) {
-    final radial = Vector3(math.cos(angle), 0, math.sin(angle));
-    return switch (effect) {
-      ArParticleEffect.jonron => (
-          start: Vector3(radial.x * 0.006, 0.03, radial.z * 0.006),
-          velocity: Vector3(radial.x * 0.07, 0.10, radial.z * 0.07),
-          spin: (rng.nextDouble() - 0.5) * 8,
-          scale: 0.55,
-        ),
-      ArParticleEffect.chispas => (
-          start: Vector3(radial.x * 0.008, 0.02, radial.z * 0.008),
-          velocity: Vector3(radial.x * 0.025, 0.15, radial.z * 0.025),
-          spin: (rng.nextDouble() - 0.5) * 18,
-          scale: 0.72,
-        ),
-      ArParticleEffect.confeti => (
-          start: Vector3(radial.x * 0.018, 0.05, radial.z * 0.018),
-          velocity: Vector3(radial.x * 0.045, 0.025, radial.z * 0.045),
-          spin: (rng.nextDouble() - 0.5) * 24,
-          scale: 0.8,
-        ),
-      ArParticleEffect.polvoDelDiamante => (
-          start: Vector3(radial.x * 0.012, 0.006, radial.z * 0.012),
-          velocity: Vector3(radial.x * 0.03, 0.018, radial.z * 0.03),
-          spin: (rng.nextDouble() - 0.5) * 3,
-          scale: 0.9,
-        ),
-    };
-  }
-
   @override
   void updateEffect(double progress) {
     _effectProgress = progress.clamp(0.0, 1.0);
@@ -569,11 +539,7 @@ class ArCoreImageTracker implements ArTracker {
     if (name == null || _effectParticles.isEmpty) return;
     final pose = _poses[name];
     if (pose == null) return;
-    _applyEffectTransforms(
-      pose,
-      progress: _effectProgress,
-      effect: _activeParticleEffect!,
-    );
+    _applyEffectTransforms(pose, progress: _effectProgress);
   }
 
   @override
@@ -597,36 +563,17 @@ class ArCoreImageTracker implements ArTracker {
   void _applyEffectTransforms(
     Matrix4 imagePose, {
     required double progress,
-    required ArParticleEffect effect,
   }) {
-    // Hold nearly full size, then shrink away in the last quarter.
-    final fade = progress < 0.72
-        ? 1.0
-        : (1.0 - ((progress - 0.72) / 0.28)).clamp(0.0, 1.0);
-    final scale = (0.4 +
-            0.7 * Curves.easeOut.transform(progress.clamp(0.0, 0.35) / 0.35)) *
-        fade;
-    // Soften scale near zero so Filament does not keep a speck.
-    final visibleScale = fade <= 0.02 ? 0.001 : scale;
-
+    const durationSeconds = 2.8;
+    final elapsedSeconds = progress * durationSeconds;
     for (final particle in _effectParticles) {
-      final wobble = math.sin(progress * math.pi * 4 + particle.spin) * 0.006;
-      final gravity = effect == ArParticleEffect.confeti ? -0.055 : 0.0;
-      final dustDrop =
-          effect == ArParticleEffect.polvoDelDiamante ? -0.004 : 0.0;
-      final drift = Vector3(
-        particle.start.x + particle.velocity.x * progress + wobble,
-        particle.start.y +
-            particle.velocity.y * progress +
-            gravity * progress * progress +
-            dustDrop * progress,
-        particle.start.z + particle.velocity.z * progress - wobble * 0.5,
-      );
+      final motion = particle.motion;
+      final particleScale = motion.scaleAt(elapsedSeconds);
       particle.node.transform = _particleWorldPose(
         imagePose,
-        drift,
-        scale: particle.scale * visibleScale,
-        yaw: particle.spin * progress,
+        motion.positionAt(elapsedSeconds),
+        scale: particleScale < 0.01 ? 0.001 : particleScale,
+        yaw: motion.yawAt(elapsedSeconds),
       );
     }
   }
@@ -831,17 +778,11 @@ class ArCoreImageTracker implements ArTracker {
 class _EffectParticle {
   _EffectParticle({
     required this.node,
-    required this.start,
-    required this.velocity,
-    required this.spin,
-    required this.scale,
+    required this.motion,
   });
 
   final ARNode node;
-  final Vector3 start;
-  final Vector3 velocity;
-  final double spin;
-  final double scale;
+  final ArParticleMotion motion;
 }
 
 class _ArCoreSurface extends StatelessWidget {
