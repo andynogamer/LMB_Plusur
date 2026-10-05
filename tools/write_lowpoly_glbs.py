@@ -839,9 +839,9 @@ def write_player(path: Path, primary: Color, secondary: Color) -> tuple[int, tup
 def write_efecto_jonron(path: Path) -> tuple[int, tuple[list[float], list[float]]]:
     """One baseball for US-13. Dart spawns several nodes and animates them."""
     mesh = Mesh()
-    ball = (0.96, 0.96, 0.92, 1.0)
-    stitch = (0.86, 0.10, 0.12, 1.0)
-    seam = (0.78, 0.78, 0.74, 1.0)
+    ball = (1.0, 0.99, 0.94, 1.0)
+    stitch = (0.96, 0.16, 0.19, 1.0)
+    seam = (0.88, 0.86, 0.80, 1.0)
     r = 0.009
     mesh.sphere(0.0, 0.0, 0.0, r, ball, segments=12)
     # Classic horseshoe stitches (thin curved strips approximated by boxes).
@@ -871,9 +871,10 @@ def write_efecto_jonron(path: Path) -> tuple[int, tuple[list[float], list[float]
                 "name": "vertexColor",
                 "pbrMetallicRoughness": {
                     "baseColorFactor": [1, 1, 1, 1],
-                    "metallicFactor": 0.04,
-                    "roughnessFactor": 0.62,
+                    "metallicFactor": 0.0,
+                    "roughnessFactor": 0.82,
                 },
+                "emissiveFactor": [0.12, 0.12, 0.10],
             }
         ],
         "accessors": accessors,
@@ -894,12 +895,13 @@ def write_particle_shape(path: Path, kind: str) -> tuple[int, tuple[list[float],
             angle = math.pi * 2 * i / 10
             radius = 0.012 if i % 2 == 0 else 0.0045
             points.append((math.cos(angle) * radius, math.sin(angle) * radius))
-        mesh.extrude_xz(points, -0.0015, 0.0015, (0.98, 0.76, 0.16, 1.0))
+        mesh.extrude_xz(points, -0.0015, 0.0015, (1.0, 0.86, 0.24, 1.0))
     elif kind == "confeti":
         colors = (
-            (0.82, 0.12, 0.16, 1.0),
-            (0.12, 0.54, 0.30, 1.0),
-            (0.96, 0.78, 0.18, 1.0),
+            (0.96, 0.18, 0.22, 1.0),
+            (0.18, 0.72, 0.36, 1.0),
+            (1.0, 0.82, 0.28, 1.0),
+            (1.0, 0.96, 0.82, 1.0),
         )
         for i, color in enumerate(colors):
             x = (i - 1) * 0.005
@@ -907,9 +909,9 @@ def write_particle_shape(path: Path, kind: str) -> tuple[int, tuple[list[float],
             mesh.box(x - 0.002, -0.001, z - 0.006, x + 0.002, 0.001, z + 0.006, color)
     elif kind == "polvo_diamante":
         colors = (
-            (0.60, 0.38, 0.20, 1.0),
-            (0.78, 0.58, 0.34, 1.0),
-            (0.48, 0.30, 0.16, 1.0),
+            (0.82, 0.62, 0.38, 1.0),
+            (0.96, 0.78, 0.52, 1.0),
+            (0.74, 0.49, 0.28, 1.0),
         )
         for i, color in enumerate(colors):
             x = (i - 1) * 0.005
@@ -933,9 +935,14 @@ def write_particle_shape(path: Path, kind: str) -> tuple[int, tuple[list[float],
                 "name": "vertexColor",
                 "pbrMetallicRoughness": {
                     "baseColorFactor": [1, 1, 1, 1],
-                    "metallicFactor": 0.02,
-                    "roughnessFactor": 0.7,
+                    "metallicFactor": 0.0,
+                    "roughnessFactor": 0.86,
                 },
+                "emissiveFactor": {
+                    "chispas": [0.24, 0.17, 0.03],
+                    "confeti": [0.10, 0.09, 0.06],
+                    "polvo_diamante": [0.16, 0.10, 0.045],
+                }[kind],
             }
         ],
         "accessors": accessors,

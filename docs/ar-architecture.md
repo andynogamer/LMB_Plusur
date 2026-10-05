@@ -317,7 +317,12 @@ presets: **Jonrón** (baseball burst), **Chispas** (gold sparks), **Confeti**
 (team-color confetti), and **Polvo del diamante** (infield dust). A user
 selects them through separate AR controls; only one effect is active at once.
 Animation playback never starts, stops, or selects an effect. Each effect is
-bounded to six lightweight particle nodes and follows the tracked pose.
+bounded to six lightweight particle nodes and follows the tracked pose. Its
+vertex colors and material emission must remain bright and hue-faithful under
+scene lighting. Motion is time-based and preset-specific: Jonrón and Chispas
+arc outward and fall, Confeti flutters while descending, and Polvo del diamante
+spreads low with a slow drift. Particles grow into view and fade out before
+their bounded effect ends; they must not remain as static or dark specks.
 
 ---
 
@@ -587,4 +592,6 @@ docs/
       claims iOS support in the Android-only US-20 implementation.
 - [ ] Four distinct particle presets are independently selectable from model
       animation controls and obey the one-effect/six-node limits.
+- [ ] Particle materials stay bright and color-faithful, and each preset has
+      its documented, time-based motion and fade-out.
 - [ ] `flutter analyze` clean on touched files.

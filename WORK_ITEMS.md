@@ -60,6 +60,7 @@
 | BUG-08 | 🐛 | 🔴 P0 | Restore AR camera after returning to the app | ◐ | AR lifecycle |
 | BUG-09 | 🐛 | 🟠 P1 | Use Piratas' stadium model as the AR default | ☑ | AR model |
 | BUG-10 | 🐛 | 🟡 P2 | Lock the app to upright portrait orientation | ☑ | Platform / UI |
+| BUG-11 | 🐛 | 🟠 P1 | Brighten and naturalize AR particle effects | ◐ | AR VFX |
 | US-18 | 📗 | 🟠 P1 | Select stadium or player model after AR lock | ☑ | AR depth |
 | US-19 | 📗 | 🟠 P1 | Lay AR model parallel to scanned logo | ☑ | AR depth |
 | US-20 | 📗 | 🟠 P1 | Pause animation, save AR photos, and trigger four independent particle effects | ◐ | AR interaction / capture |
@@ -1200,6 +1201,9 @@ Criterios de aceptación:
 - All four named effects can be triggered individually without starting or
   changing a model animation. Switching effects leaves no previous effect
   nodes attached, does not exceed 6 particle nodes, and keeps the session live.
+- Particle colors stay bright and hue-faithful, and each effect follows its
+  distinct time-based path with a clear fade-out rather than remaining dark or
+  static.
 - The AR camera platform view is not rebuilt by action taps. No UI advertises
   the Android-only photo path on iOS.
 - Widget/unit tests cover paused/resumed clip requests, all four effect
@@ -1306,3 +1310,43 @@ from unrelated platform configuration.
 Android's main activity and iOS supported orientations also restrict the app
 to portrait. iPad multitasking is disabled so iPad orientation restrictions
 are honored. No layout, AR, or filter behavior changed.
+
+## BUG-11 · 🐛 · 🟠 P1 · Brighten and naturalize AR particle effects · ◐ Código listo
+
+**Prompt**
+```
+Contexto: Physical review reports that all four US-20 in-scene particle
+effects look dark, oddly colored, or too static. Keep the existing four named
+presets, six-node maximum, and one-effect-at-a-time tracker contract.
+
+Tarea: Improve material brightness and preserve each preset's intended color.
+Replace linear placeholder drift with time-based, preset-specific trajectories:
+baseball/sparks arc and fall, confetti flutters and descends, and infield dust
+spreads low. Grow particles into view and fade them before the effect ends.
+Keep the implementation in the tracker scene graph and its procedural GLB
+generator; do not add nodes or screen-space substitutes.
+
+Criterios de aceptación:
+- All four generated effect materials use bright, readable colors under scene
+  lighting; colors remain coherent with the named effect.
+- Motion is distinct and time-based per preset; no preset is a static cluster
+  or an identical linear drift.
+- Particles scale in and fade out; six-node / one-effect limits still hold.
+- Tests cover representative trajectories and lifecycle; `flutter analyze` and
+  focused AR tests pass.
+- Inspect all four effects on a physical Android AR session; report any device
+  rendering limitation rather than claiming visual acceptance from unit tests.
+
+Archivos: `tools/write_lowpoly_glbs.py`, `assets/models/efecto_*/modelo.glb`,
+`lib/ar/particle_motion.dart`, `lib/ar/trackers/arcore_image_tracker.dart`,
+AR tests, `docs/ar-architecture.md`, `docs/agent-handoff.md`
+
+Fuera de alcance: ARCore/plugin/native changes, camera or marker changes,
+screen-space VFX, increasing particle counts, animation changes, or video
+filters.
+```
+
+**Código actualizado 2026-10-05:** Brightened the vertex palettes and added
+material emission to the four generated GLBs. Tracker motion now uses
+preset-specific velocity, acceleration, flutter/spin, per-particle lifetime,
+scale-in, and fade-out. Physical Android visual acceptance remains open.
