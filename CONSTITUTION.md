@@ -671,10 +671,12 @@ MUST NOT:
    to “cover” the other seven clubs, and do not write a matcher.
 2. **In-session 3D is coded, not device-checked (AR-06).** `attachModel`
    places a per-marker GLB on the fully-tracked pose. Leones uses the
-   stadium mesh; Olmecas uses the player mesh; Piratas is still the
-   trophy box. Do not put a WebView on the camera. Still open: model
-   holds on the card, and enter/leave AR 5 times does not crash. Plugin
-   1.1.3 hardcodes width at 0.2 m and never ticks Filament clips. After
+   stadium mesh; Olmecas uses the player mesh; Piratas now defaults to its
+   D-22 stadium GLB (BUG-09). Its former marker-specific trophy model rendered
+   as a black/glitched rectangle and was replaced. Do not put a WebView on the
+   camera. Still open: model holds on the card, and enter/leave AR 5 times does
+   not crash. Plugin 1.1.3 hardcodes width at 0.2 m and never ticks Filament
+   clips. After
    `flutter pub get` re-run `tools/patch_arcore_image_width.ps1` and
    `tools/patch_filament_clips.ps1`. Do not bump the pin and do not write
    a matcher. AR-07 buttons are coded, not confirmed on a device.

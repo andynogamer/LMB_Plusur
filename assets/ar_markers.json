@@ -30,7 +30,7 @@
     "titulo": "Serie del Rey",
     "infoTexto": "Los Piratas de Campeche, nombrados por la historia corsaria del puerto amurallado, fueron campeones de la Liga Mexicana de Béisbol en 1983 y 2004. Juegan de local en el Estadio Nelson Barrera Romellón.",
     "markerImage": "assets/markers/marcador_trofeo_piratas.png",
-    "modelAsset": "assets/models/marcador_trofeo_piratas/modelo.glb",
+    "modelAsset": "assets/models/piratas_campeche/estadio.glb",
     "anchoMetros": 0.15,
     "videoUrl": null,
     "animaciones": []

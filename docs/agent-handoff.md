@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-09-26 · by: BUG-07 device accepted; BUG-08 code
+**Last updated:** 2026-10-05 · by: BUG-09 Piratas model default
 
 ---
 
@@ -97,9 +97,12 @@ Measured later, four of them were. **Never copy code from that branch.**
 - AR-06 (code) — On `ArLocked`, `attachModel` places that marker's GLB on the
   last fully-tracked pose and moves the node with later poses. A missing or
   failed file shows Spanish overlay copy; the session stays up. No
-  `model_viewer_plus`. Scan-path models: Leones = low-poly stadium, Olmecas =
-  low-poly player, Piratas = trophy box. Device hold-to-card and the 5×
-  enter/leave run are not done.
+  `model_viewer_plus`. Scan-path defaults: Leones = low-poly stadium, Olmecas =
+  low-poly player, Piratas = D-22 stadium (BUG-09 replaced the black/glitched
+  marker-specific trophy model). Human-tested 2026-10-05: Piratas stadium now
+  displays correctly. The post-lock selector still offers stadium and player;
+  player visual confirmation, hold-to-card, and the 5× enter/leave run remain
+  open.
 - AR-07 (code) — Actions exist only in `ArLocked`. **Celebración** plays
   `celebracion` then idle. **Información** reads `titulo` / `infoTexto`, speaks
   them (TTS es-MX), and runs one 360° yaw. Stadium and trophy `animaciones`
@@ -404,6 +407,7 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-10-05 | **BUG-09 device accepted.** Human confirmed the Piratas D-22 stadium GLB displays correctly as the marker default, replacing the black/glitched trophy rectangle. Data and locked-state attachment regressions pass. Player visual confirmation and broader AR-06 hold/enter/leave checks remain open. |
 | 2026-09-26 | **BUG-07 done on device.** Pause/resume covers supported clips including idle; static stadiums stay without a fake pause control. |
 | 2026-09-26 | **BUG-08 code.** Screen observes `paused`/`hidden`/`resumed` only (not `inactive`). Controller parks `ArLocked` as `ArLost`, re-subscribes detections after tracker resume, and maps a failed restore to `ArFailed(sessionLost)`. Tracker talks to `pauseSession`/`resumeSession` on the pinned plugin after a third post-`pub get` patch. Tests use bounded pumps, not `runAsync` wait-forever loops. Device 5× still open. |
 | 2026-09-26 | **BUG-07 code.** Pause/resume now follows a successfully started clip, so Jugador's `idle` is controllable immediately and a failed/static clip cannot expose a misleading control. Model changes clear paused/celebration state before attaching the selected model; revision checks discard stale async clip results. Added direct tracker-seam and widget regressions for idle pause/resume, stadium/player switching, and fresh idle state. |
@@ -413,7 +417,6 @@ Rules of thumb:
 | 2026-09-21 | **BUG-05.** Added the ten supplied club-history image URLs to `assets/data.json`, mapped `historiaImagenUrl` into `Equipo`, and replaced Historia's generic card with a cached network image plus the existing safe fallback. Added data coverage tests. |
 | 2026-09-21 | **Release 1.0.1+2.** Bumped the Android app version and rebuilt the release APK after adding Historia images. |
 | 2026-09-19 | **US-15 packaging refinement.** Generated Android launcher icons from the authored LMB logo using a centered square crop across mdpi, hdpi, xhdpi, xxhdpi and xxxhdpi. Release APK remains on the existing debug-signing class-demo path. |
-| 2026-09-19 | **US-09 / US-02 refinement.** Replaced the random/infinite stats counter with a deterministic plate-appearance simulator: three outs per half-inning, runners, hits, runs and final-game logic. Removed the redundant AR entry from the already-selected team menu; the main shell remains the scanner entry. `flutter analyze` and focused tests pass. |
 
 ## 8. How to work
 
@@ -428,7 +431,8 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 > Next: BUG-08 device acceptance — five Android lock-screen cycles and five
 > background/foreground cycles with no black preview, duplicate session, or
-> crash.
+> crash. Separately requested follow-ups (portrait-only orientation and the
+> Pixelado spec amendment/removal) require their own work items and branches.
 
 _(The human edits this line each session. Leave it pointing at the next item
 when you finish.)_
