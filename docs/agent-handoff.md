@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-10-05 · by: US-12 Pixelado removal
+**Last updated:** 2026-10-05 · by: BUG-10 portrait orientation
 
 ---
 
@@ -107,6 +107,10 @@ Measured later, four of them were. **Never copy code from that branch.**
   `celebracion` then idle. **Información** reads `titulo` / `infoTexto`, speaks
   them (TTS es-MX), and runs one 360° yaw. Stadium and trophy `animaciones`
   are empty. Device confirmation not run.
+- BUG-10 — Flutter requests `portraitUp` before `runApp`; Android and iOS
+  platform declarations restrict the app to upright portrait. iPad
+  multitasking is disabled so iPad honors its portrait-only orientation list.
+  Device-wide settings and the existing vertical UI are unchanged.
 - **D-22 catalog (code)** — 10 static `estadio.glb` + 10 `jugador.glb` under
   `assets/models/<club_id>/`. Shared mesh family from
   `tools/write_lowpoly_glbs.py`. Players: clips `idle` (3 s), `gesto`
@@ -408,6 +412,7 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-10-05 | **BUG-10 portrait orientation.** Flutter requests `portraitUp` before `runApp`; Android and iOS declarations allow upright portrait only. iPad multitasking is disabled to enforce that orientation list. Analyzer, all Flutter tests, and Android debug build pass; iOS build unavailable on Windows. |
 | 2026-10-05 | **US-12 amended (v2.5.2).** Removed Pixelado from Article VII, the runtime enum/renderer, archive controls, and YouTube/MP4 filter choices because it could not work consistently on YouTube playback. Removed its preview-only warning and updated US-12, BUG-04, README, and performance notes. Other allowed families and forbidden-filter constraints are unchanged. |
 | 2026-10-05 | **BUG-09 device accepted.** Human confirmed the Piratas D-22 stadium GLB displays correctly as the marker default, replacing the black/glitched trophy rectangle. Data and locked-state attachment regressions pass. Player visual confirmation and broader AR-06 hold/enter/leave checks remain open. |
 | 2026-09-26 | **BUG-07 done on device.** Pause/resume covers supported clips including idle; static stadiums stay without a fake pause control. |
@@ -417,7 +422,6 @@ Rules of thumb:
 | 2026-09-26 | **AR regression triage.** Split three reported US-20 failures into independent pending items: BUG-06 blank gallery captures, BUG-07 pause/resume coverage for supported clips including idle (no new stadium animation), and BUG-08 AR camera recovery after screen lock/background. Ordered one-at-a-time; no implementation changed. |
 | 2026-09-26 | **US-20 / D-26.** Added animation pause/resume at the current clip frame, Android PixelCopy → MediaStore AR photos, and four independently triggered scene-graph particle presets (Jonrón, Chispas, Confeti, Polvo). Added bounded GLBs and updated the pinned-plugin patch and governance. `flutter analyze`, all 12 focused AR tests, and `flutter build apk --debug` pass; photo capture later passed physical review under BUG-06, animation/effect device acceptance remains open. |
 | 2026-09-21 | **BUG-05.** Added the ten supplied club-history image URLs to `assets/data.json`, mapped `historiaImagenUrl` into `Equipo`, and replaced Historia's generic card with a cached network image plus the existing safe fallback. Added data coverage tests. |
-| 2026-09-21 | **Release 1.0.1+2.** Bumped the Android app version and rebuilt the release APK after adding Historia images. |
 
 ## 8. How to work
 
@@ -432,7 +436,7 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 > Next: BUG-08 device acceptance — five Android lock-screen cycles and five
 > background/foreground cycles with no black preview, duplicate session, or
-> crash. Portrait-only orientation remains separately scoped.
+> crash. The portrait-only orientation request is complete (BUG-10).
 
 _(The human edits this line each session. Leave it pointing at the next item
 when you finish.)_
