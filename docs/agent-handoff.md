@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-10-05 · by: BUG-10 portrait orientation
+**Last updated:** 2026-10-05 · by: US-12 Suavizado removal
 
 ---
 
@@ -20,7 +20,7 @@ These are **binding**, not advisory:
 
 | # | File | What it gives you |
 |---|---|---|
-| 1 | `CONSTITUTION.md` | Governance, v2.5.2, decisions D-01…D-27 |
+| 1 | `CONSTITUTION.md` | Governance, v2.5.3, decisions D-01…D-27 |
 | 2 | `AGENTS.md` | How to work here (auto-loaded as a workspace rule) |
 | 3 | `WORK_ITEMS.md` | The backlog. Each item's `Prompt` block **is** the spec |
 | 4 | `docs/ar-postmortem.md` | Why AR attempt #1 was thrown away (RC-1…RC-7) |
@@ -189,9 +189,9 @@ Measured later, four of them were. **Never copy code from that branch.**
   YouTube playback. Direct MP4 URLs still use the fully filtered
   `video_player` path. Do not restore `DemoHighlights`. Some clubs share a
   video id (human-supplied list).
-- US-12 — Blur, thermal, color adjustment, and custom filters (soft, pastels,
-  high saturation) are allowed. Pixelado is removed; forbidden filters remain
-  absent.
+- US-12 — Blur, thermal, color adjustment, and custom filters (pastels, high
+  saturation) are allowed. Pixelado and redundant Suavizado are removed;
+  forbidden filters remain absent.
 - AR-00 / D-23 — scan targets are **logos**, not substitute cards. Gate is
   **≥ 75**, not 90. Active: Leones 100, Olmecas 100, Piratas 100, Bravos 90,
   Tigres **raw JPEG** 75, Diablos flame logo **80**, Guerreros shield logo
@@ -412,6 +412,7 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-10-05 | **US-12 amended (v2.5.3).** Removed Suavizado from Article VII examples and the runtime enum, renderer, controls, and YouTube/MP4 CSS mapping because it duplicated the existing blur family at a weaker setting. Desenfoque, Pasteles, Alta saturación, and the other families remain; forbidden filters stay forbidden. |
 | 2026-10-05 | **BUG-10 portrait orientation.** Flutter requests `portraitUp` before `runApp`; Android and iOS declarations allow upright portrait only. iPad multitasking is disabled to enforce that orientation list. Analyzer, all Flutter tests, and Android debug build pass; iOS build unavailable on Windows. |
 | 2026-10-05 | **US-12 amended (v2.5.2).** Removed Pixelado from Article VII, the runtime enum/renderer, archive controls, and YouTube/MP4 filter choices because it could not work consistently on YouTube playback. Removed its preview-only warning and updated US-12, BUG-04, README, and performance notes. Other allowed families and forbidden-filter constraints are unchanged. |
 | 2026-10-05 | **BUG-09 device accepted.** Human confirmed the Piratas D-22 stadium GLB displays correctly as the marker default, replacing the black/glitched trophy rectangle. Data and locked-state attachment regressions pass. Player visual confirmation and broader AR-06 hold/enter/leave checks remain open. |
@@ -421,7 +422,6 @@ Rules of thumb:
 | 2026-09-26 | **BUG-06 done.** Replaced Activity-window-only PixelCopy (which misses the AR plugin's separate GL surface) with the plugin's native AR-scene snapshot plus a transparent Flutter chrome capture, composed natively before MediaStore save. Added blank-input rejection and pre-snapshot API gating. Analyze, 12 focused AR tests, and Android debug build pass. Two captures from M2012K10C / Android 13 were pulled from Pictures and visually confirmed to contain the live scene, model, and controls. |
 | 2026-09-26 | **AR regression triage.** Split three reported US-20 failures into independent pending items: BUG-06 blank gallery captures, BUG-07 pause/resume coverage for supported clips including idle (no new stadium animation), and BUG-08 AR camera recovery after screen lock/background. Ordered one-at-a-time; no implementation changed. |
 | 2026-09-26 | **US-20 / D-26.** Added animation pause/resume at the current clip frame, Android PixelCopy → MediaStore AR photos, and four independently triggered scene-graph particle presets (Jonrón, Chispas, Confeti, Polvo). Added bounded GLBs and updated the pinned-plugin patch and governance. `flutter analyze`, all 12 focused AR tests, and `flutter build apk --debug` pass; photo capture later passed physical review under BUG-06, animation/effect device acceptance remains open. |
-| 2026-09-21 | **BUG-05.** Added the ten supplied club-history image URLs to `assets/data.json`, mapped `historiaImagenUrl` into `Equipo`, and replaced Historia's generic card with a cached network image plus the existing safe fallback. Added data coverage tests. |
 
 ## 8. How to work
 

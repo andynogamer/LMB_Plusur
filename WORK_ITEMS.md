@@ -1,6 +1,6 @@
 ﻿# LMB Plusur — Work Items para Agentes
 
-> Backlog under Constitution **v2.5.2** (decisions D-01…D-27 + professor
+> Backlog under Constitution **v2.5.3** (decisions D-01…D-27 + professor
 > checklist). Each item is a **copy-paste prompt**. One item per branch/PR.
 > Format: contexto → tarea → criterios de aceptación → archivos → fuera de alcance.
 >
@@ -44,7 +44,7 @@
 | US-09 | 📗 | 🟠 P1 | Simulated live stats in AR / team | ☑ | Actions |
 | US-10 | 📗 | 🟠 P1 | Multiple AR modes (galería / trivia / video) | ☑ | Bonus + modes |
 | US-11 | 📗 | 🔴 P0 | Video archive UI (remote URLs) | ☑ | Videos |
-| US-12 | 📗 | 🔴 P0 | Video filters — allowed set without Pixelado | ☑ | Filters |
+| US-12 | 📗 | 🔴 P0 | Video filters — allowed set without Pixelado or Suavizado | ☑ | Filters |
 | US-13 | 📗 | 🟠 P1 | Baseball-coherent 3D animations / VFX | ☑ | 15pt effects |
 | US-14 | 📗 | 🟡 P2 | Performance pass (load / stability) | ☑ | 15pt perf |
 | US-15 | 📗 | 🟡 P2 | Android APK release build | ☑ | Packaging |
@@ -818,13 +818,15 @@ Fuera de alcance: filter pipeline (US-12), downloading entire files for offline.
 **Prompt**
 ```
 Contexto: Constitution Article VII — MUST implement blur, thermal, color
-adjust, and custom (soft / pastel / high saturation). Pixelado was removed by
-the v2.5.2 amendment because it could not be applied consistently to YouTube
-playback. MUST NOT implement B&W, grayscale, sepia, exposure, or invert.
+adjust, and custom (pastel / high saturation). Pixelado was removed by the
+v2.5.2 amendment because it could not be applied consistently to YouTube
+playback. Suavizado was removed by v2.5.3 because it duplicated the blur
+family with a weaker setting, rather than adding a distinct treatment. MUST
+NOT implement B&W, grayscale, sepia, exposure, or invert.
 
 Tarea: On the video player/editor UI, let user preview apply each allowed
 filter family (at least one control per family). Custom section includes
-suavizado, pasteles, alta saturación. Guard code reviews: no forbidden
+pasteles and alta saturación. Guard code reviews: no forbidden
 filters in enums/UI. Prefer on-device fragment shaders or image/video frame
 processing that keeps playback usable on mid Android phones.
 
@@ -911,7 +913,8 @@ Fuera de alcance: rewriting entire architecture.
 **Done in this pass:** video tick no longer rebuilds filters; splash warm-up
 (~1.1 s) instead of a fixed 3 s; logo decode capped; DataService cache; AR
 camera isolated from chrome rebuilds; VFX node/particle counts lowered;
-blur sigmas softened. Did **not** re-encode Águila/Diablos markers (score risk).
+primary blur sigma lowered. Did **not** re-encode Águila/Diablos markers
+(score risk).
 
 ---
 
