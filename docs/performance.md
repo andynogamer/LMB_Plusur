@@ -25,7 +25,7 @@ controllers.
 | `AppLogo` uses `cacheWidth` / `cacheHeight` from display size × DPR | Avoids decoding the full 1920×1080 bitmap for every logo widget. |
 | Video chrome in `ListenableBuilder`; filter+`VideoPlayer` outside tick rebuilds | Blur and color transforms no longer rebuild every frame. |
 | YouTube posters use remote `i.ytimg.com` thumbnails and filters run on the Flutter preview before the WebView mounts | Removes the black poster state and makes filter selection visibly verifiable without trying to repaint an Android platform view. |
-| Slightly softer blur sigmas (2.4 / 0.9) | Cheaper compositor path; look still readable. |
+| Reduced primary blur sigma to 2.4 px | Cheaper compositor path; look still readable. |
 | VFX: four independent particle meshes; at most **6** scene-graph nodes for one selected effect | Preserves the one-effect limit and keeps the Filament budget bounded. |
 | AR camera surface kept outside session/action rebuild tree (`ValueKey`) | Action taps should not tear down the platform view. |
 | `DataService` memoizes equipos / videos / marcadores | Repeat navigations skip JSON parse. |

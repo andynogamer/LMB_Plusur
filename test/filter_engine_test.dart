@@ -13,7 +13,6 @@ void main() {
           'desenfoque',
           'termica',
           'ajusteColor',
-          'suavizado',
           'pasteles',
           'altaSaturacion',
         }));
@@ -23,7 +22,7 @@ void main() {
     );
     expect(
       FilterEngine.personalizados.map(FilterEngine.etiqueta).toSet(),
-      equals({'Suavizado', 'Pasteles', 'Alta saturación'}),
+      equals({'Pasteles', 'Alta saturación'}),
     );
     expect(
       nombres.any(

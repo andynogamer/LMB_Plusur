@@ -17,7 +17,15 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 | [`docs/ar-architecture.md`](./docs/ar-architecture.md) | The AR technical contract: layers, `ArTracker` seam, state machine, error taxonomy, budgets. |
 | [`docs/ar-marker-guide.md`](./docs/ar-marker-guide.md) | How to author printable markers ARCore can actually track. |
 
-**Version**: 2.5.2 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-10-05
+**Version**: 2.5.3 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-10-05
+
+> **v2.5.3 — US-12 Suavizado removal.** Removes Suavizado from the custom
+> filter examples and runtime choices. Its local blur (0.9 px) and CSS
+> `blur(0.9px)` duplicated the existing Desenfoque family with a weaker
+> setting, rather than providing a distinct custom treatment. Retain the
+> primary Desenfoque filter and the distinct Pasteles / Alta saturación
+> treatments. Pixelado remains removed by v2.5.2; all forbidden filters remain
+> forbidden.
 
 > **v2.5.2 — US-12 Pixelado removal.** Reverses Article VII's ratified
 > requirement to provide Pixelado. It worked in local previews and direct MP4
@@ -475,7 +483,7 @@ separate still-photo camera product).
   - Desenfoque (blur)
   - Cámara térmica
   - Ajuste de color
-  - Personalizados: e.g. suavizado, colores pasteles, alta saturación
+  - Personalizados: e.g. colores pasteles, alta saturación
 - **Forbidden filters (MUST NOT ship):**
   - Blanco y negro
   - Escala de grises
@@ -700,8 +708,9 @@ MUST NOT:
    The AR route is `ArScanScreen`. Do not restore the `Timer` or the Guerreros
    default. Scan UI must keep reading `ArSessionState` only.
 5. **Video filters run on archive previews and playback.** Allowed families
-   live in `FilterEngine`; Pixelado was removed in v2.5.2. Do not add blanco y
-   negro, escala de grises, sepia, exposición, or invert.
+   live in `FilterEngine`; Pixelado was removed in v2.5.2 and Suavizado in
+   v2.5.3. Do not add blanco y negro, escala de grises, sepia, exposición, or
+   invert.
 6. **Video archive loads local JSON** (`assets/videos.json`). Playback
    URLs are YouTube watch links (R-03). `HighlightVideoPlayer` uses
    `youtube_player_iframe` for those ids; `video_player` remains for any
@@ -736,7 +745,7 @@ Track fixes via `WORK_ITEMS.md`.
 | ~~D-03 (v2.2.4)~~ | ~~3D = estadios / trofeos / pelotas / jugadores históricos; student- or AI-authored; interactive animations.~~ **Amended by D-22** on `full-project` — required models are stadium + player per club. | ~~Ratified 2026-09-04~~ |
 | D-03 | 3D is student- or AI-authored. On `full-project`: **one stadium and one player per Zona Sur club** (20 GLBs). Shared mesh, team color and crest only. Only the player is animated. | **Amended 2026-09-07** |
 | D-04 | Scholar use OK for marks; logos **not yet collected** — blocking real scan QA until ≥3 markers exist. | **Ratified 2026-09-04** |
-| D-05 | Graded feature = **video catalog + filters** (allowed/forbidden lists). Still photos are out of MVP except for the explicitly scoped scan-locked AR snapshot in US-20 / D-26. | **Amended 2026-09-26** |
+| D-05 | Graded feature = **video catalog + filters** (allowed/forbidden lists). Still photos are out of MVP except for the explicitly scoped scan-locked AR snapshot in US-20 / D-26. The custom filter examples exclude redundant Suavizado (v2.5.3). | **Amended 2026-09-26, 2026-10-05** |
 | D-06 | **No API**; local JSON + assets; media via URLs only. | **Ratified 2026-09-04** |
 | D-07 | Videos/highlights = **remote URLs**. | **Ratified 2026-09-04** |
 | D-08 | **No logins**; optional **last trivia score** on device only. | **Ratified 2026-09-04** |

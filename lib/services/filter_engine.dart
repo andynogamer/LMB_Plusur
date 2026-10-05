@@ -2,7 +2,7 @@ import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 
-/// On-device preview filters for the video archive (Article VII / D-05).
+/// On-device filters for the video archive (Article VII / D-05).
 ///
 /// Allowed families only. Do not add blanco y negro, escala de grises,
 /// sepia, exposición, or invert — those are forbidden.
@@ -11,7 +11,6 @@ enum FiltroPartido {
   desenfoque,
   termica,
   ajusteColor,
-  suavizado,
   pasteles,
   altaSaturacion,
 }
@@ -24,7 +23,6 @@ abstract final class FilterEngine {
   ];
 
   static const List<FiltroPartido> personalizados = [
-    FiltroPartido.suavizado,
     FiltroPartido.pasteles,
     FiltroPartido.altaSaturacion,
   ];
@@ -35,7 +33,6 @@ abstract final class FilterEngine {
       FiltroPartido.desenfoque => 'Desenfoque',
       FiltroPartido.termica => 'Cámara térmica',
       FiltroPartido.ajusteColor => 'Ajuste de color',
-      FiltroPartido.suavizado => 'Suavizado',
       FiltroPartido.pasteles => 'Pasteles',
       FiltroPartido.altaSaturacion => 'Alta saturación',
     };
@@ -55,10 +52,6 @@ abstract final class FilterEngine {
         ),
       FiltroPartido.ajusteColor => ColorFiltered(
           colorFilter: const ColorFilter.matrix(_luzEstadio),
-          child: child,
-        ),
-      FiltroPartido.suavizado => ImageFiltered(
-          imageFilter: ImageFilter.blur(sigmaX: 0.9, sigmaY: 0.9),
           child: child,
         ),
       FiltroPartido.pasteles => ColorFiltered(
@@ -84,7 +77,6 @@ abstract final class FilterEngine {
         'saturate(2.4) contrast(1.25) hue-rotate(145deg)',
       FiltroPartido.ajusteColor =>
         'brightness(1.08) saturate(1.2) contrast(1.08)',
-      FiltroPartido.suavizado => 'blur(0.9px)',
       FiltroPartido.pasteles => 'brightness(1.18) saturate(0.72) contrast(0.9)',
       FiltroPartido.altaSaturacion => 'saturate(1.85)',
     };
