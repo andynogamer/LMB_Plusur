@@ -741,6 +741,34 @@ class ArCoreImageTracker implements ArTracker {
   }
 
   @override
+  Future<void> clearModel() async {
+    final objects = _objects;
+    final nodes = Map<String, ARNode>.of(_nodes);
+    if (nodes.isNotEmpty && objects == null) {
+      throw const ArTrackerException(ArTrackerFailure.sessionLost);
+    }
+    for (final entry in nodes.entries) {
+      try {
+        final removed = await objects!.removeNode(entry.value);
+        if (removed != true) {
+          throw ArTrackerException(
+            ArTrackerFailure.sessionLost,
+            'Could not remove AR model node ${entry.key}',
+          );
+        }
+      } on ArTrackerException {
+        rethrow;
+      } on Object catch (error) {
+        throw ArTrackerException(ArTrackerFailure.sessionLost, error);
+      }
+      _nodes.remove(entry.key);
+      _nodeAssets.remove(entry.key);
+    }
+    modelAttach = null;
+    _presentationYaw = 0;
+  }
+
+  @override
   Future<void> stop() async {
     _stopped = true;
     await clearEffect();

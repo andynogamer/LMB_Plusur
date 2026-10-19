@@ -32,6 +32,7 @@ class FakeArTracker implements ArTracker {
   List<ArReferenceImage> _references = const [];
   bool _stopped = false;
   bool stopCalled = false;
+  int startCallCount = 0;
 
   /// Names emitted by [emitRegisteredCycle], in order.
   final List<String> cycledNames = [];
@@ -49,6 +50,8 @@ class FakeArTracker implements ArTracker {
   final List<({String trackerName, String glbAsset, ArParticleEffect effect})>
   attachedEffects = [];
   final List<({String trackerName, String glbAsset})> attachedModels = [];
+  final Map<String, String> activeModels = {};
+  int clearModelCount = 0;
   int clearEffectCount = 0;
   int capturePhotoCount = 0;
   final List<Uint8List> capturedPhotoOverlays = [];
@@ -78,6 +81,7 @@ class FakeArTracker implements ArTracker {
     }
     _references = List<ArReferenceImage>.unmodifiable(references);
     _stopped = false;
+    startCallCount += 1;
   }
 
   @override
@@ -99,8 +103,17 @@ class FakeArTracker implements ArTracker {
     required String glbAsset,
   }) async {
     attachedModels.add((trackerName: trackerName, glbAsset: glbAsset));
+    activeModels[trackerName] = glbAsset;
     activeClips.remove(trackerName);
     pausedClips.remove(trackerName);
+  }
+
+  @override
+  Future<void> clearModel() async {
+    clearModelCount += 1;
+    activeModels.clear();
+    activeClips.clear();
+    pausedClips.clear();
   }
 
   @override
@@ -176,6 +189,9 @@ class FakeArTracker implements ArTracker {
   Future<void> stop() async {
     stopCalled = true;
     _stopped = true;
+    activeModels.clear();
+    activeClips.clear();
+    pausedClips.clear();
   }
 
   @override

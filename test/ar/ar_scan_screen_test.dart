@@ -101,10 +101,12 @@ void main() {
     required FakeArTracker tracker,
     Equipo? hint,
     Marcador? marcador,
+    List<Marcador>? marcadores,
     MarkerRegistry? registryOverride,
     Future<Uint8List> Function()? overlaySnapshotForTesting,
   }) async {
-    final target = marcador ?? leones;
+    final targets = marcadores ?? [marcador ?? leones];
+    final target = marcador ?? targets.first;
     final screenKey = GlobalKey<ArScanScreenState>();
     await tester.pumpWidget(
       MaterialApp(
@@ -116,10 +118,12 @@ void main() {
           equipoHint: hint,
           tracker: tracker,
           registry: registryOverride ??
-              (marcador == null
-                  ? registry
-                  : MarkerRegistry.fromMarcadores([target])),
-          marcadores: [target],
+              (marcadores != null
+                  ? MarkerRegistry.fromMarcadores(targets)
+                  : marcador == null
+                      ? registry
+                      : MarkerRegistry.fromMarcadores([target])),
+          marcadores: targets,
           overlaySnapshotForTesting: overlaySnapshotForTesting,
         ),
       ),
@@ -193,6 +197,140 @@ void main() {
     expect(find.text(info), findsNothing);
     expect(find.text('SALIR'), findsNothing);
     expect(find.text('MODO DEMO'), findsOneWidget);
+  });
+
+  testWidgets('escanea otro equipo desde ArLocked en la misma sesión', (
+    tester,
+  ) async {
+    final allMarkers = await DataService().cargarMarcadores();
+    final first = allMarkers.singleWhere(
+      (marker) => marker.id == 'marcador_estadio_leones',
+    );
+    final next = allMarkers.singleWhere(
+      (marker) => marker.id == 'marcador_jugador_olmecas',
+    );
+    final tracker = FakeArTracker();
+    await pumpScan(
+      tester,
+      tracker: tracker,
+      hint: const Equipo(
+        id: 'leones_yucatan',
+        nombre: 'Leones de Yucatán',
+        historia: 'Historia',
+        fundacion: 1954,
+        trivias: [],
+      ),
+      marcadores: [first, next],
+    );
+    await lock(tracker, first);
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text(first.titulo), findsOneWidget);
+    expect(find.byKey(const Key('ar-rescan-action')), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const Key('ar-model-player')));
+    await tester.tap(find.byKey(const Key('ar-model-player')));
+    await tester.pump();
+    await tester.pump();
+    await tester.ensureVisible(find.byKey(const Key('ar-model-stadium')));
+    await tester.tap(find.byKey(const Key('ar-model-stadium')));
+    await tester.pump();
+    await tester.pump();
+    await tester.ensureVisible(find.byKey(const Key('ar-effect-jonron')));
+    await tester.tap(find.byKey(const Key('ar-effect-jonron')));
+    await tester.pump();
+    await tester.pump();
+    await tester.ensureVisible(find.byKey(const Key('ar-mode-home-run')));
+    await tester.tap(find.byKey(const Key('ar-mode-home-run')));
+    await tester.pump();
+    expect(find.byKey(const Key('ar-home-run-game')), findsOneWidget);
+
+    await tester.ensureVisible(find.byKey(const Key('ar-rescan-action')));
+    await tester.tap(find.byKey(const Key('ar-rescan-action')));
+    await tester.pump();
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byKey(const Key('ar-searching')), findsOneWidget);
+    expect(find.byKey(const Key('ar-viewfinder')), findsOneWidget);
+    expect(find.text('Apunta al logo del equipo…'), findsOneWidget);
+    expect(find.text('Apunta al logo de Leones de Yucatán'), findsNothing);
+    expect(find.byKey(const Key('ar-marker-content')), findsNothing);
+    expect(find.byKey(const Key('ar-actions')), findsNothing);
+    expect(find.byKey(const Key('ar-model-selector')), findsNothing);
+    expect(find.byKey(const Key('ar-home-run-game')), findsNothing);
+    expect(find.byKey(const Key('ar-effect-jonron')), findsNothing);
+    expect(tracker.activeModels, isEmpty);
+    expect(tracker.clearModelCount, 1);
+    expect(tracker.startCallCount, 1);
+    expect(tracker.stopCalled, isFalse);
+    expect(tracker.lifecycleChanges, isEmpty);
+
+    tracker.emit(
+      ArDetection(
+        trackerName: 'marcador_no_registrado',
+        pose: Matrix4.identity(),
+        isFullyTracked: true,
+      ),
+    );
+    await tester.pump();
+    expect(find.byKey(const Key('ar-searching')), findsOneWidget);
+    expect(find.text(next.titulo), findsNothing);
+
+    await lock(tracker, next);
+    await tester.pump();
+    await tester.pump();
+    expect(find.byKey(const Key('ar-locked')), findsOneWidget);
+    expect(find.text(next.titulo), findsOneWidget);
+    expect(tracker.attachedModels.last, (
+      trackerName: next.id,
+      glbAsset: next.modelAsset,
+    ));
+    expect(find.byKey(const Key('ar-actions')), findsOneWidget);
+    expect(find.byKey(const Key('ar-rescan-action')), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const Key('ar-mode-trivia')));
+    await tester.tap(find.byKey(const Key('ar-mode-trivia')));
+    await tester.pump();
+    expect(find.textContaining('RETO DE OLMECAS DE TABASCO'), findsOneWidget);
+  });
+
+  testWidgets('Escanear otro equipo también está disponible desde ArLost', (
+    tester,
+  ) async {
+    final tracker = FakeArTracker();
+    await pumpScan(tester, tracker: tracker);
+    await lock(tracker, leones);
+    await tester.pump();
+    await tester.pump();
+    await tester.ensureVisible(find.byKey(const Key('ar-action-info')));
+    await tester.tap(find.byKey(const Key('ar-action-info')));
+    await tester.pump();
+    expect(find.byKey(const Key('ar-info-panel')), findsOneWidget);
+    tracker.emit(
+      ArDetection(
+        trackerName: leones.id,
+        pose: Matrix4.identity(),
+        isFullyTracked: false,
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byKey(const Key('ar-lost')), findsOneWidget);
+    expect(find.byKey(const Key('ar-rescan-action')), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const Key('ar-rescan-action')));
+    await tester.tap(find.byKey(const Key('ar-rescan-action')));
+    await tester.pump();
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byKey(const Key('ar-searching')), findsOneWidget);
+    expect(find.byKey(const Key('ar-viewfinder')), findsOneWidget);
+    expect(find.byKey(const Key('ar-marker-content')), findsNothing);
+    expect(find.byKey(const Key('ar-info-panel')), findsNothing);
+    expect(tracker.clearModelCount, 1);
+    expect(tracker.startCallCount, 1);
+    expect(tracker.stopCalled, isFalse);
   });
 
   testWidgets('el reto de jonrón solo se ofrece después de ArLocked', (
@@ -478,6 +616,7 @@ void main() {
       );
       expect(find.byKey(const Key('ar-action-gesto')), findsOneWidget);
 
+      await tester.ensureVisible(find.byKey(const Key('ar-action-animation-pause')));
       await tester.tap(find.byKey(const Key('ar-action-animation-pause')));
       await tester.pump();
       await tester.pump();
@@ -491,6 +630,7 @@ void main() {
         isEmpty,
       );
 
+      await tester.ensureVisible(find.byKey(const Key('ar-action-animation-pause')));
       await tester.tap(find.byKey(const Key('ar-action-animation-pause')));
       await tester.pump();
       await tester.pump();
@@ -606,6 +746,7 @@ void main() {
     );
     expect(find.byKey(const Key('ar-action-gesto')), findsOneWidget);
 
+    await tester.ensureVisible(find.byKey(const Key('ar-action-gesto')));
     await tester.tap(find.byKey(const Key('ar-action-gesto')));
     await tester.pump();
     await tester.pump();
@@ -618,17 +759,24 @@ void main() {
     ));
     expect(tracker.attachedEffects, isEmpty);
 
+    await tester.ensureVisible(
+      find.byKey(const Key('ar-action-animation-pause')),
+    );
     await tester.tap(find.byKey(const Key('ar-action-animation-pause')));
     await tester.pump();
     await tester.pump();
     expect(find.text('REANUDAR ANIMACIÓN'), findsOneWidget);
     expect(tracker.clipPauseChanges.last.paused, isTrue);
+    await tester.ensureVisible(
+      find.byKey(const Key('ar-action-animation-pause')),
+    );
     await tester.tap(find.byKey(const Key('ar-action-animation-pause')));
     await tester.pump();
     await tester.pump();
     expect(find.text('PAUSAR ANIMACIÓN'), findsOneWidget);
     expect(tracker.clipPauseChanges.last.paused, isFalse);
 
+    await tester.ensureVisible(find.byKey(const Key('ar-action-gesto')));
     await tester.tap(find.byKey(const Key('ar-action-gesto')));
     await tester.pump();
     await tester.pump();

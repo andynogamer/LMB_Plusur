@@ -55,11 +55,11 @@ enum ArParticleEffect {
   polvoDelDiamante;
 
   String get asset => switch (this) {
-        jonron => 'assets/models/efecto_jonron/modelo.glb',
-        chispas => 'assets/models/efecto_chispas/modelo.glb',
-        confeti => 'assets/models/efecto_confeti/modelo.glb',
-        polvoDelDiamante => 'assets/models/efecto_polvo_diamante/modelo.glb',
-      };
+    jonron => 'assets/models/efecto_jonron/modelo.glb',
+    chispas => 'assets/models/efecto_chispas/modelo.glb',
+    confeti => 'assets/models/efecto_confeti/modelo.glb',
+    polvoDelDiamante => 'assets/models/efecto_polvo_diamante/modelo.glb',
+  };
 }
 
 enum ArPhotoCaptureFailure {
@@ -110,6 +110,9 @@ abstract interface class ArTracker {
     required String trackerName,
     required String glbAsset,
   });
+
+  /// Removes the currently attached model without stopping the AR session.
+  Future<void> clearModel();
 
   /// Plays a named glTF clip on the node attached for [trackerName].
   ///

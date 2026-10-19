@@ -48,14 +48,14 @@ class _Harness {
     Equipo? hintEquipo,
     DateTime Function()? now,
   })  : tracker = FakeArTracker(supported: supported, startFailure: startFailure),
-        registry = MarkerRegistry.fromMarcadores(
-          marcadores ??
-              [
-                _marcador('marcador_estadio_leones'),
-                _marcador('marcador_jugador_olmecas'),
-                _marcador('marcador_trofeo_piratas'),
-              ],
-        ) {
+       registry = MarkerRegistry.fromMarcadores(
+         marcadores ??
+             [
+               _marcador('marcador_estadio_leones'),
+               _marcador('marcador_jugador_olmecas'),
+               _marcador('marcador_trofeo_piratas'),
+             ],
+       ) {
     controller = ArSessionController(
       tracker: tracker,
       registry: registry,
@@ -238,23 +238,96 @@ void main() {
     await harness.controller.dispose();
   });
 
+  test(
+    'rescan limpia el modelo y mantiene la misma sesión y debounce',
+    () async {
+      const hint = Equipo(
+        id: 'leones_yucatan',
+        nombre: 'Leones de Yucatán',
+        historia: 'Historia',
+        fundacion: 1954,
+        trivias: [],
+      );
+      final harness = _Harness(hintEquipo: hint);
+      await harness.start();
+      expect((harness.controller.state as ArSearching).hintEquipo, same(hint));
+      harness.tracker.emit(_detection(leones));
+      harness.tracker.emit(_detection(leones));
+      await harness.tracker.attachModel(
+        trackerName: leones,
+        glbAsset: 'assets/models/leones_yucatan/estadio.glb',
+      );
+
+      await harness.controller.rescan();
+
+      expect(harness.controller.state, isA<ArSearching>());
+      expect((harness.controller.state as ArSearching).hintEquipo, isNull);
+      expect(harness.tracker.clearModelCount, 1);
+      expect(harness.tracker.activeModels, isEmpty);
+      expect(harness.tracker.startCallCount, 1);
+      expect(harness.tracker.stopCalled, isFalse);
+
+      harness.tracker.emit(_detection('no_existe'));
+      expect(harness.controller.state, isA<ArSearching>());
+      harness.tracker.emit(_detection(olmecas));
+      expect(harness.controller.state, isA<ArCandidate>());
+      harness.tracker.emit(_detection(olmecas));
+      expect((harness.controller.state as ArLocked).marcador.id, olmecas);
+
+      await harness.controller.dispose();
+    },
+  );
+
+  test('rescan también está disponible desde ArLost', () async {
+    final harness = _Harness();
+    await harness.start();
+    harness.tracker.emit(_detection(leones));
+    harness.tracker.emit(_detection(leones));
+    harness.tracker.emit(_detection(leones, tracked: false));
+    expect(harness.controller.state, isA<ArLost>());
+
+    await harness.controller.rescan();
+
+    expect(harness.controller.state, isA<ArSearching>());
+    expect(harness.tracker.clearModelCount, 1);
+    expect(harness.tracker.startCallCount, 1);
+    expect(harness.tracker.stopCalled, isFalse);
+    await harness.controller.dispose();
+  });
+
   test('el fake recorre todos los marcadores registrados', () async {
     final harness = _Harness();
     await harness.start();
 
     harness.tracker.emitRegisteredCycle();
 
-    expect(
-      harness.tracker.cycledNames,
-      [
-        'marcador_estadio_leones',
-        'marcador_jugador_olmecas',
-        'marcador_trofeo_piratas',
-      ],
-    );
+    expect(harness.tracker.cycledNames, [
+      'marcador_estadio_leones',
+      'marcador_jugador_olmecas',
+      'marcador_trofeo_piratas',
+    ]);
     expect(harness.tracker.cycledNames.toSet(), hasLength(3));
 
     await harness.controller.dispose();
+  });
+
+  test('el tracker fake limpia modelo y clips sin detener la sesión', () async {
+    final tracker = FakeArTracker();
+    await tracker.start(references: [_reference(_marcador(leones))]);
+    await tracker.attachModel(
+      trackerName: leones,
+      glbAsset: 'assets/models/leones_yucatan/jugador.glb',
+    );
+    await tracker.playClip(trackerName: leones, clipName: 'idle', loop: true);
+
+    await tracker.clearModel();
+
+    expect(tracker.clearModelCount, 1);
+    expect(tracker.activeModels, isEmpty);
+    expect(tracker.activeClips, isEmpty);
+    expect(tracker.stopCalled, isFalse);
+    expect(tracker.startCallCount, 1);
+    await tracker.dispose();
   });
 
   test('lib/ar no usa hash, histograma, score ni umbral', () {

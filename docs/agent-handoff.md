@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-10-18 · by: US-22 batting-zone collision refinement
+**Last updated:** 2026-10-18 · by: US-23 same-session rescan
 
 ---
 
@@ -252,9 +252,15 @@ Measured later, four of them were. **Never copy code from that branch.**
   using the actual lane width and displayed dimensions (D-31, v2.7.1).
   Focused game and AR-screen widget tests plus `flutter analyze` pass.
   Physical-device visual review remains open.
-- **Next teacher-requested AR work:** US-23 keeps rescanning in the same
-  tracker session; US-24 makes Trivia AR a five-question round with a finish
-  message. Follow one work item per branch.
+- **US-23 / D-29 — same-session rescan implemented 2026-10-18.** The explicit
+  “Escanear otro equipo” action is available in `ArLocked` and `ArLost`.
+  Tracker cleanup removes the prior model and the screen resets transient
+  actions/modes while preserving the active tracker, camera, and detection
+  subscription. A new lock still requires an exact registry hit and the
+  existing two-detection debounce. Controller/tracker/widget regressions and
+  `flutter analyze` pass.
+- **Next teacher-requested AR work:** US-24 makes Trivia AR a five-question
+  round with a finish message. Follow one work item per branch.
 - **US-18 / D-24:** after a lock, the AR chrome offers **Estadio** or
   **Jugador** from the club's D-22 catalog. The tracker replaces the anchored
   node without restarting the session; the marker model remains the default.
@@ -289,9 +295,9 @@ BUG-08 device 5× lock/background.
 Remaining human/device gates: AR-06/07 acceptance, particle effects, printed marker checks.
 ```
 
-Next feature: US-23 — same-session rescan. Open physical-device gates remain
-BUG-08 lifecycle recovery, AR-06/07 acceptance, particle visuals, printed
-marker checks, and visual review of the US-22 mini-game.
+Next feature: US-24 — five-question Trivia AR. Open physical-device gates
+remain BUG-08 lifecycle recovery, AR-06/07 acceptance, particle visuals,
+printed marker checks, and visual review of the US-22 mini-game.
 
 Release APK path: `build/app/outputs/flutter-apk/app-release.apk`.
 Rebuild after all three plugin patches before installing.
@@ -439,6 +445,7 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-10-18 | **US-23 / D-29 same-session rescan.** Added “Escanear otro equipo” from locked/lost states. Tracker model cleanup and controller transition preserve the running tracker/session and detection subscription; the overlay returns to searching and clears model/actions/modes. The next lock still uses exact `MarkerRegistry` identity and the normal debounce. Focused controller/tracker/widget tests and `flutter analyze` pass. |
 | 2026-10-18 | **US-22 batting-zone collision refinement (D-31 / v2.7.1).** Replaced the narrower fixed timing threshold with collision computed from the rendered ball and zone dimensions and actual lane width. A ball that just touches the visible zone now counts as a hit; focused boundary tests cover both edges and just-outside misses. `flutter analyze` and focused game tests pass. Physical-device visual review remains open. |
 | 2026-10-18 | **US-22 / D-31 amended (v2.7.0).** Replaced the fixed five-pitch round with an endless hit streak, a slightly faster next pitch and a newly randomized batting zone per pitch. A miss ends a run; the session-best score survives replay and mode changes in the current AR screen only. Updated the Constitution and AR architecture contract. Focused game + AR-screen tests and `flutter analyze` pass; physical-device visual review remains open. Next: US-23. |
 | 2026-10-18 | **US-21 / D-28.** Added a separate international baseball-history timeline with four detailed Spanish milestones, sourced/licensed image metadata and visible credits, source links, and themed image fallback. Added a Main entry without changing the ten-club Zona Sur catalog. Governance specified US-22 (AR mini-game), US-23 (same-session rescan), and US-24 (five-question AR trivia); US-22 is now implemented, while US-23/24 remain pending. |
@@ -449,7 +456,6 @@ Rules of thumb:
 | 2026-10-05 | **BUG-09 device accepted.** Human confirmed the Piratas D-22 stadium GLB displays correctly as the marker default, replacing the black/glitched trophy rectangle. Data and locked-state attachment regressions pass. Player visual confirmation and broader AR-06 hold/enter/leave checks remain open. |
 | 2026-09-26 | **BUG-07 done on device.** Pause/resume covers supported clips including idle; static stadiums stay without a fake pause control. |
 | 2026-09-26 | **BUG-08 code.** Screen observes `paused`/`hidden`/`resumed` only (not `inactive`). Controller parks `ArLocked` as `ArLost`, re-subscribes detections after tracker resume, and maps a failed restore to `ArFailed(sessionLost)`. Tracker talks to `pauseSession`/`resumeSession` on the pinned plugin after a third post-`pub get` patch. Tests use bounded pumps, not `runAsync` wait-forever loops. Device 5× still open. |
-| 2026-09-26 | **BUG-07 code.** Pause/resume now follows a successfully started clip, so Jugador's `idle` is controllable immediately and a failed/static clip cannot expose a misleading control. Model changes clear paused/celebration state before attaching the selected model; revision checks discard stale async clip results. Added direct tracker-seam and widget regressions for idle pause/resume, stadium/player switching, and fresh idle state. |
 
 ## 8. How to work
 
@@ -462,8 +468,8 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 ## 9. Current task
 
-> Next feature: US-23 — add same-session rescan without restarting or
-> rebuilding the tracker session. Then US-24 five-question Trivia AR.
+> Next feature: US-24 — implement the five-question Trivia AR round and finish
+> message without restarting or rebuilding the tracker session.
 > Human/device gates remain BUG-08 lifecycle recovery, AR-06/07 confirmation,
 > particle visuals, printed marker checks, and US-22 visual review.
 

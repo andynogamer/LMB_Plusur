@@ -76,6 +76,7 @@ class ArScanScreenState extends State<ArScanScreen>
   ArCoreImageTracker? _cameraTracker;
   bool _liveIsDemo = false;
   ArTracker? _liveTracker;
+  int _bestHomeRunScore = 0;
   final GlobalKey _photoOverlayKey = GlobalKey();
   late final AnimationController _spin;
   late final AnimationController _efectoDrive;
@@ -100,6 +101,10 @@ class ArScanScreenState extends State<ArScanScreen>
     _chromeActions.value = next;
   }
 
+  void _recordBestHomeRunScore(int score) {
+    if (score > _bestHomeRunScore) _bestHomeRunScore = score;
+  }
+
   Marcador? _activeMarcador(ArSessionState state) {
     return switch (state) {
       ArLocked(:final marcador) => marcador,
@@ -112,26 +117,26 @@ class ArScanScreenState extends State<ArScanScreen>
   void initState() {
     super.initState();
     _spin = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1600),
-    )
-      ..addListener(() {
-        _liveTracker?.setPresentationYaw(_spin.value * math.pi * 2);
-      })
-      ..addStatusListener((status) {
-        if (status != AnimationStatus.completed || !mounted) return;
-        _liveTracker?.setPresentationYaw(0);
-      });
+            vsync: this,
+            duration: const Duration(milliseconds: 1600),
+          )
+          ..addListener(() {
+            _liveTracker?.setPresentationYaw(_spin.value * math.pi * 2);
+          })
+          ..addStatusListener((status) {
+            if (status != AnimationStatus.completed || !mounted) return;
+            _liveTracker?.setPresentationYaw(0);
+          });
     _efectoDrive = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2800),
-    )
-      ..addListener(() {
-        _liveTracker?.updateEffect(_efectoDrive.value);
-      })
-      ..addStatusListener((status) {
-        unawaited(_onEfectoDriveStatus(status));
-      });
+            vsync: this,
+            duration: const Duration(milliseconds: 2800),
+          )
+          ..addListener(() {
+            _liveTracker?.updateEffect(_efectoDrive.value);
+          })
+          ..addStatusListener((status) {
+            unawaited(_onEfectoDriveStatus(status));
+          });
     _celebrationProgress =
         AnimationController(vsync: this, duration: kCelebracionClipLength)
           ..addStatusListener((status) {
@@ -180,7 +185,7 @@ class ArScanScreenState extends State<ArScanScreen>
   }
 
   Future<({ArTracker tracker, bool isDemo, bool camera})>
-      _chooseTracker() async {
+  _chooseTracker() async {
     if (widget.tracker != null) {
       return (tracker: widget.tracker!, isDemo: widget.isDemo, camera: false);
     }
@@ -427,6 +432,21 @@ class ArScanScreenState extends State<ArScanScreen>
     if (!mounted) return;
     if (_chrome == ArChromeSnapshot.empty) return;
     _patchChrome(ArChromeSnapshot.empty);
+  }
+
+  Future<void> _rescan() async {
+    final controller = _controller;
+    if (controller == null) return;
+
+    await FeedbackService.instance.tap();
+    if (!mounted) return;
+
+    _mode.value = ArExperienceMode.gallery;
+    _modelChoice.value = ArModelChoice.defaultModel;
+    await _releaseActions();
+    await _modelUpdateQueue;
+    if (!mounted) return;
+    await controller.rescan();
   }
 
   void _startEfectoDrive() {
@@ -858,9 +878,14 @@ class ArScanScreenState extends State<ArScanScreen>
                             child: failed == null
                                 ? ArSessionBody(
                                     state: state,
-                                    equipoHint: widget.equipoHint,
+                                    equipoHint: state is ArSearching
+                                        ? state.hintEquipo
+                                        : null,
                                     onSimulateNext:
                                         _liveIsDemo ? _simulateNext : null,
+                                    onRescan: marcador == null
+                                        ? null
+                                        : () => unawaited(_rescan()),
                                     modelNote: marcador != null
                                         ? actions.modelNote
                                         : null,
@@ -873,47 +898,47 @@ class ArScanScreenState extends State<ArScanScreen>
                                             valueListenable: _mode,
                                             builder: (context, mode, _) =>
                                                 ArActionBar(
-                                              showCelebracion:
-                                                  _modelSupportsClip(
-                                                marcador,
-                                                kClipCelebracion,
-                                              ),
+                                                  showCelebracion:
+                                                      _modelSupportsClip(
+                                                        marcador,
+                                                        kClipCelebracion,
+                                                      ),
                                               showAnimationControl:
                                                   actions.animationAvailable,
-                                              showPhotoCapture:
-                                                  showPhotoCapture,
-                                              gestoPressed:
-                                                  actions.gestoPressed,
+                                                  showPhotoCapture:
+                                                      showPhotoCapture,
+                                                  gestoPressed:
+                                                      actions.gestoPressed,
                                               infoPressed: actions.infoPressed,
-                                              animationPaused:
-                                                  actions.animationPaused,
-                                              activeEffect:
-                                                  actions.activeEffect,
+                                                  animationPaused:
+                                                      actions.animationPaused,
+                                                  activeEffect:
+                                                      actions.activeEffect,
                                               infoEnabled: mode ==
-                                                  ArExperienceMode.gallery,
-                                              note: actions.actionNote,
-                                              onGesto: () => unawaited(
-                                                _onGesto(marcador),
-                                              ),
-                                              onInfo: () => unawaited(
-                                                _onInfo(marcador),
-                                              ),
-                                              onToggleAnimationPause: () =>
-                                                  unawaited(
-                                                _onToggleAnimationPause(
-                                                  marcador,
-                                                ),
-                                              ),
+                                                      ArExperienceMode.gallery,
+                                                  note: actions.actionNote,
+                                                  onGesto: () => unawaited(
+                                                    _onGesto(marcador),
+                                                  ),
+                                                  onInfo: () => unawaited(
+                                                    _onInfo(marcador),
+                                                  ),
+                                                  onToggleAnimationPause: () =>
+                                                      unawaited(
+                                                        _onToggleAnimationPause(
+                                                          marcador,
+                                                        ),
+                                                      ),
                                               onCapturePhoto: () => unawaited(
                                                 _onCapturePhoto(),
                                               ),
-                                              onEffectSelected: (effect) =>
-                                                  unawaited(
-                                                _onEffectSelected(
-                                                  effect,
+                                                  onEffectSelected: (effect) =>
+                                                      unawaited(
+                                                        _onEffectSelected(
+                                                          effect,
+                                                        ),
+                                                      ),
                                                 ),
-                                              ),
-                                            ),
                                           ),
                                     modePanel: marcador == null
                                         ? null
@@ -922,11 +947,15 @@ class ArScanScreenState extends State<ArScanScreen>
                                             valueListenable: _mode,
                                             builder: (context, mode, _) =>
                                                 ArModePanel(
-                                              marcador: marcador,
-                                              equipo: _equipoFor(marcador),
-                                              mode: mode,
-                                              onModeChanged: _onModeChanged,
-                                            ),
+                                                  marcador: marcador,
+                                                  equipo: _equipoFor(marcador),
+                                                  mode: mode,
+                                                  onModeChanged: _onModeChanged,
+                                                  bestHomeRunScore:
+                                                      _bestHomeRunScore,
+                                                  onBestHomeRunScoreChanged:
+                                                      _recordBestHomeRunScore,
+                                                ),
                                           ),
                                   )
                                 : ArFailedPanel(

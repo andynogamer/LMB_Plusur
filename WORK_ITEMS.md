@@ -66,7 +66,7 @@
 | US-20 | 📗 | 🟠 P1 | Pause animation, save AR photos, and trigger four independent particle effects | ◐ | AR interaction / capture |
 | US-21 | 📗 | 🟠 P1 | General baseball history with sourced images | ☑ | Historia |
 | US-22 | 📗 | 🟠 P1 | In-AR home-run mini-game | ☑ | Bonus / AR |
-| US-23 | 📗 | 🟠 P1 | Scan another team without leaving AR | ☐ | AR UX |
+| US-23 | 📗 | 🟠 P1 | Scan another team without leaving AR | ☑ | AR UX |
 | US-24 | 📗 | 🟠 P1 | Five-question AR trivia with a finish message | ☐ | Bonus / AR |
 | ~~US-05…US-08~~ | — | — | ~~Old monolithic AR items~~ | ⊘ | Replaced by AR-01…AR-07 |
 | ~~BUG-01~~ | — | — | ~~AR mock always Guerreros~~ | ⊘ | Deleted with the mock in AR-03 |
@@ -184,7 +184,7 @@ AR-screen tests plus `flutter analyze` pass. Ball/zone collision uses their
 rendered dimensions so even edge contact scores. Physical-device visual review
 remains open.
 
-## US-23 · 📗 · 🟠 P1 · Scan another team without leaving AR · ☐ Pendiente
+## US-23 · 📗 · 🟠 P1 · Scan another team without leaving AR · ☑ Hecho
 
 **Prompt**
 ```
@@ -220,6 +220,13 @@ Out of scope: changing marker identity/tracking algorithms, automatic scan
 timeouts, a second camera/tracker session, navigation redesign, or iOS-specific
 native work.
 ```
+
+**Hecho 2026-10-18:** Added “Escanear otro equipo” to `ArLocked` and
+`ArLost`. It clears the attached model and transient AR actions/modes, then
+returns the controller to `ArSearching` while retaining the tracker, camera,
+and detection subscription. The next team still resolves by exact registry
+lookup and the existing debounce. Controller, tracker, and widget regressions
+plus `flutter analyze` pass.
 
 ## US-24 · 📗 · 🟠 P1 · Five-question AR trivia with a finish message · ☐ Pendiente
 
@@ -1409,10 +1416,9 @@ than one simultaneous effect, and changes to the marker database.
    landed. BUG-07 pause/resume is accepted on device. After BUG-08,
    continue the existing backlog:
    **BUG-02** (failed actions), then US-09 / US-10 / DEBT-01.
-7. **Teacher additions (2026-10-18):** US-21 general baseball history and
-   US-22 in-AR home-run mini-game are complete. Continue one item per branch
-   with **US-23** (same-session rescan), then **US-24** (five-question AR
-   trivia).
+7. **Teacher additions (2026-10-18):** US-21 general baseball history,
+   US-22 in-AR home-run mini-game, and US-23 same-session rescan are complete.
+   Continue one item per branch with **US-24** (five-question AR trivia).
 
 Do not start AR-04 until AR-01…AR-03 are merged and green. That ordering is the
 whole point of the reset: the state machine and content mapping are proven

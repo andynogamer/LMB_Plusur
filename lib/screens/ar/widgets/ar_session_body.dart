@@ -14,6 +14,7 @@ class ArSessionBody extends StatelessWidget {
     required this.state,
     required this.equipoHint,
     this.onSimulateNext,
+    this.onRescan,
     this.modelNote,
     this.actions,
     this.modePanel,
@@ -23,6 +24,7 @@ class ArSessionBody extends StatelessWidget {
   final ArSessionState state;
   final Equipo? equipoHint;
   final VoidCallback? onSimulateNext;
+  final VoidCallback? onRescan;
 
   /// Spanish copy when the GLB is missing or failed. Null when the model is
   /// placed, or when this is not a real session.
@@ -39,44 +41,46 @@ class ArSessionBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return switch (state) {
       ArPreparing() => const _StatusChip(
-          panelKey: Key('ar-preparing'),
-          title: 'Preparando la experiencia AR',
-          body: 'Comprobando si este dispositivo puede escanear.',
-        ),
+        panelKey: Key('ar-preparing'),
+        title: 'Preparando la experiencia AR',
+        body: 'Comprobando si este dispositivo puede escanear.',
+      ),
       ArSearching() => _StatusChip(
-          panelKey: const Key('ar-searching'),
-          title: hintCopy(equipoHint),
-          footer: onSimulateNext == null
-              ? null
-              : PrimaryButton(
-                  label: 'Simular siguiente marcador',
-                  icon: Icons.view_in_ar_rounded,
-                  height: 48,
-                  onPressed: onSimulateNext,
-                ),
-        ),
+        panelKey: const Key('ar-searching'),
+        title: hintCopy(equipoHint),
+        footer: onSimulateNext == null
+            ? null
+            : PrimaryButton(
+                label: 'Simular siguiente marcador',
+                icon: Icons.view_in_ar_rounded,
+                height: 48,
+                onPressed: onSimulateNext,
+              ),
+      ),
       ArCandidate(:final hits, :final needed) => _StatusChip(
-          panelKey: const Key('ar-candidate'),
-          title: 'Confirmando marcador',
-          body: '$hits/$needed',
-        ),
+        panelKey: const Key('ar-candidate'),
+        title: 'Confirmando marcador',
+        body: '$hits/$needed',
+      ),
       ArLocked(:final marcador) => _LockedPanel(
-          marcadorTitulo: marcador.titulo,
-          infoTexto: marcador.infoTexto,
-          modelNote: modelNote,
-          actions: actions,
-          modePanel: modePanel,
-          infoActive: infoActive,
-        ),
+        marcadorTitulo: marcador.titulo,
+        infoTexto: marcador.infoTexto,
+        modelNote: modelNote,
+        actions: actions,
+        modePanel: modePanel,
+        infoActive: infoActive,
+        onRescan: onRescan,
+      ),
       ArLost(:final marcador) => _LockedPanel(
-          marcadorTitulo: marcador.titulo,
-          infoTexto: marcador.infoTexto,
-          modelNote: modelNote,
-          actions: actions,
-          modePanel: modePanel,
-          infoActive: infoActive,
-          lostHint: 'Vuelve a apuntar a ${marcador.titulo}.',
-        ),
+        marcadorTitulo: marcador.titulo,
+        infoTexto: marcador.infoTexto,
+        modelNote: modelNote,
+        actions: actions,
+        modePanel: modePanel,
+        infoActive: infoActive,
+        lostHint: 'Vuelve a apuntar a ${marcador.titulo}.',
+        onRescan: onRescan,
+      ),
       ArFailed() => const SizedBox.shrink(),
     };
   }
@@ -148,6 +152,7 @@ class _LockedPanel extends StatelessWidget {
     this.modePanel,
     this.infoActive = false,
     this.lostHint,
+    this.onRescan,
   });
 
   final String marcadorTitulo;
@@ -157,6 +162,7 @@ class _LockedPanel extends StatelessWidget {
   final Widget? modePanel;
   final bool infoActive;
   final String? lostHint;
+  final VoidCallback? onRescan;
 
   @override
   Widget build(BuildContext context) {
@@ -232,6 +238,16 @@ class _LockedPanel extends StatelessWidget {
               fontSize: 12,
               height: 1.35,
             ),
+          ),
+        ],
+        if (onRescan != null) ...[
+          const SizedBox(height: 10),
+          PrimaryButton(
+            key: const Key('ar-rescan-action'),
+            label: 'Escanear otro equipo',
+            icon: Icons.center_focus_strong_rounded,
+            height: 44,
+            onPressed: onRescan,
           ),
         ],
       ],
