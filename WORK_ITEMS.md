@@ -1,6 +1,6 @@
 ﻿# LMB Plusur — Work Items para Agentes
 
-> Backlog under Constitution **v2.5.3** (decisions D-01…D-27 + professor
+> Backlog under Constitution **v2.6.0** (decisions D-01…D-31 + professor
 > checklist). Each item is a **copy-paste prompt**. One item per branch/PR.
 > Format: contexto → tarea → criterios de aceptación → archivos → fuera de alcance.
 >
@@ -64,6 +64,10 @@
 | US-18 | 📗 | 🟠 P1 | Select stadium or player model after AR lock | ☑ | AR depth |
 | US-19 | 📗 | 🟠 P1 | Lay AR model parallel to scanned logo | ☑ | AR depth |
 | US-20 | 📗 | 🟠 P1 | Pause animation, save AR photos, and trigger four independent particle effects | ◐ | AR interaction / capture |
+| US-21 | 📗 | 🟠 P1 | General baseball history with sourced images | ☑ | Historia |
+| US-22 | 📗 | 🟠 P1 | In-AR home-run mini-game | ☐ | Bonus / AR |
+| US-23 | 📗 | 🟠 P1 | Scan another team without leaving AR | ☐ | AR UX |
+| US-24 | 📗 | 🟠 P1 | Five-question AR trivia with a finish message | ☐ | Bonus / AR |
 | ~~US-05…US-08~~ | — | — | ~~Old monolithic AR items~~ | ⊘ | Replaced by AR-01…AR-07 |
 | ~~BUG-01~~ | — | — | ~~AR mock always Guerreros~~ | ⊘ | Deleted with the mock in AR-03 |
 
@@ -85,6 +89,157 @@ already ships); record explanatory demo video (10pt).
 ---
 
 # 📗 USER STORIES
+
+## US-21 · 📗 · 🟠 P1 · General baseball history with sourced images · ☑ Hecho
+
+**Prompt**
+```
+Context: The current Historia route is club-specific. The teacher requests a
+separate, detailed history of baseball in general, not limited to the Mexican
+league, illustrated with historical images. Constitution D-28 allows global
+baseball education without expanding the ten-club Zona Sur catalog.
+
+Task: Add a distinct, Spanish-language “Historia del béisbol” section reachable
+from the main screen. Present a chronological, detailed account of important
+international milestones using locally bundled structured metadata. Each
+milestone must include an image, image credit/source link, and a historical
+reference link. Use public-domain or clearly licensed images; keep text and
+metadata local, and handle unavailable remote images with the existing
+baseball placeholder. Preserve the current team-specific Historia flow.
+
+Acceptance criteria:
+- The main screen has a clear entry to the general baseball history section.
+- At least four dated milestones cover the game's development beyond Mexico,
+  including professional baseball, the Negro Leagues/integration, and
+  international play.
+- Each milestone contains a substantial Spanish explanation, an illustrative
+  image, visible image credit, and a link to the image/source or historical
+  reference.
+- Image and historical source/license metadata is recorded alongside the local
+  content; image failures retain themed fallback UI.
+- Existing club histories and team navigation remain unchanged.
+- Focused data/model/widget tests pass and `flutter analyze` is clean.
+
+Files: `assets/baseball_history.json`, `lib/models/`, `lib/services/data_service.dart`,
+`lib/screens/`, `lib/routes/app_routes.dart`, `lib/screens/main_screen.dart`,
+data/widget tests, `CONSTITUTION.md`, `docs/agent-handoff.md`, `WORK_ITEMS.md`.
+
+Out of scope: changes to Zona Sur club membership, team-history content,
+backend/CMS, video archive, or AR.
+```
+
+**Hecho 2026-10-18:** Added a separate chronological history screen with four
+international milestones (1869, 1920, 1947, 2006). The local JSON catalog
+records detailed Spanish copy, image credits/licenses, image-source links, and
+historical references. Remote image failures use the themed baseball
+placeholder; club-specific history remains unchanged.
+
+## US-22 · 📗 · 🟠 P1 · In-AR home-run mini-game · ☐ Pendiente
+
+**Prompt**
+```
+Context: The teacher requests a mini video game reachable from the live AR
+experience. A small baseball-themed reaction game is sufficient; no separate
+game engine or Unity scene is allowed.
+
+Task: Add a “Reto de jonrón” to the locked AR experience. The player taps to
+swing as a pitch enters a visible batting zone across five pitches. Show
+immediate hit/miss feedback, a cumulative score, and a completion/replay state.
+Keep all game interaction in Flutter chrome over the existing AR session;
+starting or playing the game must not restart tracking or rebuild the camera
+platform view. The game is available only after a confirmed marker lock.
+
+Acceptance criteria:
+- A player can start the game from ArLocked and play five pitches.
+- Timing determines hit/miss and provides visible Spanish feedback and score.
+- A clear final result and replay action are shown.
+- Game state is local to the AR screen/session; no account, network service,
+  or leaderboard is introduced.
+- The game does not stop tracking, mutate marker identity, or use Dart camera
+  frames/image matching.
+- Focused state/widget tests and `flutter analyze` pass.
+
+Files: `lib/screens/ar/`, AR widgets/tests, `CONSTITUTION.md`,
+`docs/ar-architecture.md`, `docs/agent-handoff.md`, `WORK_ITEMS.md`.
+
+Out of scope: Unity, network play, persistent leaderboard, new tracker,
+additional AR markers, or general-purpose game engine.
+```
+
+## US-23 · 📗 · 🟠 P1 · Scan another team without leaving AR · ☐ Pendiente
+
+**Prompt**
+```
+Context: The current AR user must leave the scanner to recognize another team.
+The teacher identifies that as poor UX. Constitution D-29 requires an in-session
+rescan without disposing or recreating the live tracker session.
+
+Task: Add an explicit “Escanear otro equipo” action in the locked/lost AR
+chrome. Return the existing controller to ArSearching, clear the previous
+team's AR model and transient actions/panels, and keep the current camera and
+tracker session alive for the next marker. Continue resolving the newly
+detected tracker name through the exact MarkerRegistry lookup and existing
+debounce state flow.
+
+Acceptance criteria:
+- The action is reachable from ArLocked and ArLost.
+- After activation, old marker content/actions are no longer shown and the
+  searching viewfinder appears while the same AR session remains active.
+- Scanning a different registered marker locks to that marker's own Equipo,
+  model, and actions.
+- No second concurrent camera session is created; the action does not navigate
+  away from AR or rebuild the camera surface.
+- Unknown names continue searching; no guessed or hinted team is shown.
+- Add controller/tracker/widget regression coverage; layering check and
+  `flutter analyze` pass.
+
+Files: `lib/ar/ar_session_controller.dart`, `lib/ar/ar_session_state.dart`,
+`lib/ar/ar_tracker.dart`, `lib/ar/trackers/`, `lib/screens/ar/`, AR tests,
+`CONSTITUTION.md`, `docs/ar-architecture.md`, `docs/agent-handoff.md`,
+`WORK_ITEMS.md`.
+
+Out of scope: changing marker identity/tracking algorithms, automatic scan
+timeouts, a second camera/tracker session, navigation redesign, or iOS-specific
+native work.
+```
+
+## US-24 · 📗 · 🟠 P1 · Five-question AR trivia with a finish message · ☐ Pendiente
+
+**Prompt**
+```
+Context: Trivia AR currently presents one question and ends without a complete
+round result. The teacher requests a five-question round comparable to the
+existing Trivia section and a message when the round finishes. Constitution
+D-30 defines this as an in-session mode using the same Equipo.trivias content.
+
+Task: Replace the one-question Trivia AR overlay with a complete five-question
+round. Select five distinct questions from the detected team's existing
+trivias, present one at a time with progress and answer feedback, count the
+score, and show a Spanish completion message with the final score. Keep the
+camera session active and provide an in-place replay/return-to-gallery action.
+
+Acceptance criteria:
+- Trivia AR is available only for a locked marker with a linked Equipo and
+  enough trivia questions; otherwise show an explicit Spanish unavailable
+  message.
+- A round has exactly five distinct questions sourced from `Equipo.trivias`.
+- Each response is evaluated once, with visible correctness feedback and
+  progress; all five questions can be completed without leaving AR.
+- The finish state shows a completion message and score out of five, with a
+  replay action that resets the round.
+- Exiting trivia or completing it preserves the same tracker session and
+  model; no camera-surface rebuild occurs from answer taps.
+- Focused widget tests cover the five-question progression, score, finish
+  message, and replay; `flutter analyze` passes.
+
+Files: `lib/screens/ar/widgets/ar_mode_panel.dart`, AR widgets/tests,
+`CONSTITUTION.md`, `docs/ar-architecture.md`, `docs/agent-handoff.md`,
+`WORK_ITEMS.md`.
+
+Out of scope: changing the existing team Trivia route, adding questions or
+teams, remote trivia, leaderboard/account persistence, or changes to marker
+detection.
+```
 
 ## BUG-05 · 🟡 P2 · Show supplied club photos in Historia · ☑ Hecho
 
@@ -1236,6 +1391,10 @@ than one simultaneous effect, and changes to the marker database.
    landed. BUG-07 pause/resume is accepted on device. After BUG-08,
    continue the existing backlog:
    **BUG-02** (failed actions), then US-09 / US-10 / DEBT-01.
+7. **Teacher additions (2026-10-18):** US-21 general baseball history is
+   complete. Continue one item per branch with **US-22** (in-AR home-run
+   mini-game), **US-23** (same-session rescan), then **US-24** (five-question
+   AR trivia).
 
 Do not start AR-04 until AR-01…AR-03 are merged and green. That ordering is the
 whole point of the reset: the state machine and content mapping are proven

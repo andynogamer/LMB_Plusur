@@ -3,14 +3,15 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-10-05 · by: BUG-11 AR particle quality
+**Last updated:** 2026-10-18 · by: US-21 general baseball history
 
 ---
 
 ## 1. What this project is
 
 Flutter 3.47 / Dart 3.13 mobile app. AR fan app for **LMB Zona Sur** (10 Mexican
-baseball clubs). A scholar project that must also behave like a real product.
+baseball clubs), with a separate educational timeline of international baseball
+history. A scholar project that must also behave like a real product.
 
 Repo: `C:\Users\T450SCMPTRC\Desktop\LMB_Plusur` — branch **`full-project`**.
 
@@ -20,7 +21,7 @@ These are **binding**, not advisory:
 
 | # | File | What it gives you |
 |---|---|---|
-| 1 | `CONSTITUTION.md` | Governance, v2.5.3, decisions D-01…D-27 |
+| 1 | `CONSTITUTION.md` | Governance, v2.6.0, decisions D-01…D-31 |
 | 2 | `AGENTS.md` | How to work here (auto-loaded as a workspace rule) |
 | 3 | `WORK_ITEMS.md` | The backlog. Each item's `Prompt` block **is** the spec |
 | 4 | `docs/ar-postmortem.md` | Why AR attempt #1 was thrown away (RC-1…RC-7) |
@@ -233,8 +234,17 @@ Measured later, four of them were. **Never copy code from that branch.**
   Google Play URL, and only the manual action navigates to teams.
 - **BUG-05 fixed 2026-09-21:** Historia reads `historiaImagenUrl` for all ten
   clubs from `assets/data.json` and uses the existing baseball placeholder if a
-  remote image fails. Constitution “Feature contracts” table is stale (videos
-  still say Planned; markers still say 5 logos).
+  remote image fails.
+- **US-21 / D-28 — done 2026-10-18.** A separate “Historia del béisbol”
+  timeline is reachable from Main and covers four international milestones
+  (1869, 1920, 1947, 2006). `assets/baseball_history.json` stores Spanish detail,
+  image source/credit/license, and historical references. Network image failure
+  uses the baseball placeholder; existing club histories are unchanged. Team
+  coverage remains the ten Zona Sur clubs.
+- **Teacher-requested AR work is specified, not implemented:** US-22 is the
+  five-pitch in-AR home-run mini-game, US-23 keeps rescanning in the same
+  tracker session, and US-24 makes Trivia AR a five-question round with a
+  finish message. Follow one work item per branch.
 - **US-18 / D-24:** after a lock, the AR chrome offers **Estadio** or
   **Jugador** from the club's D-22 catalog. The tracker replaces the anchored
   node without restarting the session; the marker model remains the default.
@@ -269,8 +279,9 @@ BUG-08 device 5× lock/background.
 Remaining human/device gates: AR-06/07 acceptance, particle effects, printed marker checks.
 ```
 
-Next: physical Android confirmation for BUG-08 (five lock-screen cycles and
-five background/foreground cycles without a black preview).
+Next feature: US-22 in-AR home-run mini-game. Open physical-device gates remain
+BUG-08 lifecycle recovery, AR-06/07 acceptance, particle visuals, and printed
+marker checks.
 
 Release APK path: `build/app/outputs/flutter-apk/app-release.apk`.
 Rebuild after all three plugin patches before installing.
@@ -418,6 +429,7 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-10-18 | **US-21 / D-28.** Added a separate international baseball-history timeline with four detailed Spanish milestones, sourced/licensed image metadata and visible credits, source links, and themed image fallback. Added a Main entry without changing the ten-club Zona Sur catalog. Governance now specifies US-22 (AR mini-game), US-23 (same-session rescan), and US-24 (five-question AR trivia); those remain pending. |
 | 2026-10-05 | **BUG-11 code.** Brightened all four procedural particle materials and replaced linear drift with ballistic arcs, confetti flutter/descent, low dust spread, per-particle lifetimes, scale-in, and fade-out. Added motion tests and clarified the visual/motion requirement in the AR architecture. Physical Android visual confirmation remains open. |
 | 2026-10-05 | **US-12 amended (v2.5.3).** Removed Suavizado from Article VII examples and the runtime enum, renderer, controls, and YouTube/MP4 CSS mapping because it duplicated the existing blur family at a weaker setting. Desenfoque, Pasteles, Alta saturación, and the other families remain; forbidden filters stay forbidden. |
 | 2026-10-05 | **BUG-10 portrait orientation.** Flutter requests `portraitUp` before `runApp`; Android and iOS declarations allow upright portrait only. iPad multitasking is disabled to enforce that orientation list. Analyzer, all Flutter tests, and Android debug build pass; iOS build unavailable on Windows. |
@@ -427,7 +439,6 @@ Rules of thumb:
 | 2026-09-26 | **BUG-08 code.** Screen observes `paused`/`hidden`/`resumed` only (not `inactive`). Controller parks `ArLocked` as `ArLost`, re-subscribes detections after tracker resume, and maps a failed restore to `ArFailed(sessionLost)`. Tracker talks to `pauseSession`/`resumeSession` on the pinned plugin after a third post-`pub get` patch. Tests use bounded pumps, not `runAsync` wait-forever loops. Device 5× still open. |
 | 2026-09-26 | **BUG-07 code.** Pause/resume now follows a successfully started clip, so Jugador's `idle` is controllable immediately and a failed/static clip cannot expose a misleading control. Model changes clear paused/celebration state before attaching the selected model; revision checks discard stale async clip results. Added direct tracker-seam and widget regressions for idle pause/resume, stadium/player switching, and fresh idle state. |
 | 2026-09-26 | **BUG-06 done.** Replaced Activity-window-only PixelCopy (which misses the AR plugin's separate GL surface) with the plugin's native AR-scene snapshot plus a transparent Flutter chrome capture, composed natively before MediaStore save. Added blank-input rejection and pre-snapshot API gating. Analyze, 12 focused AR tests, and Android debug build pass. Two captures from M2012K10C / Android 13 were pulled from Pictures and visually confirmed to contain the live scene, model, and controls. |
-| 2026-09-26 | **AR regression triage.** Split three reported US-20 failures into independent pending items: BUG-06 blank gallery captures, BUG-07 pause/resume coverage for supported clips including idle (no new stadium animation), and BUG-08 AR camera recovery after screen lock/background. Ordered one-at-a-time; no implementation changed. |
 
 ## 8. How to work
 
@@ -440,10 +451,10 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 ## 9. Current task
 
-> Next: BUG-08 device acceptance — five Android lock-screen cycles and five
-> background/foreground cycles with no black preview, duplicate session, or
-> crash. BUG-11's four particle presets also need physical Android visual
-> confirmation. The portrait-only orientation request is complete (BUG-10).
+> Next feature: US-22 — add the five-pitch in-AR home-run mini-game without
+> restarting or rebuilding the tracker session. Then US-23 same-session rescan
+> and US-24 five-question Trivia AR. Human/device gates remain BUG-08 lifecycle
+> recovery, AR-06/07 confirmation, particle visuals, and printed marker checks.
 
 _(The human edits this line each session. Leave it pointing at the next item
 when you finish.)_

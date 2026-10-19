@@ -1,8 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 import 'models/equipo_model.dart';
 import 'routes/app_routes.dart';
 import 'screens/ar/ar_scan_screen.dart';
+import 'screens/baseball_history_screen.dart';
 import 'screens/highlights_screen.dart';
 import 'screens/history_screen.dart';
 import 'screens/main_screen.dart';
@@ -28,8 +29,9 @@ class LmbPlusurApp extends StatelessWidget {
   }
 
   static Route<dynamic> _onGenerateRoute(RouteSettings settings) {
-    final equipo =
-        settings.arguments is Equipo ? settings.arguments as Equipo : null;
+    final equipo = settings.arguments is Equipo
+        ? settings.arguments as Equipo
+        : null;
 
     switch (settings.name) {
       case AppRoutes.splash:
@@ -44,6 +46,8 @@ class LmbPlusurApp extends StatelessWidget {
         return _page(TeamMenuScreen(equipo: equipo!), settings);
       case AppRoutes.history:
         return _page(HistoryScreen(equipo: equipo!), settings);
+      case AppRoutes.baseballHistory:
+        return _page(const BaseballHistoryScreen(), settings);
       case AppRoutes.trivia:
         return _page(TriviaScreen(equipo: equipo!), settings);
       case AppRoutes.triviaResults:
@@ -62,9 +66,6 @@ class LmbPlusurApp extends StatelessWidget {
   }
 
   static MaterialPageRoute<void> _page(Widget child, RouteSettings settings) {
-    return MaterialPageRoute<void>(
-      builder: (_) => child,
-      settings: settings,
-    );
+    return MaterialPageRoute<void>(builder: (_) => child, settings: settings);
   }
 }

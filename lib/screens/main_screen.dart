@@ -30,61 +30,66 @@ class _MainBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return ListView(
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 28),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'LIGA MEXICANA',
-            style: GoogleFonts.poppins(
-              color: AppColors.muted,
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
-              letterSpacing: 2.2,
-            ),
+      children: [
+        Text(
+          'LIGA MEXICANA',
+          style: GoogleFonts.poppins(
+            color: AppColors.muted,
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+            letterSpacing: 2.2,
           ),
-          Text(
-            'Zona Sur',
-            style: GoogleFonts.poppins(
-              color: AppColors.white,
-              fontWeight: FontWeight.w800,
-              fontSize: 40,
-              height: 1.05,
-            ),
+        ),
+        Text(
+          'Zona Sur',
+          style: GoogleFonts.poppins(
+            color: AppColors.white,
+            fontWeight: FontWeight.w800,
+            fontSize: 40,
+            height: 1.05,
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Explora la historia, juega trivia y revive los videos de la Zona Sur.',
-            style: GoogleFonts.poppins(
-              color: AppColors.muted,
-              fontSize: 14,
-              height: 1.45,
-            ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Explora la historia, juega trivia y revive los videos de la Zona Sur.',
+          style: GoogleFonts.poppins(
+            color: AppColors.muted,
+            fontSize: 14,
+            height: 1.45,
           ),
-          const Spacer(),
-          FeatureCard(
-            title: 'Escanear Logo',
-            subtitle: 'Apunta la cámara al logo y abre la experiencia AR.',
-            icon: Icons.view_in_ar_rounded,
-            onTap: () => Navigator.of(context).pushNamed(AppRoutes.ar),
-          ),
-          const SizedBox(height: 14),
-          FeatureCard(
-            title: 'Seleccionar Equipo',
-            subtitle: 'Elige manualmente un club de la Zona Sur.',
-            icon: Icons.sports_baseball_rounded,
-            onTap: () => Navigator.of(context).pushNamed(AppRoutes.teams),
-          ),
-          const SizedBox(height: 14),
-          FeatureCard(
-            title: 'Archivo de videos',
-            subtitle: 'Reproduce el acervo de la Zona Sur.',
-            icon: Icons.play_circle_fill_rounded,
-            onTap: () => Navigator.of(context).pushNamed(AppRoutes.highlights),
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 24),
+        FeatureCard(
+          title: 'Escanear Logo',
+          subtitle: 'Apunta la cámara al logo y abre la experiencia AR.',
+          icon: Icons.view_in_ar_rounded,
+          onTap: () => Navigator.of(context).pushNamed(AppRoutes.ar),
+        ),
+        const SizedBox(height: 14),
+        FeatureCard(
+          title: 'Seleccionar Equipo',
+          subtitle: 'Elige manualmente un club de la Zona Sur.',
+          icon: Icons.sports_baseball_rounded,
+          onTap: () => Navigator.of(context).pushNamed(AppRoutes.teams),
+        ),
+        const SizedBox(height: 14),
+        FeatureCard(
+          title: 'Historia del béisbol',
+          subtitle: 'Descubre momentos clave del juego en todo el mundo.',
+          icon: Icons.history_edu_rounded,
+          onTap: () =>
+              Navigator.of(context).pushNamed(AppRoutes.baseballHistory),
+        ),
+        const SizedBox(height: 14),
+        FeatureCard(
+          title: 'Archivo de videos',
+          subtitle: 'Reproduce el acervo de la Zona Sur.',
+          icon: Icons.play_circle_fill_rounded,
+          onTap: () => Navigator.of(context).pushNamed(AppRoutes.highlights),
+        ),
+      ],
     );
   }
 }

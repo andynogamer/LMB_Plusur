@@ -39,6 +39,7 @@ flutter:
   assets:
     - assets/
     - assets/data.json
+    - assets/baseball_history.json
     - assets/videos.json
     - assets/ar_markers.json
     - assets/images/
