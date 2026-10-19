@@ -47,6 +47,11 @@ String modelNodeName(String trackerName) => 'modelo_$trackerName';
 /// Scene-graph name prefix for baseball VFX nodes (`…_0` … `…_n`).
 String effectNodeName(String trackerName) => 'efecto_$trackerName';
 
+@visibleForTesting
+Future<void> removeArSceneNode(MethodChannel channel, String nodeName) async {
+  await channel.invokeMethod<void>('removeNode', {'name': nodeName});
+}
+
 /// Filename stem ARCore stores as the reference-image name.
 ///
 /// Must equal [ArReferenceImage.name] / `Marcador.id`. No rewriting.
@@ -742,20 +747,17 @@ class ArCoreImageTracker implements ArTracker {
 
   @override
   Future<void> clearModel() async {
-    final objects = _objects;
+    final channel = _objectChannel;
     final nodes = Map<String, ARNode>.of(_nodes);
-    if (nodes.isNotEmpty && objects == null) {
+    if (nodes.isNotEmpty && channel == null) {
       throw const ArTrackerException(ArTrackerFailure.sessionLost);
     }
     for (final entry in nodes.entries) {
       try {
-        final removed = await objects!.removeNode(entry.value);
-        if (removed != true) {
-          throw ArTrackerException(
-            ArTrackerFailure.sessionLost,
-            'Could not remove AR model node ${entry.key}',
-          );
-        }
+        // The plugin's ARObjectManager.removeNode is fire-and-forget and
+        // returns void. Invoke its Android channel directly so completion
+        // (null on success) can be awaited before searching resumes.
+        await removeArSceneNode(channel!, entry.value.name);
       } on ArTrackerException {
         rethrow;
       } on Object catch (error) {

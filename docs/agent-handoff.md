@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-10-18 · by: US-24 five-question Trivia AR
+**Last updated:** 2026-10-18 · by: BUG-12 same-session rescan recovery
 
 ---
 
@@ -259,6 +259,15 @@ Measured later, four of them were. **Never copy code from that branch.**
   subscription. A new lock still requires an exact registry hit and the
   existing two-detection debounce. Controller/tracker/widget regressions and
   `flutter analyze` pass.
+- **BUG-12 — same-session rescan false failure fixed 2026-10-18.**
+  `ARObjectManager.removeNode` in plugin 1.1.3 is fire-and-forget (`void`),
+  while its Android native handler completes successfully with a null result.
+  The tracker had treated that normal result as `false`, showing
+  “Perdimos el seguimiento” after every rescan. It now awaits the object
+  channel directly; only native channel errors become `ArFailed`. A null-result
+  channel regression test plus focused AR tests and `flutter analyze` pass.
+  “Elegir equipo manualmente” remains on genuine failure panels as Article
+  VI.7 requires; it no longer appears in the successful rescan flow.
 - **US-24 / D-30 — five-question Trivia AR implemented 2026-10-18.** A linked
   locked team's unique `Equipo.trivias` populate a five-question in-session
   round with progress, one-time answer scoring/feedback, a Spanish result, and
@@ -376,6 +385,10 @@ chrome). Do not fall back to the fake tracker when that session fails.
   powershell -ExecutionPolicy Bypass -File tools/patch_filament_clips.ps1
   powershell -ExecutionPolicy Bypass -File tools/patch_arcore_session_lifecycle.ps1
   ```
+- **Plugin 1.1.3 `ARObjectManager.removeNode` is fire-and-forget and returns
+  `void`.** Its Android native handler reports success with a null channel
+  result. Do not interpret that as `false`; await the `arobjects_<viewId>`
+  channel's `removeNode` call directly when rescan must wait for completion.
 - ⚠️ **Plugin 1.1.3 hardcodes reference width at 0.2 m** and `precompile`
   errors with `Session not initialized` if called before any `onInitialize`.
   AR-05 sends `anchoMetros` via `setImageWidths`, which exists only after:
@@ -452,6 +465,7 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
+| 2026-10-18 | **BUG-12 — US-23 rescan false failure.** Plugin 1.1.3's `ARObjectManager.removeNode` is fire-and-forget and returns `void`, while native Android reports successful removal with `null`. The tracker previously interpreted that as failure and emitted `ArFailed(sessionLost)` on every rescan. It now awaits the object-channel call; only channel errors fail the rescan. Added a null-result channel regression test. Focused AR tests, `flutter analyze`, layering and diff checks pass. The manual path remains on genuine `ArFailed` states per Article VI.7. |
 | 2026-10-18 | **US-24 / D-30 five-question Trivia AR.** Replaced the single prompt with five distinct questions from the marker-linked `Equipo.trivias`; progress, once-only answer feedback/scoring, a Spanish final score, and replay stay in Flutter chrome. Unlinked or undersupplied teams see explicit unavailable copy. Mode interactions preserve the live tracker and attached model. Focused AR widget tests, `flutter analyze`, layering, and diff checks pass; physical-device visual review remains open. Next: BUG-08 device acceptance. |
 | 2026-10-18 | **US-23 / D-29 same-session rescan.** Added “Escanear otro equipo” from locked/lost states. Tracker model cleanup and controller transition preserve the running tracker/session and detection subscription; the overlay returns to searching and clears model/actions/modes. The next lock still uses exact `MarkerRegistry` identity and the normal debounce. Focused controller/tracker/widget tests and `flutter analyze` pass. |
 | 2026-10-18 | **US-22 batting-zone collision refinement (D-31 / v2.7.1).** Replaced the narrower fixed timing threshold with collision computed from the rendered ball and zone dimensions and actual lane width. A ball that just touches the visible zone now counts as a hit; focused boundary tests cover both edges and just-outside misses. `flutter analyze` and focused game tests pass. Physical-device visual review remains open. |
@@ -460,7 +474,6 @@ Rules of thumb:
 | 2026-10-05 | **BUG-11 code.** Brightened all four procedural particle materials and replaced linear drift with ballistic arcs, confetti flutter/descent, low dust spread, per-particle lifetimes, scale-in, and fade-out. Added motion tests and clarified the visual/motion requirement in the AR architecture. Physical Android visual confirmation remains open. |
 | 2026-10-05 | **US-12 amended (v2.5.3).** Removed Suavizado from Article VII examples and the runtime enum, renderer, controls, and YouTube/MP4 CSS mapping because it duplicated the existing blur family at a weaker setting. Desenfoque, Pasteles, Alta saturación, and the other families remain; forbidden filters stay forbidden. |
 | 2026-10-05 | **BUG-10 portrait orientation.** Flutter requests `portraitUp` before `runApp`; Android and iOS declarations allow upright portrait only. iPad multitasking is disabled to enforce that orientation list. Analyzer, all Flutter tests, and Android debug build pass; iOS build unavailable on Windows. |
-| 2026-10-05 | **US-12 amended (v2.5.2).** Removed Pixelado from Article VII, the runtime enum/renderer, archive controls, and YouTube/MP4 filter choices because it could not work consistently on YouTube playback. Removed its preview-only warning and updated US-12, BUG-04, README, and performance notes. Other allowed families and forbidden-filter constraints are unchanged. |
 | 2026-10-05 | **BUG-09 device accepted.** Human confirmed the Piratas D-22 stadium GLB displays correctly as the marker default, replacing the black/glitched trophy rectangle. Data and locked-state attachment regressions pass. Player visual confirmation and broader AR-06 hold/enter/leave checks remain open. |
 | 2026-09-26 | **BUG-07 done on device.** Pause/resume covers supported clips including idle; static stadiums stay without a fake pause control. |
 

@@ -61,6 +61,7 @@
 | BUG-09 | 🐛 | 🟠 P1 | Use Piratas' stadium model as the AR default | ☑ | AR model |
 | BUG-10 | 🐛 | 🟡 P2 | Lock the app to upright portrait orientation | ☑ | Platform / UI |
 | BUG-11 | 🐛 | 🟠 P1 | Brighten and naturalize AR particle effects | ◐ | AR VFX |
+| BUG-12 | 🐛 | 🟠 P1 | Keep same-session rescan out of the tracking-loss error flow | ☑ | AR rescan |
 | US-18 | 📗 | 🟠 P1 | Select stadium or player model after AR lock | ☑ | AR depth |
 | US-19 | 📗 | 🟠 P1 | Lay AR model parallel to scanned logo | ☑ | AR depth |
 | US-20 | 📗 | 🟠 P1 | Pause animation, save AR photos, and trigger four independent particle effects | ◐ | AR interaction / capture |
@@ -1541,3 +1542,42 @@ filters.
 material emission to the four generated GLBs. Tracker motion now uses
 preset-specific velocity, acceleration, flutter/spin, per-particle lifetime,
 scale-in, and fade-out. Physical Android visual acceptance remains open.
+
+## BUG-12 · 🐛 · 🟠 P1 · Keep same-session rescan out of the tracking-loss error flow · ☑ Hecho
+
+**Prompt**
+```
+Context: US-23's same-session rescan reports “Perdimos el seguimiento” after
+the user taps “Escanear otro equipo”, even though the live AR session is still
+available. The tracker then must be retried, sometimes more than once, before
+scanning resumes.
+
+Task: Correct the production model-removal call to match the pinned plugin's
+actual API contract. `ARObjectManager.removeNode` is fire-and-forget and
+returns void; its Android native handler reports successful completion with a
+null result. A successful removal must not be interpreted as a false return or
+mapped to `ArFailed(sessionLost)`. Keep the current tracker/camera session,
+preserve explicit error handling for native channel failures, and do not
+change the general ArFailed recovery contract.
+
+Acceptance criteria:
+- A successful null-result native removeNode call is accepted.
+- “Escanear otro equipo” returns to ArSearching without a session-loss panel
+  or a retry, retaining the same session.
+- Native removal failures remain visible as typed tracker failures.
+- Focused AR tests and `flutter analyze` pass.
+
+Files: `lib/ar/trackers/arcore_image_tracker.dart`, AR tracker tests,
+`WORK_ITEMS.md`, `docs/agent-handoff.md`.
+
+Out of scope: removing “Elegir equipo manualmente” from genuine ArFailed
+states (required by Article VI.7), restarting/replacing the tracker, or
+changing marker identity/debounce.
+```
+
+**Hecho 2026-10-18:** The pinned plugin's `removeNode` wrapper returns `void`,
+and Android reports success as `null`; the old boolean check treated every
+successful removal as `sessionLost`. The tracker now awaits the Android object
+channel's `removeNode` completion and only maps actual channel errors to a
+failure. Added a null-result channel regression test; focused AR tests and
+`flutter analyze` pass.
