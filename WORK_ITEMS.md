@@ -67,7 +67,7 @@
 | US-21 | 📗 | 🟠 P1 | General baseball history with sourced images | ☑ | Historia |
 | US-22 | 📗 | 🟠 P1 | In-AR home-run mini-game | ☑ | Bonus / AR |
 | US-23 | 📗 | 🟠 P1 | Scan another team without leaving AR | ☑ | AR UX |
-| US-24 | 📗 | 🟠 P1 | Five-question AR trivia with a finish message | ☐ | Bonus / AR |
+| US-24 | 📗 | 🟠 P1 | Five-question AR trivia with a finish message | ☑ | Bonus / AR |
 | ~~US-05…US-08~~ | — | — | ~~Old monolithic AR items~~ | ⊘ | Replaced by AR-01…AR-07 |
 | ~~BUG-01~~ | — | — | ~~AR mock always Guerreros~~ | ⊘ | Deleted with the mock in AR-03 |
 
@@ -228,7 +228,7 @@ and detection subscription. The next team still resolves by exact registry
 lookup and the existing debounce. Controller, tracker, and widget regressions
 plus `flutter analyze` pass.
 
-## US-24 · 📗 · 🟠 P1 · Five-question AR trivia with a finish message · ☐ Pendiente
+## US-24 · 📗 · 🟠 P1 · Five-question AR trivia with a finish message · ☑ Hecho
 
 **Prompt**
 ```
@@ -265,6 +265,14 @@ Out of scope: changing the existing team Trivia route, adding questions or
 teams, remote trivia, leaderboard/account persistence, or changes to marker
 detection.
 ```
+
+**Hecho 2026-10-18:** Trivia AR now selects five distinct questions from the
+locked team's linked `Equipo.trivias`, with progress, once-only answer
+feedback, score, a completion result, and in-session replay. Unlinked teams or
+teams with fewer than five distinct questions receive explicit unavailable
+copy. Focused mode and AR-screen widget tests pass; tracker/model continuity,
+`flutter analyze`, the AR layering check, and `git diff --check` are verified.
+Physical-device visual review remains open.
 
 ## BUG-05 · 🟡 P2 · Show supplied club photos in Historia · ☑ Hecho
 

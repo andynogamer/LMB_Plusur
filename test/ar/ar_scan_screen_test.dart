@@ -20,12 +20,13 @@ Marcador _marcador({
   required String id,
   required String titulo,
   required String infoTexto,
+  String equipoId = 'leones_yucatan',
   TipoMarcador tipo = TipoMarcador.estadio,
   List<String> animaciones = const [],
 }) {
   return Marcador(
     id: id,
-    equipoId: 'leones_yucatan',
+    equipoId: equipoId,
     tipo: tipo,
     titulo: titulo,
     infoTexto: infoTexto,
@@ -616,7 +617,9 @@ void main() {
       );
       expect(find.byKey(const Key('ar-action-gesto')), findsOneWidget);
 
-      await tester.ensureVisible(find.byKey(const Key('ar-action-animation-pause')));
+      await tester.ensureVisible(
+        find.byKey(const Key('ar-action-animation-pause')),
+      );
       await tester.tap(find.byKey(const Key('ar-action-animation-pause')));
       await tester.pump();
       await tester.pump();
@@ -630,7 +633,9 @@ void main() {
         isEmpty,
       );
 
-      await tester.ensureVisible(find.byKey(const Key('ar-action-animation-pause')));
+      await tester.ensureVisible(
+        find.byKey(const Key('ar-action-animation-pause')),
+      );
       await tester.tap(find.byKey(const Key('ar-action-animation-pause')));
       await tester.pump();
       await tester.pump();
@@ -695,6 +700,88 @@ void main() {
     );
     expect(infoButton.onPressed, isNull);
     expect(find.byKey(const Key('ar-trivia')), findsOneWidget);
+  });
+
+  testWidgets(
+    'la ronda completa conserva tracker y modelo en la misma sesión',
+    (tester) async {
+      final tracker = FakeArTracker();
+      await pumpScan(tester, tracker: tracker);
+      await lock(tracker, leones);
+      await tester.pump();
+      await tester.pump();
+
+      final equipo = (await DataService().cargarEquipos()).singleWhere(
+        (team) => team.id == leones.equipoId,
+      );
+      final attachedModels = List.of(tracker.attachedModels);
+      await tester.ensureVisible(find.byKey(const Key('ar-mode-trivia')));
+      await tester.tap(find.byKey(const Key('ar-mode-trivia')));
+      await tester.pump();
+
+      for (var question = 0; question < 5; question++) {
+        final prompt = tester.widget<Text>(
+          find.byKey(const Key('ar-trivia-question')),
+        );
+        final trivia = equipo.trivias.singleWhere(
+          (item) => item.pregunta == prompt.data,
+        );
+        final answer = find.byKey(
+          Key('ar-trivia-answer-${trivia.respuestaCorrecta}'),
+        );
+        await tester.ensureVisible(answer);
+        await tester.tap(answer);
+        await tester.pump();
+        await tester.ensureVisible(find.byKey(const Key('ar-trivia-next')));
+        await tester.tap(find.byKey(const Key('ar-trivia-next')));
+        await tester.pump();
+      }
+
+      expect(find.byKey(const Key('ar-trivia-finished')), findsOneWidget);
+      expect(find.text('Puntaje final: 5/5'), findsOneWidget);
+      await tester.ensureVisible(find.byKey(const Key('ar-trivia-replay')));
+      await tester.tap(find.byKey(const Key('ar-trivia-replay')));
+      await tester.pump();
+      expect(find.textContaining('Pregunta 1 de 5'), findsOneWidget);
+
+      await tester.ensureVisible(find.byKey(const Key('ar-mode-gallery')));
+      await tester.tap(find.byKey(const Key('ar-mode-gallery')));
+      await tester.pump();
+
+      expect(find.byKey(const Key('ar-trivia')), findsNothing);
+      expect(tracker.startCallCount, 1);
+      expect(tracker.stopCalled, isFalse);
+      expect(tracker.attachedModels, attachedModels);
+      expect(tracker.activeModels, contains(leones.id));
+    },
+  );
+
+  testWidgets('no ofrece trivia usando un equipo sugerido sin vínculo', (
+    tester,
+  ) async {
+    final markerWithoutTeam = _marcador(
+      id: 'marcador_sin_equipo',
+      equipoId: 'equipo_no_vinculado',
+      titulo: 'Marcador sin equipo',
+      infoTexto: 'Sin equipo asociado.',
+    );
+    final teamHint = (await DataService().cargarEquipos()).singleWhere(
+      (team) => team.id == 'leones_yucatan',
+    );
+    final tracker = FakeArTracker();
+    await pumpScan(
+      tester,
+      tracker: tracker,
+      hint: teamHint,
+      marcador: markerWithoutTeam,
+    );
+    await lock(tracker, markerWithoutTeam);
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byKey(const Key('ar-mode-trivia')), findsNothing);
+    expect(find.byKey(const Key('ar-trivia-unavailable')), findsOneWidget);
+    expect(find.textContaining('cinco preguntas distintas'), findsOneWidget);
   });
 
   testWidgets('el reto de jonrón cierra información al activarse', (
@@ -827,7 +914,8 @@ void main() {
     expect(
       tracker.clearEffectCount,
       greaterThanOrEqualTo(
-          clearedBeforeEffects + ArParticleEffect.values.length),
+        clearedBeforeEffects + ArParticleEffect.values.length,
+      ),
     );
     expect(find.byKey(const Key('ar-locked')), findsOneWidget);
   });
@@ -839,9 +927,8 @@ void main() {
     await pumpScan(
       tester,
       tracker: tracker,
-      overlaySnapshotForTesting: () async => Uint8List.fromList(
-        [137, 80, 78, 71, 13, 10, 26, 10],
-      ),
+      overlaySnapshotForTesting: () async =>
+          Uint8List.fromList([137, 80, 78, 71, 13, 10, 26, 10]),
     );
 
     expect(find.byKey(const Key('ar-action-photo')), findsNothing);
@@ -856,10 +943,16 @@ void main() {
 
     expect(tracker.capturePhotoCount, 1);
     expect(tracker.capturedPhotoOverlays, hasLength(1));
-    expect(
-      tracker.capturedPhotoOverlays.single.take(8),
-      [137, 80, 78, 71, 13, 10, 26, 10],
-    );
+    expect(tracker.capturedPhotoOverlays.single.take(8), [
+      137,
+      80,
+      78,
+      71,
+      13,
+      10,
+      26,
+      10,
+    ]);
     expect(find.text('Foto guardada en la galería.'), findsOneWidget);
     expect(find.byKey(const Key('ar-locked')), findsOneWidget);
   });
@@ -876,9 +969,8 @@ void main() {
     await pumpScan(
       tester,
       tracker: tracker,
-      overlaySnapshotForTesting: () async => Uint8List.fromList(
-        [137, 80, 78, 71, 13, 10, 26, 10],
-      ),
+      overlaySnapshotForTesting: () async =>
+          Uint8List.fromList([137, 80, 78, 71, 13, 10, 26, 10]),
     );
     await lock(tracker, leones);
     await tester.pump();

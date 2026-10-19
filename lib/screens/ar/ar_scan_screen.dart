@@ -252,7 +252,7 @@ class ArScanScreenState extends State<ArScanScreen>
     for (final equipo in _equipos) {
       if (equipo.id == marcador.equipoId) return equipo;
     }
-    return widget.equipoHint;
+    return null;
   }
 
   Future<void> _presentAndBind(
@@ -682,6 +682,13 @@ class ArScanScreenState extends State<ArScanScreen>
   }
 
   void _onModeChanged(ArExperienceMode next) {
+    if (next == ArExperienceMode.trivia) {
+      final marcador = _activeMarcador(_uiState.value);
+      if (marcador == null ||
+          !hasFiveDistinctTriviaQuestions(marcador, _equipoFor(marcador))) {
+        return;
+      }
+    }
     if (next != ArExperienceMode.gallery && _chrome.infoPressed) {
       unawaited(ArSpeechService.instance.stop());
       _spin
