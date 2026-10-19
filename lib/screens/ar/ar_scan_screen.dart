@@ -642,7 +642,7 @@ class ArScanScreenState extends State<ArScanScreen>
   }
 
   Future<void> _onInfo(Marcador marcador) async {
-    if (_mode.value == ArExperienceMode.trivia) return;
+    if (_mode.value != ArExperienceMode.gallery) return;
     if (_chrome.infoPressed) {
       await ArSpeechService.instance.stop();
       _spin.stop();
@@ -662,7 +662,7 @@ class ArScanScreenState extends State<ArScanScreen>
   }
 
   void _onModeChanged(ArExperienceMode next) {
-    if (next == ArExperienceMode.trivia && _chrome.infoPressed) {
+    if (next != ArExperienceMode.gallery && _chrome.infoPressed) {
       unawaited(ArSpeechService.instance.stop());
       _spin
         ..stop()
@@ -673,9 +673,11 @@ class ArScanScreenState extends State<ArScanScreen>
     _mode.value = next;
     _patchChrome(
       _chrome.copyWith(
-        actionNote: next == ArExperienceMode.trivia
-            ? 'Modo Trivia AR activado.'
-            : 'Modo Galería AR activado.',
+        actionNote: switch (next) {
+          ArExperienceMode.gallery => 'Modo Galería AR activado.',
+          ArExperienceMode.trivia => 'Modo Trivia AR activado.',
+          ArExperienceMode.homeRun => 'Reto de jonrón activado.',
+        },
       ),
     );
   }

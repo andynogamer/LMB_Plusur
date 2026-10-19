@@ -3,7 +3,7 @@
 **This file is the session entry point.** A new agent reads this first, works
 one item, then **updates this file before finishing** (§6 — mandatory).
 
-**Last updated:** 2026-10-18 · by: US-21 general baseball history
+**Last updated:** 2026-10-18 · by: US-22 batting-zone collision refinement
 
 ---
 
@@ -21,7 +21,7 @@ These are **binding**, not advisory:
 
 | # | File | What it gives you |
 |---|---|---|
-| 1 | `CONSTITUTION.md` | Governance, v2.6.0, decisions D-01…D-31 |
+| 1 | `CONSTITUTION.md` | Governance, v2.7.0, decisions D-01…D-31 |
 | 2 | `AGENTS.md` | How to work here (auto-loaded as a workspace rule) |
 | 3 | `WORK_ITEMS.md` | The backlog. Each item's `Prompt` block **is** the spec |
 | 4 | `docs/ar-postmortem.md` | Why AR attempt #1 was thrown away (RC-1…RC-7) |
@@ -241,10 +241,20 @@ Measured later, four of them were. **Never copy code from that branch.**
   image source/credit/license, and historical references. Network image failure
   uses the baseball placeholder; existing club histories are unchanged. Team
   coverage remains the ten Zona Sur clubs.
-- **Teacher-requested AR work is specified, not implemented:** US-22 is the
-  five-pitch in-AR home-run mini-game, US-23 keeps rescanning in the same
-  tracker session, and US-24 makes Trivia AR a five-question round with a
-  finish message. Follow one work item per branch.
+- **US-22 / D-31 — implemented and refined 2026-10-18.** The locked AR chrome
+  has an endless “Reto de jonrón” mode: after each hit, the next pitch is
+  slightly faster and its visible batting zone is randomized; a miss ends the
+  streak. Spanish feedback, current streak, session-best score, result and
+  replay are shown. The best survives replay and mode changes but is not
+  persisted beyond the current AR screen session. The Flutter widget owns and
+  disposes its animation and inter-pitch timer; it does not call the tracker.
+  Hit detection now matches rendered ball/zone overlap, including edge contact,
+  using the actual lane width and displayed dimensions (D-31, v2.7.1).
+  Focused game and AR-screen widget tests plus `flutter analyze` pass.
+  Physical-device visual review remains open.
+- **Next teacher-requested AR work:** US-23 keeps rescanning in the same
+  tracker session; US-24 makes Trivia AR a five-question round with a finish
+  message. Follow one work item per branch.
 - **US-18 / D-24:** after a lock, the AR chrome offers **Estadio** or
   **Jugador** from the club's D-22 catalog. The tracker replaces the anchored
   node without restarting the session; the marker model remains the default.
@@ -279,9 +289,9 @@ BUG-08 device 5× lock/background.
 Remaining human/device gates: AR-06/07 acceptance, particle effects, printed marker checks.
 ```
 
-Next feature: US-22 in-AR home-run mini-game. Open physical-device gates remain
-BUG-08 lifecycle recovery, AR-06/07 acceptance, particle visuals, and printed
-marker checks.
+Next feature: US-23 — same-session rescan. Open physical-device gates remain
+BUG-08 lifecycle recovery, AR-06/07 acceptance, particle visuals, printed
+marker checks, and visual review of the US-22 mini-game.
 
 Release APK path: `build/app/outputs/flutter-apk/app-release.apk`.
 Rebuild after all three plugin patches before installing.
@@ -429,7 +439,9 @@ Rules of thumb:
 
 | Date | Change |
 |---|---|
-| 2026-10-18 | **US-21 / D-28.** Added a separate international baseball-history timeline with four detailed Spanish milestones, sourced/licensed image metadata and visible credits, source links, and themed image fallback. Added a Main entry without changing the ten-club Zona Sur catalog. Governance now specifies US-22 (AR mini-game), US-23 (same-session rescan), and US-24 (five-question AR trivia); those remain pending. |
+| 2026-10-18 | **US-22 batting-zone collision refinement (D-31 / v2.7.1).** Replaced the narrower fixed timing threshold with collision computed from the rendered ball and zone dimensions and actual lane width. A ball that just touches the visible zone now counts as a hit; focused boundary tests cover both edges and just-outside misses. `flutter analyze` and focused game tests pass. Physical-device visual review remains open. |
+| 2026-10-18 | **US-22 / D-31 amended (v2.7.0).** Replaced the fixed five-pitch round with an endless hit streak, a slightly faster next pitch and a newly randomized batting zone per pitch. A miss ends a run; the session-best score survives replay and mode changes in the current AR screen only. Updated the Constitution and AR architecture contract. Focused game + AR-screen tests and `flutter analyze` pass; physical-device visual review remains open. Next: US-23. |
+| 2026-10-18 | **US-21 / D-28.** Added a separate international baseball-history timeline with four detailed Spanish milestones, sourced/licensed image metadata and visible credits, source links, and themed image fallback. Added a Main entry without changing the ten-club Zona Sur catalog. Governance specified US-22 (AR mini-game), US-23 (same-session rescan), and US-24 (five-question AR trivia); US-22 is now implemented, while US-23/24 remain pending. |
 | 2026-10-05 | **BUG-11 code.** Brightened all four procedural particle materials and replaced linear drift with ballistic arcs, confetti flutter/descent, low dust spread, per-particle lifetimes, scale-in, and fade-out. Added motion tests and clarified the visual/motion requirement in the AR architecture. Physical Android visual confirmation remains open. |
 | 2026-10-05 | **US-12 amended (v2.5.3).** Removed Suavizado from Article VII examples and the runtime enum, renderer, controls, and YouTube/MP4 CSS mapping because it duplicated the existing blur family at a weaker setting. Desenfoque, Pasteles, Alta saturación, and the other families remain; forbidden filters stay forbidden. |
 | 2026-10-05 | **BUG-10 portrait orientation.** Flutter requests `portraitUp` before `runApp`; Android and iOS declarations allow upright portrait only. iPad multitasking is disabled to enforce that orientation list. Analyzer, all Flutter tests, and Android debug build pass; iOS build unavailable on Windows. |
@@ -438,7 +450,6 @@ Rules of thumb:
 | 2026-09-26 | **BUG-07 done on device.** Pause/resume covers supported clips including idle; static stadiums stay without a fake pause control. |
 | 2026-09-26 | **BUG-08 code.** Screen observes `paused`/`hidden`/`resumed` only (not `inactive`). Controller parks `ArLocked` as `ArLost`, re-subscribes detections after tracker resume, and maps a failed restore to `ArFailed(sessionLost)`. Tracker talks to `pauseSession`/`resumeSession` on the pinned plugin after a third post-`pub get` patch. Tests use bounded pumps, not `runAsync` wait-forever loops. Device 5× still open. |
 | 2026-09-26 | **BUG-07 code.** Pause/resume now follows a successfully started clip, so Jugador's `idle` is controllable immediately and a failed/static clip cannot expose a misleading control. Model changes clear paused/celebration state before attaching the selected model; revision checks discard stale async clip results. Added direct tracker-seam and widget regressions for idle pause/resume, stadium/player switching, and fresh idle state. |
-| 2026-09-26 | **BUG-06 done.** Replaced Activity-window-only PixelCopy (which misses the AR plugin's separate GL surface) with the plugin's native AR-scene snapshot plus a transparent Flutter chrome capture, composed natively before MediaStore save. Added blank-input rejection and pre-snapshot API gating. Analyze, 12 focused AR tests, and Android debug build pass. Two captures from M2012K10C / Android 13 were pulled from Pictures and visually confirmed to contain the live scene, model, and controls. |
 
 ## 8. How to work
 
@@ -451,10 +462,10 @@ If a request conflicts with the constitution, or repeats a postmortem root cause
 
 ## 9. Current task
 
-> Next feature: US-22 — add the five-pitch in-AR home-run mini-game without
-> restarting or rebuilding the tracker session. Then US-23 same-session rescan
-> and US-24 five-question Trivia AR. Human/device gates remain BUG-08 lifecycle
-> recovery, AR-06/07 confirmation, particle visuals, and printed marker checks.
+> Next feature: US-23 — add same-session rescan without restarting or
+> rebuilding the tracker session. Then US-24 five-question Trivia AR.
+> Human/device gates remain BUG-08 lifecycle recovery, AR-06/07 confirmation,
+> particle visuals, printed marker checks, and US-22 visual review.
 
 _(The human edits this line each session. Leave it pointing at the next item
 when you finish.)_

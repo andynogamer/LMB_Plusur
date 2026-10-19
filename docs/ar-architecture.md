@@ -1,7 +1,7 @@
 # AR architecture contract
 
 **Status:** binding. Referenced by Constitution **Article VI**.
-**Version:** 1.2.0 · 2026-10-18
+**Version:** 1.3.1 · 2026-10-18
 **Scope:** everything under `lib/ar/`, plus AR-related native config.
 **Read first:** [`ar-postmortem.md`](./ar-postmortem.md) — this document is its remedy.
 
@@ -346,10 +346,17 @@ their bounded effect ends; they must not remain as static or dark specks.
   `Equipo.trivias`, one at a time. Keep progress, single-answer correctness,
   and score in the Flutter overlay; show a final score/result and in-session
   replay. The AR camera and anchored model remain active.
-- **Mini-game:** the “Reto de jonrón” is a local five-pitch timing game in
-  Flutter chrome, reachable after a confirmed lock. It may not access/decode
-  camera frames, change marker identity, use a game engine, or restart/rebuild
-  the tracker surface.
+- **Mini-game:** the “Reto de jonrón” is an endless consecutive-hit timing
+  challenge in Flutter chrome, reachable after a confirmed lock. A miss ends
+  the current run; replay starts another. Each pitch gets a fresh random
+  batting-zone position and becomes slightly faster than the previous pitch.
+  Show current streak and best run, retaining the best only in memory for the
+  current AR screen session (including mode switches and replay). A swing
+  counts as a hit whenever the rendered ball overlaps or touches the visible
+  batting zone; compute collision from their displayed dimensions and lane
+  width, not a fixed normalized timing threshold. It may not
+  access/decode camera frames, change marker identity, use a game engine, or
+  restart/rebuild the tracker surface; do not persist a leaderboard.
 
 ---
 
@@ -624,6 +631,7 @@ docs/
 - [ ] Rescan clears prior content and returns to `ArSearching` without stopping,
       disposing, or rebuilding the current tracker session.
 - [ ] Trivia AR completes five linked-team questions with result feedback and
-      in-session replay; the mini-game uses Flutter chrome only and never
-      accesses camera frames or restarts tracking.
+      in-session replay; the mini-game uses Flutter chrome only, gradually
+      speeds each new pitch, randomizes its batting zone, retains the session
+      best score, and never accesses camera frames or restarts tracking.
 - [ ] `flutter analyze` clean on touched files.
