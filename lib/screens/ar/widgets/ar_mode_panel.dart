@@ -18,6 +18,8 @@ class ArModePanel extends StatefulWidget {
     required this.equipo,
     required this.mode,
     required this.onModeChanged,
+    this.bestHomeRunScore = 0,
+    this.onBestHomeRunScoreChanged,
     this.homeRunRandom,
   });
 
@@ -25,6 +27,8 @@ class ArModePanel extends StatefulWidget {
   final Equipo? equipo;
   final ArExperienceMode mode;
   final ValueChanged<ArExperienceMode> onModeChanged;
+  final int bestHomeRunScore;
+  final ValueChanged<int>? onBestHomeRunScoreChanged;
   final math.Random? homeRunRandom;
 
   @override
@@ -33,16 +37,26 @@ class ArModePanel extends StatefulWidget {
 
 class _ArModePanelState extends State<ArModePanel> {
   int? _selected;
-  int _bestHomeRunScore = 0;
+  late int _bestHomeRunScore;
 
   void _recordBestHomeRunScore(int score) {
     if (score <= _bestHomeRunScore) return;
     setState(() => _bestHomeRunScore = score);
+    widget.onBestHomeRunScoreChanged?.call(score);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _bestHomeRunScore = widget.bestHomeRunScore;
   }
 
   @override
   void didUpdateWidget(covariant ArModePanel oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.bestHomeRunScore > _bestHomeRunScore) {
+      _bestHomeRunScore = widget.bestHomeRunScore;
+    }
     if (oldWidget.mode != widget.mode) _selected = null;
   }
 

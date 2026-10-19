@@ -58,9 +58,9 @@ class ArSessionController {
     this.needed = 2,
     this.window = const Duration(seconds: 2),
     DateTime Function()? now,
-  })  : _tracker = tracker,
-        _registry = registry,
-        _now = now ?? DateTime.now {
+  }) : _tracker = tracker,
+       _registry = registry,
+       _now = now ?? DateTime.now {
     _gate = _DetectionGate(needed: needed, window: window, now: _now);
   }
 
@@ -81,6 +81,7 @@ class ArSessionController {
   bool _disposed = false;
   bool _started = false;
   bool _appResumed = true;
+  bool _rescanInProgress = false;
 
   ArSessionState get state => _state;
 
@@ -121,6 +122,32 @@ class ArSessionController {
   /// camera through [ArTracker]. Does not rebuild UI chrome.
   Future<void> handleAppLifecycleChange({required bool resumed}) async {
     await _applyAppLifecycleChange(resumed: resumed);
+  }
+
+  /// Clears the current model and resumes exact-name detection in the same
+  /// tracker session. The detection subscription remains active throughout.
+  Future<void> rescan() async {
+    final current = _state;
+    if (_disposed ||
+        !_started ||
+        _rescanInProgress ||
+        (current is! ArLocked && current is! ArLost)) {
+      return;
+    }
+
+    _rescanInProgress = true;
+    _gate.reset();
+    try {
+      await _tracker.clearModel();
+      if (_disposed || _state is ArFailed) return;
+      _emit(const ArSearching());
+    } on ArTrackerException catch (error) {
+      if (!_disposed) _fail(error.failure);
+    } on Object {
+      if (!_disposed) _fail(ArTrackerFailure.unknown);
+    } finally {
+      _rescanInProgress = false;
+    }
   }
 
   Future<void> _applyAppLifecycleChange({required bool resumed}) async {
