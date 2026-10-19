@@ -17,7 +17,16 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 | [`docs/ar-architecture.md`](./docs/ar-architecture.md) | The AR technical contract: layers, `ArTracker` seam, state machine, error taxonomy, budgets. |
 | [`docs/ar-marker-guide.md`](./docs/ar-marker-guide.md) | How to author printable markers ARCore can actually track. |
 
-**Version**: 2.5.3 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-10-05
+**Version**: 2.6.0 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-10-18
+
+> **v2.6.0 — teacher-requested history and AR experiences.** D-28 keeps the
+> ten-club Zona Sur catalog intact while allowing a separate educational
+> baseball-history timeline spanning the sport internationally, with sourced
+> and credited images. D-29 adds an in-session rescan without replacing the
+> tracker session; D-30 defines Trivia AR as a five-question round with a
+> visible result; D-31 adds a lightweight local baseball mini-game. These
+> additions stay within the existing Flutter / `ArTracker` boundaries and do
+> not add teams, services, or a game engine.
 
 > **v2.5.3 — US-12 Suavizado removal.** Removes Suavizado from the custom
 > filter examples and runtime choices. Its local blur (0.9 px) and CSS
@@ -185,9 +194,11 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 ## Preamble — What LMB Plusur is
 
 **LMB Plusur** is a Flutter mobile app for fans of the **Liga Mexicana de
-Béisbol (LMB) — Zona Sur only**. It is a **degree / scholar project** that must
-also behave like a real product: coherent baseball narrative, polished UI, and
-a complete AR experience.
+Béisbol (LMB) — Zona Sur clubs**. Alongside Zona Sur team content, it may
+include **general educational baseball history spanning the sport
+internationally** (D-28). It is a **degree / scholar project** that must also
+behave like a real product: coherent baseball narrative, polished UI, and a
+complete AR experience.
 
 A user can **scan image markers / logos** to unlock AR experiences (3D stadiums,
 trophies, balls, or historical players with animations and in-AR controls), or
@@ -217,21 +228,25 @@ plugins) are an **embedded capability**, not a parallel product. **Unity is out.
 the professor switched the assigned theme to **baseball / LMB** and left some
 “Mundial 2026” strings in the handout and checklist by mistake.
 
-**This product’s theme is LMB baseball (Zona Sur) only.** Agents MUST keep
-visual and narrative coherence with baseball. Meet the handout’s *technical*
-bars (filters, AR interactions, effects, packaging) using baseball content.
-Do **not** add soccer/World Cup branding, assets, or copy to “match” leftover
+**This product’s theme is LMB baseball and Zona Sur teams.** The educational
+baseball-history section (D-28) may cover the sport internationally without
+adding other clubs to the app’s team catalog. Agents MUST keep visual and
+narrative coherence with baseball. Meet the handout’s *technical* bars
+(filters, AR interactions, effects, packaging) using baseball content. Do
+**not** add soccer/World Cup branding, assets, or copy to “match” leftover
 Mundial wording.
 
 ---
 
 ## Core Principles
 
-### I. Zona Sur only
+### I. Zona Sur team coverage; general baseball education
 
-The app MUST cover **only LMB Zona Sur** teams. Do not add Zona Norte clubs,
-MLB clubs, soccer/World Cup clubs, or generic non-baseball content unless a
-ratified amendment expands scope.
+The team catalog MUST cover **only LMB Zona Sur** clubs. Do not add Zona Norte
+clubs, MLB teams, soccer/World Cup clubs, or non-baseball content. A separate
+educational baseball-history section MAY discuss the sport's international
+history, leagues, and historic figures without adding those organizations as
+selectable teams or changing the ten-club catalog (D-28).
 
 **Canonical team ids** (source: `assets/data.json`):
 
@@ -318,6 +333,10 @@ data**, not hardcoded widget trees.
 - Screens MUST receive models (or ids resolved to models), not copy-pasted
   team strings.
 - Adding a team means extending data + assets, not cloning screens per club.
+- General baseball-history metadata MUST remain in a local structured asset.
+  Historical images may be remote only when their source and license/credit
+  are recorded with the item and shown to the user; image failure must retain
+  a themed fallback.
 
 ### VI. Flutter-native AR behind an enforced boundary (D-01, D-12 … D-20)
 
@@ -464,6 +483,20 @@ Anything else requires an amendment.
 - Multiple interaction modes (e.g. galería AR, trivia AR, videos inmersivos).
 - AR chrome MUST match main app style (colors, type, icons, layout language).
 
+**Teacher-requested AR interactions (D-29 … D-31):**
+
+- From `ArLocked` / `ArLost`, the user can request another scan. The existing
+  tracker session and camera remain live; the controller returns to
+  `ArSearching`, clears the prior marker's model/actions, and locks new content
+  only through the exact registry + debounce flow. Never start a second
+  concurrent camera session.
+- Trivia AR is a five-question round sourced from the locked team's existing
+  `Equipo.trivias`, with one-at-a-time answers, progress, score, and a visible
+  Spanish completion result. Replay remains in the current AR session.
+- A lightweight baseball mini-game is reachable only after a confirmed lock.
+  Game interaction belongs to Flutter chrome, remains local to the session,
+  and must not restart tracking, access camera frames, or bypass `ArTracker`.
+
 **3D content (D-03, D-22):** On `full-project`, every Zona Sur club has two
 GLBs — a static stadium and an animated player. Same mesh family; team color
 and crest are the only differences. Only the player has clips (`idle`,
@@ -577,6 +610,9 @@ tools/             dev scripts (marker scoring, …)
 Splash → Main
   ├─ Escanear → detect marcador (≥3 distinct) → AR window
   │       ├─ modo Galería AR / Trivia AR / Video inmersivo
+  │       ├─ Trivia AR: five questions → result + replay
+  │       ├─ Reto de jonrón: five pitches → result + replay
+  │       ├─ Escanear otro equipo → searching in the same AR session
   │       ├─ botones: animación | información+TTS | video | stats | VFX
   │       └→ shared features (historia, trivia, videos)
   └─ Seleccionar equipo → búsqueda por nombre → Team menu
@@ -584,18 +620,24 @@ Splash → Main
           └─ Abrir experiencia AR → scanner (same AR stack)
 ```
 
+Main also links to the standalone, international “Historia del béisbol”
+timeline; it does not add clubs to the team catalog.
+
 ### Feature contracts
 
 | Feature | Status | Contract |
 |---|---|---|
-| Historia | Implemented | `equipo.historia` + fundación. |
-| Trivia / retos | Implemented (extend) | From `trivias`; last score only; AR trivia mode planned. |
+| Historia del club | Implemented | `equipo.historia` + fundación. |
+| Historia general del béisbol | Implemented (US-21) | International chronological education; local metadata, sourced/credited images, Spanish detail. Does not expand the team catalog (D-28). |
+| Trivia / retos | Implemented (extend) | From `trivias`; last score only; Trivia AR is a five-question in-session round with a result message (D-30). |
 | Video archive + filters | Implemented | YouTube catalog (R-03); allowed filters only. |
 | AR markers (≥3) | 5 logos in DB (scores ≥ 75); 3 accepted on device | Gate is 75, not 90. Human: Leones, Olmecas, Piratas lock. Bravos and Tigres raw are not device-checked. |
 | AR controls | Code (AR-07/US-20); device not checked | On `ArLocked`: animation play/pause, information + TTS, Android photo-to-gallery, and four independently selected in-scene particle effects. iOS photo capture is deferred. |
 | Simulated live stats | Planned | Local mock “tiempo real”. |
 | Multiple AR modes | Planned | e.g. galería, trivia AR, video inmersivo. |
 | AR model choice | Implemented (US-18) | On `ArLocked` / `ArLost`, choose the club's stadium or player GLB; tracker replacement preserves the session and pose anchor. |
+| In-session rescan | Planned (US-23) | Return to searching and clear prior content without leaving or restarting the live tracker session (D-29). |
+| AR mini-game | Planned (US-22) | Local five-pitch “Reto de jonrón” in Flutter chrome after marker lock; no game engine or camera-frame access (D-31). |
 | Team search | Partial → required | Client-side name filter on team list. |
 | User feedback | Partial | Sounds + visual state + short messages. |
 
@@ -769,6 +811,10 @@ Track fixes via `WORK_ITEMS.md`.
 | D-24 | After an AR marker locks, fans may choose the club's D-22 stadium or player GLB. Flutter owns the choice; the tracker replaces the anchored node in place without restarting the session. The marker's original model remains the default. | **Ratified 2026-09-19** |
 | D-25 | Club GLBs are authored Y-up and are placed parallel to the scanned logo plane with a local **-90° X rotation**. Presentation yaw rotates around the marker normal. | **Ratified 2026-09-19; amended for orientation sign** |
 | D-27 | While the AR scan screen is open, Android pause/resume is owned by `ArTracker.handleAppLifecycleChange`. The controller parks a lock as `ArLost` until a fully tracked detection returns. Recovery uses the pinned plugin session (after `tools/patch_arcore_session_lifecycle.ps1`), never a second concurrent camera session, and never a camera-surface rebuild from chrome taps. A failed resume is `ArFailed(sessionLost)`. iOS lifecycle is not included. | **Ratified 2026-09-26** |
+| D-28 | The team catalog remains the ten LMB Zona Sur clubs. A separate Spanish educational baseball-history timeline may cover international baseball, leagues, and historic figures without adding teams. Store text/source metadata locally; use only sourced images with recorded license/credit and visible attribution, plus themed fallback on image failure. | **Ratified 2026-10-18** |
+| D-29 | “Escanear otro equipo” from `ArLocked` / `ArLost` returns the controller to `ArSearching` and clears the prior model/actions while keeping the same tracker/camera session. New content still requires the exact marker registry and debounce. Never create a second concurrent session. | **Ratified 2026-10-18** |
+| D-30 | Trivia AR is a five-question round from the locked team's existing `Equipo.trivias`; it shows progress, evaluates one response per question, and ends with a Spanish score/result message and in-session replay. | **Ratified 2026-10-18** |
+| D-31 | A local “Reto de jonrón” mini-game is available after a confirmed AR lock: five timed pitches, tap-to-swing, hit/miss feedback, final score, and replay. It runs in Flutter chrome and uses no game engine, camera-frame access, network, or account. | **Ratified 2026-10-18** |
 
 Open residual (non-blocking for backlog writing):
 

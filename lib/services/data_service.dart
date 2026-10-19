@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 
 import '../models/equipo_model.dart';
+import '../models/baseball_history_entry.dart';
 import '../models/marcador_model.dart';
 import '../models/video_archivo.dart';
 
@@ -10,6 +11,7 @@ class DataService {
   static List<Equipo>? _equipos;
   static List<VideoArchivo>? _videos;
   static List<Marcador>? _marcadores;
+  static List<BaseballHistoryEntry>? _baseballHistory;
 
   Future<List<Equipo>> cargarEquipos() async {
     final cached = _equipos;
@@ -34,7 +36,9 @@ class DataService {
     final cached = _videos;
     if (cached != null) return cached;
     try {
-      final String jsonString = await rootBundle.loadString('assets/videos.json');
+      final String jsonString = await rootBundle.loadString(
+        'assets/videos.json',
+      );
       final List<dynamic> decoded = json.decode(jsonString) as List<dynamic>;
       final list = decoded
           .map((item) => VideoArchivo.fromJson(item as Map<String, dynamic>))
@@ -48,13 +52,31 @@ class DataService {
     }
   }
 
+  Future<List<BaseballHistoryEntry>> cargarHistoriaBeisbol() async {
+    final cached = _baseballHistory;
+    if (cached != null) return cached;
+
+    final jsonString = await rootBundle.loadString(
+      'assets/baseball_history.json',
+    );
+    final List<dynamic> decoded = json.decode(jsonString) as List<dynamic>;
+    final history = decoded
+        .map(
+          (item) => BaseballHistoryEntry.fromJson(item as Map<String, dynamic>),
+        )
+        .toList();
+    _baseballHistory = history;
+    return history;
+  }
+
   /// Loads the active D-20 markers. The printable spare is not in this file.
   Future<List<Marcador>> cargarMarcadores() async {
     final cached = _marcadores;
     if (cached != null) return cached;
     try {
-      final String jsonString =
-          await rootBundle.loadString('assets/ar_markers.json');
+      final String jsonString = await rootBundle.loadString(
+        'assets/ar_markers.json',
+      );
       final List<dynamic> decoded = json.decode(jsonString) as List<dynamic>;
       final list = decoded
           .map((item) => Marcador.fromJson(item as Map<String, dynamic>))

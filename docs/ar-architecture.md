@@ -1,7 +1,7 @@
 # AR architecture contract
 
 **Status:** binding. Referenced by Constitution **Article VI**.
-**Version:** 1.1.1 · 2026-09-26
+**Version:** 1.2.0 · 2026-10-18
 **Scope:** everything under `lib/ar/`, plus AR-related native config.
 **Read first:** [`ar-postmortem.md`](./ar-postmortem.md) — this document is its remedy.
 
@@ -130,6 +130,10 @@ abstract interface class ArTracker {
   /// Attaches a GLB to a detected marker's pose. No-op for fakes.
   Future<void> attachModel({required String trackerName, required String glbAsset});
 
+  /// Removes the current marker's attached model without stopping tracking.
+  /// Used when the user explicitly requests another scan (D-29).
+  Future<void> clearModel();
+
   /// Plays a named glTF clip on the attached node. Missing clip or a missing
   /// Filament patch returns false and must not fail the session.
   /// Clip names are `idle` (loop), `gesto`, and `celebracion` (one-shot).
@@ -238,6 +242,9 @@ class ArFailed extends ArSessionState {
                  └──────────────┘◄─────────────────────└──────────┘
                                     re-detected
 
+  ArLocked / ArLost ──(user requests another scan)──► ArSearching
+                       same tracker and camera session; clear old model
+
   Any state ──(ArTrackerException)──► ArFailed
 ```
 
@@ -275,6 +282,11 @@ Requirements:
 - `trackerName` **is** the reference image's filename stem, and it **must** equal
   the `Marcador.id`. One name, one meaning, verified by a unit test that walks
   `assets/ar_markers.json` and asserts every `markerImage` stem matches its `id`.
+- The explicit rescan transition is the only user action that returns a
+  confirmed lock to `ArSearching`. It clears attached content and transient
+  actions but retains the same detection stream, tracker, and camera session.
+  New content still requires a fully tracked detection, exact registry lookup,
+  and debounce; never start a second concurrent camera session (D-29).
 
 Naming convention (also enforced by that test):
 
@@ -323,6 +335,21 @@ scene lighting. Motion is time-based and preset-specific: Jonrón and Chispas
 arc outward and fall, Confeti flutters while descending, and Polvo del diamante
 spreads low with a slow drift. Particles grow into view and fade out before
 their bounded effect ends; they must not remain as static or dark specks.
+
+### In-session bonus interactions (D-29 … D-31)
+
+- **Rescan:** “Escanear otro equipo” is available from `ArLocked` / `ArLost`.
+  It calls the tracker seam to remove the current model, clears transient AR
+  actions/modes, and returns to `ArSearching` without disposing or recreating
+  the native session.
+- **Trivia AR:** use five distinct questions from the locked team's existing
+  `Equipo.trivias`, one at a time. Keep progress, single-answer correctness,
+  and score in the Flutter overlay; show a final score/result and in-session
+  replay. The AR camera and anchored model remain active.
+- **Mini-game:** the “Reto de jonrón” is a local five-pitch timing game in
+  Flutter chrome, reachable after a confirmed lock. It may not access/decode
+  camera frames, change marker identity, use a game engine, or restart/rebuild
+  the tracker surface.
 
 ---
 
@@ -594,4 +621,9 @@ docs/
       animation controls and obey the one-effect/six-node limits.
 - [ ] Particle materials stay bright and color-faithful, and each preset has
       its documented, time-based motion and fade-out.
+- [ ] Rescan clears prior content and returns to `ArSearching` without stopping,
+      disposing, or rebuilding the current tracker session.
+- [ ] Trivia AR completes five linked-team questions with result feedback and
+      in-session replay; the mini-game uses Flutter chrome only and never
+      accesses camera frames or restarts tracking.
 - [ ] `flutter analyze` clean on touched files.

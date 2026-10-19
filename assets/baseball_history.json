@@ -1,0 +1,54 @@
+[
+  {
+    "id": "beisbol-profesional-1869",
+    "periodo": "1869",
+    "titulo": "El béisbol se vuelve profesional",
+    "resumen": "Los Cincinnati Red Stockings ayudaron a transformar un juego de clubes en un espectáculo con jugadores remunerados.",
+    "detalle": "En Cincinnati, Harry Wright organizó un equipo que pagaba a sus jugadores y podía viajar para competir con otros clubes. Los Red Stockings de 1869 son reconocidos como el primer equipo abiertamente profesional del béisbol. Su popularidad impulsó el crecimiento de clubes y competencias organizadas; en 1876 se fundó la National League. El deporte ya tenía antecedentes y reglas en evolución antes de este momento: 1869 marca un paso decisivo de profesionalización, no un origen único del béisbol.",
+    "imagenUrl": "https://upload.wikimedia.org/wikipedia/commons/c/c1/1869-cincinnati-red-stockings.jpg",
+    "imagenCredito": "Cincinnati Red Stockings, 1869. Autor desconocido.",
+    "imagenFuenteUrl": "https://commons.wikimedia.org/wiki/File:1869-cincinnati-red-stockings.jpg",
+    "licenciaImagen": "Dominio público",
+    "licenciaImagenUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+    "fuenteHistoricaUrl": "https://baseballhall.org/hall-of-famers/wright-harry"
+  },
+  {
+    "id": "negro-leagues-1920",
+    "periodo": "1920",
+    "titulo": "Las Ligas Negras organizan su propio campeonato",
+    "resumen": "Ante la segregación, Rube Foster y otros dirigentes impulsaron ligas profesionales para jugadores afroamericanos.",
+    "detalle": "En 1920, Rube Foster reunió a propietarios de clubes y ayudó a fundar la Negro National League, una asociación de equipos afroamericanos organizada siguiendo el modelo de las Grandes Ligas. La exclusión de las ligas principales no impidió que las Ligas Negras desarrollaran equipos, estadios, rivalidades y figuras de enorme talento. Sus torneos sostuvieron comunidades y una tradición deportiva propia; sus historias también muestran que el crecimiento del béisbol estuvo marcado por barreras raciales y por quienes las enfrentaron.",
+    "imagenUrl": "https://upload.wikimedia.org/wikipedia/commons/9/9d/1905_Philadelphia_Giants_baseball_team.jpg",
+    "imagenCredito": "Philadelphia Giants, 1905; Rube Foster aparece en la fila de pie. Autor desconocido.",
+    "imagenFuenteUrl": "https://commons.wikimedia.org/wiki/File:1905_Philadelphia_Giants_baseball_team.jpg",
+    "licenciaImagen": "Dominio público",
+    "licenciaImagenUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+    "fuenteHistoricaUrl": "https://baseballhall.org/hall-of-famers/foster-rube"
+  },
+  {
+    "id": "integracion-1947",
+    "periodo": "1947",
+    "titulo": "Jackie Robinson rompe la barrera racial de MLB",
+    "resumen": "Su debut con Brooklyn el 15 de abril de 1947 abrió una nueva etapa en la integración del béisbol de las Grandes Ligas.",
+    "detalle": "Jackie Robinson debutó con los Brooklyn Dodgers el 15 de abril de 1947 y se convirtió en el primer jugador afroamericano de la era moderna de las Grandes Ligas. Enfrentó insultos, amenazas y discriminación dentro y fuera del campo, mientras respondía con un juego extraordinario. Su llegada fue un hito, pero la integración no ocurrió de inmediato: el cambio avanzó gradualmente y las Ligas Negras continuaron siendo una parte esencial de la historia del deporte.",
+    "imagenUrl": "https://upload.wikimedia.org/wikipedia/commons/c/cd/Jackie_Robinson_Ballpark_statue.jpg",
+    "imagenCredito": "Estatua de Jackie Robinson en su estadio de Daytona Beach. Foto de Kenny Rowland.",
+    "imagenFuenteUrl": "https://commons.wikimedia.org/wiki/File:Jackie_Robinson_Ballpark_statue.jpg",
+    "licenciaImagen": "CC BY-SA 4.0 — atribución a Kenny Rowland y compartir bajo la misma licencia",
+    "licenciaImagenUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "fuenteHistoricaUrl": "https://baseballhall.org/hall-of-famers/robinson-jackie"
+  },
+  {
+    "id": "world-baseball-classic-2006",
+    "periodo": "2006",
+    "titulo": "El Clásico Mundial reúne selecciones",
+    "resumen": "La primera edición del World Baseball Classic llevó el formato de selecciones nacionales al escenario internacional.",
+    "detalle": "En 2006 se disputó la primera edición del World Baseball Classic, un torneo internacional de selecciones que reunió a jugadores profesionales de distintas ligas. Japón ganó aquella edición inaugural. El torneo dio mayor visibilidad a la diversidad de estilos y tradiciones del béisbol, y reforzó su carácter global: el juego se practica y se sigue en América, Asia y muchas otras regiones.",
+    "imagenUrl": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Baseball_spoken_here.jpg",
+    "imagenCredito": "“Baseball spoken here”, Petco Park durante el Clásico Mundial de 2006. Foto: John Bracken.",
+    "imagenFuenteUrl": "https://commons.wikimedia.org/wiki/File:Baseball_spoken_here.jpg",
+    "licenciaImagen": "CC BY 2.0 — requiere atribución a John Bracken",
+    "licenciaImagenUrl": "https://creativecommons.org/licenses/by/2.0/",
+    "fuenteHistoricaUrl": "https://www.mlb.com/world-baseball-classic/history"
+  }
+]

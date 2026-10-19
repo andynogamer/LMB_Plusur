@@ -1,4 +1,4 @@
-﻿import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:lmb_plusur/models/equipo_model.dart';
 import 'package:lmb_plusur/models/video_archivo.dart';
 import 'package:lmb_plusur/services/data_service.dart';
@@ -90,5 +90,28 @@ void main() {
     expect(videos.map((v) => v.equipoId).toSet(), hasLength(10));
     expect(videos.any((v) => v.equipoId == 'leones_yucatan'), isTrue);
     expect(videos.any((v) => v.equipoId == 'olmecas_tabasco'), isTrue);
+  });
+
+  test('DataService carga la historia general con imagen y fuentes', () async {
+    final entries = await DataService().cargarHistoriaBeisbol();
+
+    expect(entries.map((entry) => entry.periodo), [
+      '1869',
+      '1920',
+      '1947',
+      '2006',
+    ]);
+    expect(
+      entries.every(
+        (entry) =>
+            entry.detalle.length > 100 &&
+            entry.imagenUrl.startsWith('https://') &&
+            entry.imagenCredito.isNotEmpty &&
+            entry.imagenFuenteUrl.startsWith('https://') &&
+            entry.licenciaImagen.isNotEmpty &&
+            entry.fuenteHistoricaUrl.startsWith('https://'),
+      ),
+      isTrue,
+    );
   });
 }

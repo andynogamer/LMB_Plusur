@@ -10,14 +10,16 @@ native Android/iOS or an AR plugin integration.
 
 ## What this repository is
 
-LMB Plusur — AR fan app for **LMB Zona Sur** (scholar + product rigor). Scan
-markers for AR; or pick a team by name. Video archive with **allowed** filters,
-trivia, simulated stats. **No Unity. No API. No logins.**
+LMB Plusur — AR fan app for **LMB Zona Sur** (scholar + product rigor), with a
+separate educational history of baseball internationally. Scan markers for AR;
+or pick a team by name. Video archive with **allowed** filters, trivia, and
+simulated stats. General history does not expand the ten-club team catalog
+(D-28). **No Unity. No API. No logins.**
 
 | Path | What it is |
 |---|---|
 | `docs/agent-handoff.md` | **Session entry point.** Current state + env gotchas. Read first, update last. |
-| `CONSTITUTION.md` | Non-negotiable principles + decisions log (v2.5.3). |
+| `CONSTITUTION.md` | Non-negotiable principles + decisions log (v2.6.0). |
 | `AGENTS.md` | This file. |
 | `WORK_ITEMS.md` | Backlog as copy-paste agent prompts. |
 | `docs/ar-postmortem.md` | Why AR attempt #1 failed. **Read before any AR work.** |
@@ -25,6 +27,7 @@ trivia, simulated stats. **No Unity. No API. No logins.**
 | `docs/ar-marker-guide.md` | How to author markers ARCore can actually track. |
 | `lib/` | Flutter app. |
 | `assets/data.json` | Canonical team content (10 clubs). |
+| `assets/baseball_history.json` | Sourced international baseball-history timeline (D-28). |
 | `assets/` | Images, future markers / models / sfx. |
 | `tools/` | Dev scripts (e.g. `score_markers.ps1`). |
 | `pubspec.yaml` | Dependencies — do **not** enable Unity widget. |
