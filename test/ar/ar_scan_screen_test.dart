@@ -195,6 +195,36 @@ void main() {
     expect(find.text('MODO DEMO'), findsOneWidget);
   });
 
+  testWidgets('el reto de jonrón solo se ofrece después de ArLocked', (
+    tester,
+  ) async {
+    final tracker = FakeArTracker();
+    await pumpScan(tester, tracker: tracker);
+
+    expect(find.text('RETO DE JONRÓN'), findsNothing);
+    expect(find.byKey(const Key('ar-home-run-game')), findsNothing);
+
+    await lock(tracker, leones);
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byKey(const Key('ar-mode-home-run')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('ar-mode-home-run')));
+    await tester.pump();
+
+    expect(find.byKey(const Key('ar-home-run-game')), findsOneWidget);
+    expect(find.byKey(const Key('ar-home-run-swing')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('ar-home-run-swing')));
+    await tester.pump();
+
+    expect(tracker.stopCalled, isFalse);
+    expect(tracker.attachedModels, isNotEmpty);
+    expect(
+      tracker.attachedModels.every((model) => model.trackerName == leones.id),
+      isTrue,
+    );
+  });
+
   testWidgets('conserva la pista D-11 del equipo', (tester) async {
     final tracker = FakeArTracker();
     await pumpScan(
@@ -525,6 +555,30 @@ void main() {
     );
     expect(infoButton.onPressed, isNull);
     expect(find.byKey(const Key('ar-trivia')), findsOneWidget);
+  });
+
+  testWidgets('el reto de jonrón cierra información al activarse', (
+    tester,
+  ) async {
+    final tracker = FakeArTracker();
+    await pumpScan(tester, tracker: tracker);
+    await lock(tracker, leones);
+    await tester.pump();
+    await tester.pump();
+
+    await tester.tap(find.byKey(const Key('ar-action-info')));
+    await tester.pump();
+    expect(find.byKey(const Key('ar-info-panel')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('ar-mode-home-run')));
+    await tester.pump();
+
+    expect(find.byKey(const Key('ar-info-panel')), findsNothing);
+    expect(find.byKey(const Key('ar-home-run-game')), findsOneWidget);
+    final infoButton = tester.widget<ElevatedButton>(
+      find.byKey(const Key('ar-action-info')),
+    );
+    expect(infoButton.onPressed, isNull);
   });
 
   testWidgets('celebracion pide el clip y reposo vuelve a idle', (

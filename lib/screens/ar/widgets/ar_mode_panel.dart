@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -5,8 +7,9 @@ import '../../../models/equipo_model.dart';
 import '../../../models/marcador_model.dart';
 import '../../../models/trivia_model.dart';
 import '../../../theme/app_colors.dart';
+import 'ar_home_run_game.dart';
 
-enum ArExperienceMode { gallery, trivia }
+enum ArExperienceMode { gallery, trivia, homeRun }
 
 class ArModePanel extends StatefulWidget {
   const ArModePanel({
@@ -15,12 +18,14 @@ class ArModePanel extends StatefulWidget {
     required this.equipo,
     required this.mode,
     required this.onModeChanged,
+    this.homeRunRandom,
   });
 
   final Marcador marcador;
   final Equipo? equipo;
   final ArExperienceMode mode;
   final ValueChanged<ArExperienceMode> onModeChanged;
+  final math.Random? homeRunRandom;
 
   @override
   State<ArModePanel> createState() => _ArModePanelState();
@@ -28,6 +33,12 @@ class ArModePanel extends StatefulWidget {
 
 class _ArModePanelState extends State<ArModePanel> {
   int? _selected;
+  int _bestHomeRunScore = 0;
+
+  void _recordBestHomeRunScore(int score) {
+    if (score <= _bestHomeRunScore) return;
+    setState(() => _bestHomeRunScore = score);
+  }
 
   @override
   void didUpdateWidget(covariant ArModePanel oldWidget) {
@@ -46,19 +57,31 @@ class _ArModePanelState extends State<ArModePanel> {
           children: [
             Expanded(
               child: _ModeButton(
+                buttonKey: const Key('ar-mode-gallery'),
                 label: 'Galería AR',
                 icon: Icons.view_in_ar_rounded,
                 selected: widget.mode == ArExperienceMode.gallery,
                 onPressed: () => widget.onModeChanged(ArExperienceMode.gallery),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             Expanded(
               child: _ModeButton(
+                buttonKey: const Key('ar-mode-trivia'),
                 label: 'Trivia AR',
                 icon: Icons.quiz_rounded,
                 selected: widget.mode == ArExperienceMode.trivia,
                 onPressed: () => widget.onModeChanged(ArExperienceMode.trivia),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: _ModeButton(
+                buttonKey: const Key('ar-mode-home-run'),
+                label: 'Jonrón',
+                icon: Icons.sports_baseball_rounded,
+                selected: widget.mode == ArExperienceMode.homeRun,
+                onPressed: () => widget.onModeChanged(ArExperienceMode.homeRun),
               ),
             ),
           ],
@@ -70,6 +93,14 @@ class _ArModePanelState extends State<ArModePanel> {
             trivia: trivia,
             selected: _selected,
             onSelected: (index) => setState(() => _selected = index),
+          ),
+        ],
+        if (widget.mode == ArExperienceMode.homeRun) ...[
+          const SizedBox(height: 10),
+          ArHomeRunGame(
+            bestScore: _bestHomeRunScore,
+            onBestScoreChanged: _recordBestHomeRunScore,
+            random: widget.homeRunRandom,
           ),
         ],
       ],
@@ -185,12 +216,14 @@ class _TriviaOverlay extends StatelessWidget {
 
 class _ModeButton extends StatelessWidget {
   const _ModeButton({
+    this.buttonKey,
     required this.label,
     required this.icon,
     required this.selected,
     required this.onPressed,
   });
 
+  final Key? buttonKey;
   final String label;
   final IconData icon;
   final bool selected;
@@ -199,8 +232,9 @@ class _ModeButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return OutlinedButton.icon(
+      key: buttonKey,
       onPressed: onPressed,
-      icon: Icon(icon, size: 16),
+      icon: Icon(icon, size: 14),
       label: Text(label.toUpperCase()),
       style: OutlinedButton.styleFrom(
         foregroundColor: selected ? AppColors.black : AppColors.white,
@@ -210,10 +244,10 @@ class _ModeButton extends StatelessWidget {
               ? AppColors.button
               : AppColors.button.withValues(alpha: 0.4),
         ),
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
         textStyle: GoogleFonts.poppins(
           fontWeight: FontWeight.w800,
-          fontSize: 10,
+          fontSize: 9,
         ),
       ),
     );

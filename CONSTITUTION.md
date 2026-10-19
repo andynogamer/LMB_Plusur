@@ -17,7 +17,18 @@ operating rules live in `AGENTS.md`. The ordered backlog lives in
 | [`docs/ar-architecture.md`](./docs/ar-architecture.md) | The AR technical contract: layers, `ArTracker` seam, state machine, error taxonomy, budgets. |
 | [`docs/ar-marker-guide.md`](./docs/ar-marker-guide.md) | How to author printable markers ARCore can actually track. |
 
-**Version**: 2.6.0 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-10-18
+**Version**: 2.7.1 | **Ratified**: 2026-09-04 | **Last Amended**: 2026-10-18
+
+> **v2.7.1 — US-22 batting-zone contact.** D-31 now defines a hit by actual
+> overlap between the rendered ball and batting zone, including edge contact.
+> The hit test uses their displayed dimensions and lane width, rather than a
+> narrower fixed timing threshold.
+
+> **v2.7.0 — US-22 endless home-run challenge.** D-31 is amended from a
+> five-pitch round to an endless consecutive-hit run that ends on a miss.
+> Each pitch is slightly faster and moves the randomly placed batting zone.
+> The current run and best run remain in memory for the current AR screen
+> session only; this adds no persistent leaderboard or account.
 
 > **v2.6.0 — teacher-requested history and AR experiences.** D-28 keeps the
 > ten-club Zona Sur catalog intact while allowing a separate educational
@@ -611,7 +622,7 @@ Splash → Main
   ├─ Escanear → detect marcador (≥3 distinct) → AR window
   │       ├─ modo Galería AR / Trivia AR / Video inmersivo
   │       ├─ Trivia AR: five questions → result + replay
-  │       ├─ Reto de jonrón: five pitches → result + replay
+  │       ├─ Reto de jonrón: endless pitches → miss → result + replay
   │       ├─ Escanear otro equipo → searching in the same AR session
   │       ├─ botones: animación | información+TTS | video | stats | VFX
   │       └→ shared features (historia, trivia, videos)
@@ -637,7 +648,7 @@ timeline; it does not add clubs to the team catalog.
 | Multiple AR modes | Planned | e.g. galería, trivia AR, video inmersivo. |
 | AR model choice | Implemented (US-18) | On `ArLocked` / `ArLost`, choose the club's stadium or player GLB; tracker replacement preserves the session and pose anchor. |
 | In-session rescan | Planned (US-23) | Return to searching and clear prior content without leaving or restarting the live tracker session (D-29). |
-| AR mini-game | Planned (US-22) | Local five-pitch “Reto de jonrón” in Flutter chrome after marker lock; no game engine or camera-frame access (D-31). |
+| AR mini-game | Implemented (US-22) | Local endless “Reto de jonrón” in Flutter chrome after marker lock; each pitch speeds up slightly and gets a random batting zone; miss ends the streak, with session-best score and replay; no game engine or camera-frame access (D-31). |
 | Team search | Partial → required | Client-side name filter on team list. |
 | User feedback | Partial | Sounds + visual state + short messages. |
 
@@ -814,7 +825,7 @@ Track fixes via `WORK_ITEMS.md`.
 | D-28 | The team catalog remains the ten LMB Zona Sur clubs. A separate Spanish educational baseball-history timeline may cover international baseball, leagues, and historic figures without adding teams. Store text/source metadata locally; use only sourced images with recorded license/credit and visible attribution, plus themed fallback on image failure. | **Ratified 2026-10-18** |
 | D-29 | “Escanear otro equipo” from `ArLocked` / `ArLost` returns the controller to `ArSearching` and clears the prior model/actions while keeping the same tracker/camera session. New content still requires the exact marker registry and debounce. Never create a second concurrent session. | **Ratified 2026-10-18** |
 | D-30 | Trivia AR is a five-question round from the locked team's existing `Equipo.trivias`; it shows progress, evaluates one response per question, and ends with a Spanish score/result message and in-session replay. | **Ratified 2026-10-18** |
-| D-31 | A local “Reto de jonrón” mini-game is available after a confirmed AR lock: five timed pitches, tap-to-swing, hit/miss feedback, final score, and replay. It runs in Flutter chrome and uses no game engine, camera-frame access, network, or account. | **Ratified 2026-10-18** |
+| D-31 | A local “Reto de jonrón” mini-game is available after a confirmed AR lock. It is an endless tap-to-swing streak: each pitch is slightly faster and receives a randomized batting-zone position; a swing is a hit whenever the rendered ball overlaps or touches the visible zone. A miss ends the run and shows the score, in-session best score, and replay. Current and best scores live only in memory for the current AR screen session. It runs in Flutter chrome and uses no game engine, camera-frame access, network, persistent leaderboard, or account. | **Amended 2026-10-18** |
 
 Open residual (non-blocking for backlog writing):
 

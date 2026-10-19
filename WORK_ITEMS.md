@@ -65,7 +65,7 @@
 | US-19 | 📗 | 🟠 P1 | Lay AR model parallel to scanned logo | ☑ | AR depth |
 | US-20 | 📗 | 🟠 P1 | Pause animation, save AR photos, and trigger four independent particle effects | ◐ | AR interaction / capture |
 | US-21 | 📗 | 🟠 P1 | General baseball history with sourced images | ☑ | Historia |
-| US-22 | 📗 | 🟠 P1 | In-AR home-run mini-game | ☐ | Bonus / AR |
+| US-22 | 📗 | 🟠 P1 | In-AR home-run mini-game | ☑ | Bonus / AR |
 | US-23 | 📗 | 🟠 P1 | Scan another team without leaving AR | ☐ | AR UX |
 | US-24 | 📗 | 🟠 P1 | Five-question AR trivia with a finish message | ☐ | Bonus / AR |
 | ~~US-05…US-08~~ | — | — | ~~Old monolithic AR items~~ | ⊘ | Replaced by AR-01…AR-07 |
@@ -134,7 +134,7 @@ records detailed Spanish copy, image credits/licenses, image-source links, and
 historical references. Remote image failures use the themed baseball
 placeholder; club-specific history remains unchanged.
 
-## US-22 · 📗 · 🟠 P1 · In-AR home-run mini-game · ☐ Pendiente
+## US-22 · 📗 · 🟠 P1 · In-AR home-run mini-game · ☑ Hecho
 
 **Prompt**
 ```
@@ -142,19 +142,27 @@ Context: The teacher requests a mini video game reachable from the live AR
 experience. A small baseball-themed reaction game is sufficient; no separate
 game engine or Unity scene is allowed.
 
-Task: Add a “Reto de jonrón” to the locked AR experience. The player taps to
-swing as a pitch enters a visible batting zone across five pitches. Show
-immediate hit/miss feedback, a cumulative score, and a completion/replay state.
+Task: Add an endless “Reto de jonrón” to the locked AR experience. The player
+taps to swing as each pitch enters a visible batting zone. Every pitch is
+slightly faster than the previous one and the zone position is randomized for
+each pitch. A hit continues the streak; a miss ends the run. Show immediate
+hit/miss feedback, the current streak, the best run score, and a replay action.
 Keep all game interaction in Flutter chrome over the existing AR session;
 starting or playing the game must not restart tracking or rebuild the camera
-platform view. The game is available only after a confirmed marker lock.
+platform view. The game is available only after a confirmed marker lock. Keep
+the best score in memory for the current AR screen session only.
 
 Acceptance criteria:
-- A player can start the game from ArLocked and play five pitches.
-- Timing determines hit/miss and provides visible Spanish feedback and score.
-- A clear final result and replay action are shown.
-- Game state is local to the AR screen/session; no account, network service,
-  or leaderboard is introduced.
+- A player can start the game only from ArLocked; pitches continue after hits
+  without a fixed pitch limit, and a miss ends the run.
+- A swing is a hit whenever the rendered ball overlaps or touches the visible
+  batting zone; each new pitch is slightly faster and places that zone at a
+  new randomized position.
+- Visible Spanish feedback, current streak and best run score are shown; the
+  final result includes replay, and replay retains the session best.
+- The best run survives replay and mode changes during the current AR screen
+  session, but resets when that screen/session is left. No account, network
+  service, persistence, or leaderboard is introduced.
 - The game does not stop tracking, mutate marker identity, or use Dart camera
   frames/image matching.
 - Focused state/widget tests and `flutter analyze` pass.
@@ -165,6 +173,16 @@ Files: `lib/screens/ar/`, AR widgets/tests, `CONSTITUTION.md`,
 Out of scope: Unity, network play, persistent leaderboard, new tracker,
 additional AR markers, or general-purpose game engine.
 ```
+
+**Hecho 2026-10-18:** Added the locked-session “Reto de jonrón” Flutter mode.
+Its endless animated pitch lane accepts swings only during the randomized
+batting window, speeds up slightly after every pitch, tracks the current streak
+and session-best score, and ends each run on a miss with replay. Scores stay in
+memory for the AR screen session. The widget owns and disposes its animation
+and timer state; it does not call or rebuild the tracker. Focused game and
+AR-screen tests plus `flutter analyze` pass. Ball/zone collision uses their
+rendered dimensions so even edge contact scores. Physical-device visual review
+remains open.
 
 ## US-23 · 📗 · 🟠 P1 · Scan another team without leaving AR · ☐ Pendiente
 
@@ -1391,10 +1409,10 @@ than one simultaneous effect, and changes to the marker database.
    landed. BUG-07 pause/resume is accepted on device. After BUG-08,
    continue the existing backlog:
    **BUG-02** (failed actions), then US-09 / US-10 / DEBT-01.
-7. **Teacher additions (2026-10-18):** US-21 general baseball history is
-   complete. Continue one item per branch with **US-22** (in-AR home-run
-   mini-game), **US-23** (same-session rescan), then **US-24** (five-question
-   AR trivia).
+7. **Teacher additions (2026-10-18):** US-21 general baseball history and
+   US-22 in-AR home-run mini-game are complete. Continue one item per branch
+   with **US-23** (same-session rescan), then **US-24** (five-question AR
+   trivia).
 
 Do not start AR-04 until AR-01…AR-03 are merged and green. That ordering is the
 whole point of the reset: the state machine and content mapping are proven
